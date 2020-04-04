@@ -5,38 +5,37 @@ namespace estd { namespace meta {
 
 // Fill the array with `value` on the range positions [first, last).
 template <typename ArrayT, typename ValueT>
-constexpr void fill(ArrayT& cont, size_t first, size_t last, ValueT&& value) {
+constexpr void fill(ArrayT &cont, size_t first, size_t last, ValueT &&value) {
   for (; first != last; ++first) {
     cont[first] = value;
   }
 }
 
 template <typename ArrayT, typename ValueT, typename RangeT>
-constexpr void fill(ArrayT& cont, RangeT&& range, ValueT&& value) {
+constexpr void fill(ArrayT &cont, RangeT &&range, ValueT &&value) {
   fill(cont, range.begin(), range.end(), std::forward<ValueT>(value));
 }
 
 template <typename ArrayT, typename ValueT, typename PositionT>
-constexpr void fill(ArrayT& cont, std::initializer_list<PositionT> pos, ValueT&& value) {
+constexpr void fill(ArrayT &cont, std::initializer_list<PositionT> pos, ValueT &&value) {
   for (auto it = pos.begin(); it != pos.end(); ++it) {
     cont[*it] = value;
   }
 }
 
 template <typename ContainerT, typename ValueT, typename... Args>
-constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
+constexpr void fill_n(ContainerT &cont, ValueT &&value, Args &&... args) {
   (void)std::initializer_list<int>{
-      (estd::meta::fill(cont, std::forward<Args>(args), value), 0)...
+    (estd::meta::fill(cont, std::forward<Args>(args), value), 0)...
   };
 }
 
 template <typename ContainerT, typename ValueT, typename... Args>
-constexpr ContainerT partial_initializer(ValueT&& value, Args&&... args) {
+constexpr ContainerT partial_initializer(ValueT &&value, Args &&... args) {
   ContainerT cont{};
   fill_n(cont, std::forward<ValueT>(value), std::forward<Args>(args)...);
   return cont;
 }
-
 
 }}
 

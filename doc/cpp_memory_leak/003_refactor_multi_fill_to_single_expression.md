@@ -31,7 +31,7 @@ constexpr void fill_n(ContainerT& cont, ValueT&& value) { }
 template <typename ContainerT, typename ValueT, typename Arg1, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Arg1&& arg1, Args&&... args) {
   estd::fill(cont, std::forward<Arg1>(arg1), value);
-  fill_multi(cont, value, std::forward<Args>(args)...);
+  fill_n(cont, value, std::forward<Args>(args)...);
 }
 }
 
@@ -65,7 +65,7 @@ template <typename ContainerT, typename ValueT, typename... Args>
 constexpr ContainerT partial_initializer(ValueT&& value, Args&&... args) {
   ContainerT cont{};
   (void)std::initializer_list<int>{
-      (estd::meta::fill(cont, std::forward<Args>(args), value), 0)...
+    (estd::meta::fill(cont, std::forward<Args>(args), value), 0)...
   };
   return cont;
 }
