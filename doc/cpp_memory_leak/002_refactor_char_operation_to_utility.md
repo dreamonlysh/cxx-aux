@@ -1,4 +1,4 @@
-> 基于[001_refactor_logic_to_static]([https://gitee.com/dreamonlysh/tony/blob/master/doc/Notes4C++Weekly/Ep%201%20ChaiScript_Parser%20Initialization%20Refactor.md](https://gitee.com/dreamonlysh/tony/blob/master/doc/Notes4C++Weekly/Ep 1 ChaiScript_Parser Initialization Refactor.md))中的模块提供更为通用的抽象，凸显主题业务，并提高代码可复用性。
+> 基于[001_refactor_logic_to_static](https://gitee.com/dreamonlysh/tony/blob/master/doc/Notes4C++Weekly/Ep%201%20ChaiScript_Parser%20Initialization%20Refactor.md)中的模块提供更为通用的抽象，凸显主题业务，并提高代码可复用性。
 >
 > 待优化的代码如下：
 >
