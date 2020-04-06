@@ -1,4 +1,4 @@
-> Video Link: https://www.youtube.com/watch?v=EJtqHLvAIZE&list=PLs3KjaCtOwSZ2tbuV1hx8Xz-rFZTan2J1&index=1
+> Video Link: [C++ Weekly - Ep 1 ChaiScript_Parser Initialization Refactor](https://www.youtube.com/watch?v=EJtqHLvAIZE&list=PLs3KjaCtOwSZ2tbuV1hx8Xz-rFZTan2J1&index=1)
 
 此视频的目标：将代码中具有初始化语义的代码进行重构，以此可以更多的利用编译器能力进行优化，从而获得更高的性能。
 
