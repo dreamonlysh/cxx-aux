@@ -133,13 +133,13 @@ exchange_test2(unsigned long):
         ret
 ```
 
-唯一的区别在于非`std::exchange`场景下，多了一条近期清零的指令`xor     eax, eax`。使用`clang10`指令数便一样多了。
+唯一的区别在于非`std::exchange`场景下，多了一条清零指令`xor     eax, eax`。使用`clang10`指令数便一样多了。
 
 ## 结论
 
 `std::exchange`表达方式并不非常清晰，性能上也没有明显的提升，且使用场景只有少数循环中需要备份历史，所以个人不是很推荐使用。
 
-若上述场景中，`a`类型占用空间较大，需要显示`std::move`来提升性能，此时可以用`std::exchange`。或在泛型编程中，无法确定`a`类型时，使用`std::exchange`可以比较多的减少啰嗦的代码。
+若上述场景中，`a`类型占用空间较大，需要显示`std::move`来避免拷贝，此时可以用`std::exchange`。或在泛型编程中，无法确定`a`类型时，使用`std::exchange`可以比较有效的减少啰嗦代码。
 
 ## 参考资料
 
