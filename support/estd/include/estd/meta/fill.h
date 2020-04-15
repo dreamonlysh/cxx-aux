@@ -25,9 +25,7 @@ constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos, ValueT&& value
 
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
-  (void)std::initializer_list<int>{
-    (estd::meta::fill(cont, std::forward<Args>(args), value), 0)...
-  };
+    (... , estd::meta::fill(cont, std::forward<Args>(args), value));
 }
 
 template <typename ContainerT, typename ValueT, typename... Args>
