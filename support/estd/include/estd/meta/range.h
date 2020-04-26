@@ -45,6 +45,14 @@ private:
 
 using char_enumerate_slice = enumerate_slice<char>;
 
+/// Overload fill in `fill.h`, to enable `fill_n` with `enumerate_slice`
+template <typename ArrayT, typename ValueT, typename PositionT>
+constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos, ValueT&& value) {
+  for (auto it = pos.begin(); it != pos.end(); ++it) {
+    cont[static_cast<size_t>(*it)] = value;
+  }
+}
+
 }}
 
 #endif //ESTD_META_RANGE_H

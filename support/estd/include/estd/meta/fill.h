@@ -16,13 +16,6 @@ constexpr void fill(ArrayT& cont, RangeT&& range, ValueT&& value) {
   fill(cont, range.begin(), range.end(), std::forward<ValueT>(value));
 }
 
-template <typename ArrayT, typename ValueT, typename PositionT>
-constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos, ValueT&& value) {
-  for (auto it = pos.begin(); it != pos.end(); ++it) {
-    cont[static_cast<size_t>(*it)] = value;
-  }
-}
-
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
     (... , estd::meta::fill(cont, std::forward<Args>(args), value));
