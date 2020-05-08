@@ -2,6 +2,7 @@
 #define ESTD_FACTORY_H
 #include <functional>
 #include <optional>
+#include <map>
 #include "utils.h"
 
 namespace estd {
@@ -67,7 +68,7 @@ private:
 template <typename ConcreteT>
 template <typename KeyT, typename RetT, typename... Args>
 typename MemberFunctionFactory<ConcreteT>::template FactoryType<KeyT, RetT, Args...>::CreatorHolder
-    MemberFunctionFactory<ConcreteT>::template FactoryType<KeyT, RetT, Args...>::holder = {};
+    MemberFunctionFactory<ConcreteT>::FactoryType<KeyT, RetT, Args...>::holder = {};
 
 } // estd
 
