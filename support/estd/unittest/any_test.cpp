@@ -1,4 +1,5 @@
 #include <any>
+#include <utility>
 #include <vector>
 #include <map>
 #include <string>
@@ -35,7 +36,7 @@ public:
   CommandLine &operator=(CommandLine&&) = delete;
 
   void addCommand(const std::string& name, std::any option) {
-    commands[name] = option;
+    commands[name] = std::move(option);
   }
 
   void addCommand(const std::string& option) {

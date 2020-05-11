@@ -3,7 +3,7 @@
 #include <functional>
 #include <optional>
 #include <map>
-#include "utils.h"
+#include "estd/meta/void.h"
 
 namespace estd {
 
@@ -31,22 +31,21 @@ public:
   }
 
   template <typename FactoryT, typename... Args>
-  std::optional<std::enable_if_t<!std::is_void_v<typename FactoryT::ret_type>,
-                                 typename FactoryT::ret_type>>
-  invoke(typename FactoryT::key_type c, Args&&... args) {
-    if (auto it = FactoryT::holder.find(c); it != FactoryT::holder.end()) {
-      return std::invoke(it->second, static_cast<ConcreteT*>(this),
-                         std::forward<Args>(args)...);
+  auto invoke(typename FactoryT::key_type c, Args&&... args)
+  -> substitute_void_t<typename FactoryT::ret_type, bool,
+                       std::optional<typename FactoryT::ret_type>> {
+    auto it = FactoryT::holder.find(c);
+    if (it == FactoryT::holder.end()) {
+      return substitute_void_v<typename FactoryT::ret_type>(false, std::nullopt);
     }
-    return std::nullopt;
-  }
 
-  template <typename FactoryT, typename... Args>
-  std::enable_if_t<std::is_void_v<typename FactoryT::ret_type>>
-  invoke(typename FactoryT::key_type c, Args&&... args) {
-    if (auto it = FactoryT::holder.find(c); it != FactoryT::holder.end()) {
+    if constexpr (std::is_void_v<typename FactoryT::ret_type>) {
       std::invoke(it->second, static_cast<ConcreteT*>(this),
                   std::forward<Args>(args)...);
+      return true;
+    } else {
+      return std::invoke(it->second, static_cast<ConcreteT*>(this),
+                         std::forward<Args>(args)...);
     }
   }
 };

@@ -2,6 +2,7 @@
 #define ESTD_DYNAMIC_LIBRARY_H
 #include <dlfcn.h>
 #include <optional>
+#include "estd/meta/void.h"
 #include "estd/utils.h"
 #include "estd/types.h"
 
@@ -28,23 +29,18 @@ public:
 
   template <typename RetT, typename... Args>
   auto invoke(CCString name, Args&&... args) const
-    -> std::enable_if_t<!std::is_void_v<RetT>, std::optional<RetT>> {
+  -> substitute_void_t<RetT, bool, std::optional<RetT>> {
     auto func = load<RetT, Args...>(name);
     if (!func.has_value()) {
-      return std::nullopt;
+      return substitute_void_v<RetT>(false, std::nullopt);
     }
-    return std::invoke(func.value(), std::forward<Args>(args)...);
-  }
 
-  template <typename RetT, typename... Args>
-  auto invoke(CCString name, Args&&... args) const
-  -> std::enable_if_t<std::is_void_v<RetT>, bool> {
-    auto func = load<RetT, Args...>(name);
-    if (func.has_value()) {
+    if constexpr (std::is_void_v<RetT>) {
       std::invoke(func.value(), std::forward<Args>(args)...);
       return true;
+    } else {
+      return std::invoke(func.value(), std::forward<Args>(args)...);
     }
-    return false;
   }
 private:
   void* handler;
