@@ -10,9 +10,9 @@ set(SRC_FILES
         exchange_test.cpp
         invoke_test.cpp
         factory_test.cpp
-        dl_test.cpp)
+        dl/test.cpp)
 
 add_subdirectory(dl)
 
 add_executable(estd_test ${SRC_FILES})
-target_link_libraries(estd_test gmock ${CMAKE_DL_LIBS})
+target_link_libraries(estd_test gmock al_sum ${CMAKE_DL_LIBS})
