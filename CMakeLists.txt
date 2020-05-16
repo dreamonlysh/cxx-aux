@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(tony)
 
 set(CMAKE_CXX_STANDARD 17)
+add_compile_options(-Wall -Wextra)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

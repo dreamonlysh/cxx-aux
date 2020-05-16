@@ -5,7 +5,7 @@ include_directories(${GMOCK_ROOT}/googletest/include)
 
 set(SRC_FILES
         main.cpp
-        utils_test.cpp
+        fill_range_test.cpp
         any_test.cpp
         exchange_test.cpp
         invoke_test.cpp

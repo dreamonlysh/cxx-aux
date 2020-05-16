@@ -47,7 +47,7 @@ public:
   T get(const std::string& key, T&& defRet) {
     auto it = commands.find(key);
     if (it == commands.end())
-      return defRet;
+      return std::forward<T>(defRet);
     return std::any_cast<T>(it->second);
   }
 
