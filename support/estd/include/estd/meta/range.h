@@ -2,7 +2,7 @@
 #define ESTD_META_RANGE_H
 #include <initializer_list>
 
-namespace estd { namespace meta {
+namespace es { namespace meta {
 
 template <typename T, typename Size = size_t>
 class range_slice {

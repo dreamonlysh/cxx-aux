@@ -2,7 +2,7 @@
 
 ## Verification Case
 
-`constexpr if`用于在编译期进行分支选择，不满足条件的分支在编译期被丢弃。从某种程度上来说，`constexpr if`有着`#if...#else`类似的效果。举例来看[dynamic_library](https://gitee.com/dreamonlysh/tony/blob/master/support/estd/include/estd/dl/dynamic_library.h)中`invoke`函数要同时支持返回值是`void`以及其他的场景：
+`constexpr if`用于在编译期进行分支选择，不满足条件的分支在编译期被丢弃。从某种程度上来说，`constexpr if`有着`#if...#else`类似的效果。举例来看[dynamic_library](https://gitee.com/dreamonlysh/tony/blob/master/support/es/include/es/dl/dynamic_library.h)中`invoke`函数要同时支持返回值是`void`以及其他的场景：
 
 ```c++
   template <typename RetT, typename... Args>

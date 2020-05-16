@@ -1,7 +1,7 @@
 #ifndef ESTD_UTILS_H
 #define ESTD_UTILS_H
 
-namespace estd {
+namespace es {
 
 struct disabled_copy {
   disabled_copy() = default;

@@ -10,7 +10,7 @@ constexpr void fill_n(ContainerT& cont, ValueT&& value) { }
 
 template <typename ContainerT, typename ValueT, typename Arg1, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Arg1&& arg1, Args&&... args) {
-  estd::fill(cont, std::forward<Arg1>(arg1), value);
+  es::fill(cont, std::forward<Arg1>(arg1), value);
   fill_n(cont, value, std::forward<Args>(args)...);
 }
 ```
@@ -21,7 +21,7 @@ constexpr void fill_n(ContainerT& cont, ValueT&& value, Arg1&& arg1, Args&&... a
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
   (void)std::initializer_list<int>{
-    (estd::fill(cont, std::forward<Args>(args), value), 0)...
+    (es::fill(cont, std::forward<Args>(args), value), 0)...
   };
 }
 ```
@@ -31,7 +31,7 @@ constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
 ```c++
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
-  (estd::fill(cont, std::forward<Args>(args), value) , ...);
+  (es::fill(cont, std::forward<Args>(args), value) , ...);
 }
 ```
 
@@ -40,7 +40,7 @@ constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
 ```c++
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
-  (... , estd::fill(cont, std::forward<Args>(args), value));
+  (... , es::fill(cont, std::forward<Args>(args), value));
 }
 ```
 

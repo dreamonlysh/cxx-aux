@@ -5,7 +5,7 @@
 #include <map>
 #include "estd/meta/void.h"
 
-namespace estd {
+namespace es {
 
 template <typename ConcreteT>
 class MemberFunctionFactory {

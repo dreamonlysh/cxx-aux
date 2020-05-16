@@ -2,7 +2,7 @@
 #define ESTD_CONDITIONAL_H
 #include <type_traits>
 
-namespace estd {
+namespace es {
 
 template<bool B, typename IfT, typename ThenT>
 using conditional_t = std::conditional<B, IfT, ThenT>;

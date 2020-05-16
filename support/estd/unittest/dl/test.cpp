@@ -3,7 +3,7 @@
 #include <estd/meta/conditional.h>
 #include <estd/meta/system.h>
 
-using namespace estd;
+using namespace es;
 
 TEST(dl, loadTest) {
   std::string file = "../lib/";

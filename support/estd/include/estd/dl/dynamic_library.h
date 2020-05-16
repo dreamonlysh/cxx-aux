@@ -6,7 +6,7 @@
 #include "estd/utils.h"
 #include "estd/types.h"
 
-namespace estd {
+namespace es {
 
 class DynamicLibrary : private disabled_copy {
 public:

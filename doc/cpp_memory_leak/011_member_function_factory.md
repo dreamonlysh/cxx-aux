@@ -170,7 +170,7 @@ private:
 综合考虑之后(没忍住，一下子搞到头了，过程缺失)，将以上代码重构为：
 
 ```c++
-namespace estd {
+namespace es {
 
 template <typename ConcreteT>
 class MemberFunctionFactory {
@@ -235,9 +235,9 @@ template <typename KeyT, typename RetT, typename... Args>
 typename MemberFunctionFactory<ConcreteT>::template FactoryType<KeyT, RetT, Args...>::CreatorHolder
     MemberFunctionFactory<ConcreteT>::template FactoryType<KeyT, RetT, Args...>::holder = {};
 
-} // estd
+} // es
 
-class OpCluster : public estd::MemberFunctionFactory<OpCluster> {
+class OpCluster : public es::MemberFunctionFactory<OpCluster> {
   using factory_type = FactoryType<char, int, int, int>;
 public:
   OpCluster() {

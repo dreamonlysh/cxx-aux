@@ -1,7 +1,7 @@
 #ifndef ESTD_TYPES_H
 #define ESTD_TYPES_H
 
-namespace estd {
+namespace es {
 
 using CString = char*;
 using CCString = const char*;

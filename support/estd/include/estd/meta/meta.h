@@ -2,7 +2,7 @@
 #define ESTD_META_H
 #include <type_traits>
 
-namespace estd {
+namespace es {
 
 template <typename T, typename U>
 struct meta_and

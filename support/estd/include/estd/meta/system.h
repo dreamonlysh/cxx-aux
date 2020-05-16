@@ -3,7 +3,7 @@
 #include <type_traits>
 #include "meta.h"
 
-namespace estd {
+namespace es {
 
 /// win
 #ifdef __WIN32

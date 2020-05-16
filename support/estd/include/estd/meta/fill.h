@@ -1,7 +1,7 @@
 #ifndef ESTD_META_FILL_H
 #define ESTD_META_FILL_H
 
-namespace estd { namespace meta {
+namespace es { namespace meta {
 
 // Fill the array with `value` on the range positions [first, last).
 template <typename ArrayT, typename ValueT>
@@ -18,7 +18,7 @@ constexpr void fill(ArrayT& cont, RangeT&& range, ValueT&& value) {
 
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
-    (... , estd::meta::fill(cont, std::forward<Args>(args), value));
+    (... , es::meta::fill(cont, std::forward<Args>(args), value));
 }
 
 template <typename ContainerT, typename ValueT, typename... Args>

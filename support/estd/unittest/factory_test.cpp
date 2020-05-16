@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <estd/factory.h>
 
-class OpCluster : public estd::MemberFunctionFactory<OpCluster> {
+class OpCluster : public es::MemberFunctionFactory<OpCluster> {
   using factory_type = FactoryType<char, int, int, int>;
 public:
   OpCluster() {
@@ -52,7 +52,7 @@ TEST(OpCluster, Div) {
   ASSERT_EQ(OpCluster().calc('/', 1, 2).value_or(-1), 0);
 }
 
-class VoidOpCluster : public estd::MemberFunctionFactory<VoidOpCluster> {
+class VoidOpCluster : public es::MemberFunctionFactory<VoidOpCluster> {
   using factory_type = FactoryType<char, void, int, int>;
 public:
   VoidOpCluster() {

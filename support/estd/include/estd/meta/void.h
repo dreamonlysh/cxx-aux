@@ -2,7 +2,7 @@
 #define ESTD_VOID_H
 #include "conditional.h"
 
-namespace estd {
+namespace es {
 
 /// To replace void with VoidSubstituteT and none void with NoneVoidSubstituteT.
 template <typename MayVoidT,
