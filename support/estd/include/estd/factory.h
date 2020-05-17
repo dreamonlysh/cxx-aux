@@ -32,7 +32,8 @@ public:
 
   template <typename FactoryT, typename... Args>
   auto invoke(typename FactoryT::key_type c, Args&&... args)
-  -> substitute_void_t<typename FactoryT::ret_type, bool,
+  -> substitute_void_t<typename FactoryT::ret_type,
+                       bool,
                        std::optional<typename FactoryT::ret_type>> {
     auto it = FactoryT::holder.find(c);
     if (it == FactoryT::holder.end()) {

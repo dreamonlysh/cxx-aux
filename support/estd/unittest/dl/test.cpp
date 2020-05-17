@@ -1,15 +1,16 @@
 #include <gtest/gtest.h>
 #include <estd/dl/dynamic_library.h>
-#include <estd/meta/conditional.h>
 #include <estd/meta/system.h>
 
 using namespace es;
 
 TEST(dl, loadTest) {
-  std::string file = "../lib/";
-  file += conditional_v<is_win_v, is_cygwin_v>(
-    "libdl_sum.dll", "cygdl_sum.dll", "libdl_sum.so");
-  std::optional<DynamicLibrary> optDL = loadDynamicLibrary(file.c_str());
+  auto file = []() {
+    if constexpr (is_win_v) return "../lib/" "libdl_sum.dll";
+    else if (is_cygwin_v)   return "../lib/" "cygdl_sum.dll";
+    else                    return "../lib/" "libdl_sum.so";
+  };
+  std::optional<DynamicLibrary> optDL = loadDynamicLibrary(file());
   ASSERT_TRUE(optDL.has_value());
   DynamicLibrary& dl = optDL.value();
 

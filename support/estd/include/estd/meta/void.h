@@ -1,6 +1,5 @@
 #ifndef ESTD_VOID_H
 #define ESTD_VOID_H
-#include "conditional.h"
 
 namespace es {
 
@@ -22,7 +21,8 @@ template <typename MayVoidT,
   typename VoidSubstituteT, typename NoneVoidSubstituteT>
 constexpr auto substitute_void_v(VoidSubstituteT&& t1,
                                  NoneVoidSubstituteT&& t2) {
-  return conditional_v<std::is_void_v<MayVoidT>>(t1, t2);
+  if constexpr (std::is_void_v<MayVoidT>) return t1;
+  else                                    return t2;
 }
 
 }
