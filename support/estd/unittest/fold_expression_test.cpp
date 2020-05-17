@@ -24,7 +24,7 @@ T add(T&& a, U&& b) {
   return a + b;
 }
 
-TEST(exchange, xxx) {
+TEST(FoldExpression, All) {
   int step = 1;
   auto increase = [&step](auto&& a) {
     return add(std::forward<decltype(a)>(a), step);
@@ -34,5 +34,4 @@ TEST(exchange, xxx) {
   ASSERT_EQ(increase(1), 3);
 
   ASSERT_EQ(assign(1, 2, 3, 4), 4);
-  print(1, 2, 3, 4);
 }
