@@ -3,21 +3,10 @@
 
 namespace es {
 
-struct disabled_copy {
-  disabled_copy() = default;
-  disabled_copy(const disabled_copy&) = delete;
-  disabled_copy& operator=(const disabled_copy&) = delete;
-  disabled_copy(disabled_copy&&) = default;
-  disabled_copy& operator=(disabled_copy&&) = default;
-};
-
-struct disabled_move {
-  disabled_move() = default;
-  disabled_move(const disabled_move&) = default;
-  disabled_move& operator=(const disabled_move&) = default;
-  disabled_move(disabled_move&&) = delete;
-  disabled_move& operator=(disabled_move&&) = delete;
-};
+template <typename T>
+constexpr bool not_null(T* p) {
+  return p != nullptr;
+}
 
 struct disabled_copy_move {
   disabled_copy_move() = default;

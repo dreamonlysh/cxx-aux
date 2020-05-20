@@ -8,12 +8,22 @@
 
 namespace es {
 
-class DynamicLibrary : private disabled_copy {
+class DynamicLibrary {
 public:
   explicit DynamicLibrary(void* handler) noexcept
     : handler(handler) {}
   ~DynamicLibrary() {
-    dlclose(handler);
+    reset();
+  }
+
+  DynamicLibrary(const DynamicLibrary&) = delete;
+  DynamicLibrary& operator=(const DynamicLibrary&) = delete;
+  DynamicLibrary(DynamicLibrary&& other) noexcept {
+    std::swap(handler, other.handler);
+  }
+  DynamicLibrary& operator=(DynamicLibrary&& other) noexcept {
+    std::swap(handler, other.handler);
+    return *this;
   }
 
   template <typename RetT, typename... Args>
@@ -21,7 +31,7 @@ public:
     (void)dlerror();
     using FunctionType = RetT (*)(Args...);
     auto func = reinterpret_cast<FunctionType>(dlsym(handler, name));
-    if (auto* err = dlerror(); err != nullptr) {
+    if (auto* err = dlerror(); not_null(err)) {
       return std::nullopt;
     }
     return func;
@@ -42,12 +52,18 @@ public:
       return std::invoke(func.value(), std::forward<Args>(args)...);
     }
   }
+
+  void reset() {
+    dlclose(handler);
+    handler = nullptr;
+  }
+
 private:
-  void* handler;
+  void* handler{};
 };
 
 std::optional<DynamicLibrary> loadDynamicLibrary(CCString dllPath) {
-  void* handler = dlopen(dllPath, RTLD_NOW);
+  void* handler = dlopen(dllPath, RTLD_LAZY);
   if (handler == nullptr) return std::nullopt;
   return std::make_optional<DynamicLibrary>(handler);
 }
