@@ -54,8 +54,10 @@ public:
   }
 
   void reset() {
-    dlclose(handler);
-    handler = nullptr;
+    if (not_null(handler)) {
+      dlclose(handler);
+      handler = nullptr;
+    }
   }
 
 private:
