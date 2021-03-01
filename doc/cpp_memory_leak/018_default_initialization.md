@@ -20,12 +20,12 @@ new T() 		// (until C++03)
 2. 若是`array`类型，则每个元素各自进行默认初始化
 3. 其他情况，默认初始化什么也不做
 
-然而比较具有迷惑性的是，例如像全局静态变量`static int i;`中`i`会被初始化为`0`，与以上行为并不一致。这里比较有意思，`c++`在概念上将初始化过程描述为两个阶段：`Zero initialization`<sup>[2]</sup>、`Other initializations`，此处`i`初始化为`0`是`Zero initialization`的结果，默认初始化什么也没做。
+然而比较具有迷惑性的是，例如像全局静态变量`static int i;`中`i`会被初始化为`0`，与以上行为并不一致。这里比较有意思，`c++`在概念上将初始化过程描述为两个阶段：`Static initialization`<sup>[2]</sup>、`Dynamic initialization`，此处`i`初始化为`0`是`Static initialization`中`Zero initialization`的结果，默认初始化(`Dynamic initialization`)什么也没做。
 
 ## 参考资料
 
 [1] Default initialization. [https://en.cppreference.com/w/cpp/language/default_initialization](https://en.cppreference.com/w/cpp/language/default_initialization)
 
-[2] Zero initialization. [https://en.cppreference.com/w/cpp/language/zero_initialization](https://en.cppreference.com/w/cpp/language/zero_initialization)
+[2] Initialization. [https://en.cppreference.com/w/cpp/language/initialization](https://en.cppreference.com/w/cpp/language/initialization)
 
 
