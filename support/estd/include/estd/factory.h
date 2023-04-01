@@ -3,6 +3,7 @@
 #include <functional>
 #include <optional>
 #include <map>
+#include <type_traits>
 #include "estd/meta/void.h"
 
 namespace es {
