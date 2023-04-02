@@ -6,4 +6,4 @@ list(APPEND SRC_FILES
         )
 
 add_executable(binary_test main.cpp ${SRC_FILES})
-target_link_libraries(binary_test gmock ${CMAKE_DL_LIBS})
+target_link_libraries(binary_test gmock binary ${CMAKE_DL_LIBS})

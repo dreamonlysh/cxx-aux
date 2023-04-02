@@ -1,21 +1,15 @@
 #include "binary/elf_parser.h"
+#include "llvm/BinaryFormat/ELF.h"
 
-namespace binary {
+namespace binary { namespace elf {
+using namespace llvm::ELF;
 
-struct demo {
-  int x;
-  int y;
-  int z;
-};
+class BinaryElfImpl : public BinaryElf {};
 
-void xxx() {
-  BinaryBuffer bb("");
-  auto x = bb.get<int>();
-  auto y = bb.get<double>();
-  auto z = bb.get<demo>();
+std::unique_ptr<BinaryElf> createBinaryElf(BinaryBuffer be) {
+  auto *header = be.peek<Elf64_Ehdr>();
 
-
-  auto zz = bb.get<demo>();
+  return std::make_unique<BinaryElfImpl>();
 }
 
-}// namespace binary
+}}// namespace binary::elf
