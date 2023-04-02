@@ -14,16 +14,19 @@ public:
   BinaryBuffer(const char* data, size_t size) : buf({data, size}) {}
   explicit BinaryBuffer(std::string_view buf) : buf(buf) {}
 
+  BinaryBuffer(const BinaryBuffer&) = default;
+  BinaryBuffer(BinaryBuffer&&) = default;
+  BinaryBuffer& operator=(const BinaryBuffer&) = default;
+  BinaryBuffer& operator=(BinaryBuffer&&) = default;
+
   ~BinaryBuffer() = default;
 
   // Set cursor position in the buffer.
   // If out of buffer, the end of the buffer will set `eob`
-  void seekg(size_t idx) {
-    cursor = idx < buf.size() ? idx : eob;
-  }
+  void seekg(size_t idx) { cursor = idx < buf.size() ? idx : eob; }
 
   // Get current cursor in the buffer
-  size_t tellg() const { return cursor; }
+  [[nodiscard]] size_t tellg() const { return cursor; }
 
   // Extracts and discards characters until the given string is found.
   // The given string will not be extracted
@@ -54,9 +57,18 @@ public:
   }
 
   // Reads the next char array without extracting it
-  std::string_view peek(size_t size) const {
-    assert((cursor + size) <= buf.size());
-    return {std::next(buf.data(), cursor), size};
+  std::string_view peekn(size_t n) const {
+    assert((cursor + n) <= buf.size());
+    return {std::next(buf.data(), cursor), n};
+  }
+
+  // Reads the next char array that has a char end, mostly `\0`.
+  // Won't extracting it
+  std::string_view peekc(char c = '\0') const {
+    size_t offset = buf.find_first_of(c, cursor);
+    if (offset == eob)
+      return buf.substr(cursor);
+    return buf.substr(cursor, offset - cursor);
   }
 
   // Extracts characters
@@ -69,9 +81,15 @@ public:
   }
 
   // Extracts characters
-  std::string_view get(size_t size) {
-    auto ret = peek(size);
-    seekg(cursor + size);
+  std::string_view getn(size_t n) {
+    auto ret = peekn(n);
+    seekg(cursor + n);
+    return ret;
+  }
+
+  std::string_view getc(char c = '\0') {
+    auto ret = peekc(c);
+    seekg(cursor + ret.size());
     return ret;
   }
 

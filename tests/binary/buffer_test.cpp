@@ -47,17 +47,26 @@ TEST(BinaryBuffer, get) {
   ASSERT_EQ(tmp2->y, 0x45678);
 }
 
-TEST(BinaryBuffer, getSized) {
+TEST(BinaryBuffer, getn) {
   std::string_view data("that is a demo");
   BinaryBuffer buf(data);
 
   buf.seekg(strlen("this "));
-  ASSERT_EQ(buf.get(2), "is");
+  ASSERT_EQ(buf.getn(2), "is");
 }
+
+TEST(BinaryBuffer, getc) {
+  std::string_view data("that is\0 a demo", 15);
+  BinaryBuffer buf(data);
+
+  buf.seekg(strlen("this "));
+  ASSERT_EQ(buf.getc(), "is");
+}
+
 TEST(BinaryBuffer, slice) {
   std::string_view data("that is a demo");
   BinaryBuffer buf(data);
 
   BinaryBuffer sub = buf.slice(strlen("this "), 2);
-  ASSERT_EQ(sub.get(2), "is");
+  ASSERT_EQ(sub.getn(2), "is");
 }

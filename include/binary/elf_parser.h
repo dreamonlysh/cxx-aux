@@ -5,7 +5,16 @@
 
 namespace binary { namespace elf {
 
+struct Section {
+  std::string_view name;
+  BinaryBuffer contents;
+};
+
 class BinaryElf {
+public:
+  virtual ~BinaryElf() noexcept {}
+
+  virtual const std::vector<Section>& sections() = 0;
 };
 
 std::unique_ptr<BinaryElf> createBinaryElf(BinaryBuffer be);
