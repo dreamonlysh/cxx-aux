@@ -1,8 +1,5 @@
 project(estd_test)
 
-include_directories(${GMOCK_ROOT}/googlemock/include)
-include_directories(${GMOCK_ROOT}/googletest/include)
-
 list(APPEND SRC_FILES
         fill_range_test.cpp
         any_test.cpp

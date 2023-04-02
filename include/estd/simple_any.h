@@ -24,12 +24,12 @@ public:
 private:
   // 1. Operations on __Storage with different type
   // 2. hl_ == nullptr to differ if there is valid data.
-  __Handler hl_;
-  __Storage st_;
+//  __Handler hl_;
+//  __Storage st_;
 };
 
 template <typename ValueType>
-ValueType* simple_any_cast(simple_any& v) {
+ValueType* simple_any_cast(simple_any&) {
   // [optional] The __Handler with different address(template with type) for different type.
   // [optional] use type info
   // [optional] template <typename ValueType> struct unique_id {static auto value = 0;}; the address of value is unique type id.
