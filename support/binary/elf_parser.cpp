@@ -28,6 +28,7 @@ public:
     auto be = std::make_unique<BinaryElfImpl>();
 
     auto* ehdr = bb.peek<Ehdr>();
+    // If the file has no section header table, this member(e_shoff) holds zero.
     if (ehdr->e_shoff != 0)
       be->loadSections(bb, ehdr);
 
@@ -38,25 +39,49 @@ private:
   void loadSections(BinaryBuffer bb, const Ehdr* ehdr) {
     bb.seekg(ehdr->e_shoff);
 
-    auto* entry = bb.get<Shdr>();
+    auto* entry = bb.peek<Shdr>();
+    // If a file has no section header table, e_shnum holds the value of zero.
+    //
+    // If the number of entries in the section header table is
+    // larger than or equal to SHN_LORESERVE (0xff00), e_shnum
+    // holds the value zero and the real number of entries in the
+    // section header table is held in the sh_size member of the
+    // initial entry in section header table.  Otherwise, the
+    // sh_size member of the initial entry in the section header
+    // table holds the value zero.
     size_t shCount = ehdr->e_shnum == 0 ? entry->sh_size : ehdr->e_shnum;
-    std::vector<const Shdr*> ss;
-    ss.reserve(shCount);
-    ss.push_back(entry);
+    // If the file has no section name string table, this member holds the value
+    // SHN_UNDEF.
+    //
+    // If the index of section name string table section is
+    // larger than or equal to SHN_LORESERVE (0xff00), this
+    // member holds SHN_XINDEX (0xffff) and the real index of the
+    // section name string table section is held in the sh_link
+    // member of the initial entry in section header table.
+    // Otherwise, the sh_link member of the initial entry in
+    // section header table contains the value zero.
+    size_t strTblIdx =
+      ehdr->e_shstrndx == SHN_UNDEF ? entry->sh_link : ehdr->e_shstrndx;
+
+    bb.seekg(ehdr->e_shoff + ehdr->e_shentsize * strTblIdx);
+    auto* str = bb.get<Shdr>();
+    BinaryBuffer strTbl = getSectionContent(bb, str);
+
+    bb.seekg(ehdr->e_shoff + ehdr->e_shentsize);
     for (size_t i = 1; i < shCount; ++i) {
       auto* shdr = bb.get<Shdr>();
-      ss.push_back(shdr);
-    }
-
-    size_t shStrIdx = ehdr->e_shstrndx == 0 ? entry->sh_link : ehdr->e_shstrndx;
-    auto* shstrtabidx = ss[shStrIdx];
-    BinaryBuffer shstrtab(
-      bb.slice(shstrtabidx->sh_offset, shstrtabidx->sh_size));
-    for (size_t i = 1; i < ss.size(); ++i) {
-      shstrtab.seekg(ss[i]->sh_name);
       secs.push_back(
-        {shstrtab.peekc(), bb.slice(ss[i]->sh_offset, ss[i]->sh_size)});
+        {getSectionName(strTbl, shdr), getSectionContent(bb, shdr)});
     }
+  }
+
+  std::string_view getSectionName(BinaryBuffer strTbl, const Shdr* shdr) const {
+    strTbl.seekg(shdr->sh_name);
+    return strTbl.peekc();
+  }
+
+  BinaryBuffer getSectionContent(BinaryBuffer bb, const Shdr* shdr) const {
+    return bb.slice(shdr->sh_offset, shdr->sh_size);
   }
 
 private:
