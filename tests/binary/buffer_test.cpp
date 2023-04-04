@@ -31,7 +31,8 @@ TEST(BinaryBuffer, get) {
                         "\xcc\xcc\xcc\xcc"
                         "\xee\xee\xee\xee\xee\xee\xee\xee"
                         "\x23\x01"
-                        "\x78\x56\x04\x00", 21);
+                        "\x78\x56\x04\x00",
+                        21);
   BinaryBuffer buf(data);
 
   ASSERT_EQ(buf.get<uint8_t>(), 0xaa);

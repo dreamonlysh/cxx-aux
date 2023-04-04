@@ -1,8 +1,22 @@
+// Copyright (c) 2023 guyuemeng
+//
+// Tony is licensed under Mulan PSL v2.
+// You can use this software according to the terms and conditions of the Mulan
+// PSL v2. You may obtain a copy of Mulan PSL v2 at:
+//             http://license.coscl.org.cn/MulanPSL2
+//
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY
+// KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+//
+// See the Mulan PSL v2 for more details.
+
 #include "binary/elf_parser.h"
 #include "llvm/BinaryFormat/ELF.h"
 #include <vector>
 
-namespace binary { namespace elf {
+namespace binary {
+namespace elf {
 using namespace llvm::ELF;
 
 struct Elf32 {
@@ -15,9 +29,23 @@ struct Elf64 {
   using Shdr = Elf64_Shdr;
 };
 
-template <typename ElfN> class BinaryElfImpl : public BinaryElf {
-  using Ehdr = typename ElfN::Ehdr;
-  using Shdr = typename ElfN::Shdr;
+template <uint32_t N> struct ElfN {
+  using T = std::conditional_t<N == 32, Elf32,
+                               std::conditional_t<N == 64, Elf64, void>>;
+
+  using Ehdr = typename T::Ehdr;
+  using Shdr = typename T::Shdr;
+
+  const Ehdr* ehdr;
+  std::vector<const Shdr*> shdrs;
+};
+
+template <uint32_t N> class BinaryElfImpl : public BinaryElf {
+  using T = std::conditional_t<N == 32, Elf32,
+                               std::conditional_t<N == 64, Elf64, void>>;
+
+  using Ehdr = typename T::Ehdr;
+  using Shdr = typename T::Shdr;
 
 public:
   virtual ~BinaryElfImpl() noexcept = default;
@@ -27,7 +55,7 @@ public:
   static std::unique_ptr<BinaryElfImpl> create(BinaryBuffer bb) {
     auto be = std::make_unique<BinaryElfImpl>();
 
-    auto* ehdr = bb.peek<Ehdr>();
+    auto* ehdr = bb.peek<typename ElfN<N>::Ehdr>();
     // If the file has no section header table, this member(e_shoff) holds zero.
     if (ehdr->e_shoff != 0)
       be->loadSections(bb, ehdr);
@@ -61,7 +89,7 @@ private:
     // Otherwise, the sh_link member of the initial entry in
     // section header table contains the value zero.
     size_t strTblIdx =
-      ehdr->e_shstrndx == SHN_UNDEF ? entry->sh_link : ehdr->e_shstrndx;
+        ehdr->e_shstrndx == SHN_UNDEF ? entry->sh_link : ehdr->e_shstrndx;
 
     bb.seekg(ehdr->e_shoff + ehdr->e_shentsize * strTblIdx);
     auto* str = bb.get<Shdr>();
@@ -71,7 +99,7 @@ private:
     for (size_t i = 1; i < shCount; ++i) {
       auto* shdr = bb.get<Shdr>();
       secs.push_back(
-        {getSectionName(strTbl, shdr), getSectionContent(bb, shdr)});
+          {getSectionName(strTbl, shdr), getSectionContent(bb, shdr)});
     }
   }
 
@@ -100,12 +128,13 @@ std::unique_ptr<BinaryElf> createBinaryElf(BinaryBuffer bb) {
   }
 
   if (magic[EI_CLASS] == ELFCLASS64) {
-    return BinaryElfImpl<Elf64>::create(bb);
+    return BinaryElfImpl<64>::create(bb);
   }
   if (magic[EI_CLASS] == ELFCLASS32) {
-    return BinaryElfImpl<Elf32>::create(bb);
+    return BinaryElfImpl<32>::create(bb);
   }
   return {};
 }
 
-}}// namespace binary::elf
+} // namespace elf
+} // namespace binary

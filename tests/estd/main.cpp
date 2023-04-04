@@ -1,6 +1,6 @@
-#include <iostream>
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <iostream>
 
 int main(int argc, char** argv) {
   // Since Google Mock depends on Google Test, InitGoogleMock() is

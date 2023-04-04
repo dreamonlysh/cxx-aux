@@ -1,9 +1,9 @@
 #include <any>
-#include <utility>
-#include <vector>
+#include <gtest/gtest.h>
 #include <map>
 #include <string>
-#include <gtest/gtest.h>
+#include <utility>
+#include <vector>
 
 TEST(any, int) {
   std::any v = 1;
@@ -32,8 +32,8 @@ class CommandLine {
 public:
   CommandLine(const CommandLine&) = delete;
   CommandLine(CommandLine&&) = delete;
-  CommandLine &operator=(const CommandLine&) = delete;
-  CommandLine &operator=(CommandLine&&) = delete;
+  CommandLine& operator=(const CommandLine&) = delete;
+  CommandLine& operator=(CommandLine&&) = delete;
 
   void addCommand(const std::string& name, std::any option) {
     commands[name] = std::move(option);
@@ -43,8 +43,7 @@ public:
     commands[option] = std::any(true);
   }
 
-  template <typename T>
-  T get(const std::string& key, T&& defRet) {
+  template <typename T> T get(const std::string& key, T&& defRet) {
     auto it = commands.find(key);
     if (it == commands.end())
       return std::forward<T>(defRet);
@@ -70,12 +69,7 @@ private:
   std::map<std::string, std::any> commands;
 };
 
-enum class CPPVersion {
-  kCPP98,
-  kCPP11,
-  kCPP14,
-  kCPP17
-};
+enum class CPPVersion { kCPP98, kCPP11, kCPP14, kCPP17 };
 
 TEST(CommandLine, test) {
   auto& cmdl = CommandLine::ins();
@@ -86,6 +80,7 @@ TEST(CommandLine, test) {
   ASSERT_TRUE(cmdl.any("O2"));
   ASSERT_FALSE(cmdl.any("O0"));
 
-  ASSERT_EQ(cmdl.get<CPPVersion>("std", CPPVersion::kCPP98), CPPVersion::kCPP17);
+  ASSERT_EQ(cmdl.get<CPPVersion>("std", CPPVersion::kCPP98),
+            CPPVersion::kCPP17);
   ASSERT_EQ(cmdl.get<std::string>("o", "a.out"), "filename");
 }

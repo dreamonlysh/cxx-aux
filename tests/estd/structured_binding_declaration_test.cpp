@@ -1,5 +1,5 @@
-#include <type_traits>
 #include <gtest/gtest.h>
+#include <type_traits>
 
 TEST(StructuredBindingDeclarationArray, Value) {
   int a[2] = {1, 2};
@@ -55,7 +55,7 @@ TEST(StructuredBindingDeclarationArray, ConstReference) {
 class StructuredBindingDeclarationTuple : public testing::Test {
 protected:
   float tx{1.0};
-  int   ty{2};
+  int ty{2};
 
   std::tuple<float&, int, char&&> baseline() {
     char tz{'a'};
@@ -152,15 +152,14 @@ TEST_F(StructuredBindingDeclarationTuple, ConstReference) {
 class StructuredBindingDeclarationStruct : public testing::Test {
 protected:
   struct SBD {
-    SBD(float& sx, int sy, char&& sz)
-      : sx(sx), sy(sy), sz(std::move(sz)) {}
+    SBD(float& sx, int sy, char&& sz) : sx(sx), sy(sy), sz(std::move(sz)) {}
 
     float& sx;
     int sy;
     char&& sz;
   };
   float tx{1.0};
-  int   ty{2};
+  int ty{2};
 
   SBD baseline() {
     char tz{'a'};

@@ -1,28 +1,20 @@
+#include <functional>
 #include <gtest/gtest.h>
 #include <iostream>
-#include <functional>
 
-template <typename... Args>
-int sum(Args&&... args) {
-  return (0 + ... + args);
-}
+template <typename... Args> int sum(Args&&... args) { return (0 + ... + args); }
 
-template <typename... Args>
-int assign(Args&&... args) {
+template <typename... Args> int assign(Args&&... args) {
   int result = -1;
   (result = ... = args);
   return result;
 }
 
-template <typename... Args>
-void print(Args&&... args) {
+template <typename... Args> void print(Args&&... args) {
   (std::cout << ... << args);
 }
 
-template <typename T, typename U>
-T add(T&& a, U&& b) {
-  return a + b;
-}
+template <typename T, typename U> T add(T&& a, U&& b) { return a + b; }
 
 TEST(FoldExpression, All) {
   int step = 1;

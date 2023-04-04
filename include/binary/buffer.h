@@ -1,3 +1,16 @@
+// Copyright (c) 2023 guyuemeng
+//
+// Tony is licensed under Mulan PSL v2.
+// You can use this software according to the terms and conditions of the Mulan
+// PSL v2. You may obtain a copy of Mulan PSL v2 at:
+//             http://license.coscl.org.cn/MulanPSL2
+//
+// THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY
+// KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+//
+// See the Mulan PSL v2 for more details.
+
 #ifndef TONY_BINARY_BUFFER_H
 #define TONY_BINARY_BUFFER_H
 #include <string_view>
@@ -41,10 +54,10 @@ public:
   // Reads the next value without extracting it
   template <typename T>
   auto peek()
-    -> std::conditional_t<std::is_aggregate_v<T>,
-                          std::add_pointer_t<std::add_const_t<T>>, T> const {
-    static_assert(!(std::is_reference_v<T> || std::is_pointer_v<T>
-                    || std::is_const_v<T> || std::is_volatile_v<T>));
+      -> std::conditional_t<std::is_aggregate_v<T>,
+                            std::add_pointer_t<std::add_const_t<T>>, T> const {
+    static_assert(!(std::is_reference_v<T> || std::is_pointer_v<T> ||
+                    std::is_const_v<T> || std::is_volatile_v<T>));
     static_assert(std::is_arithmetic_v<T> || std::is_aggregate_v<T>);
     assert((cursor + sizeof(T)) <= buf.size());
 
@@ -104,6 +117,6 @@ private:
   size_t cursor = 0;
 };
 
-}// namespace binary
+} // namespace binary
 
-#endif//TONY_BINARY_BUFFER_H
+#endif // TONY_BINARY_BUFFER_H
