@@ -1,9 +1,8 @@
-#include "binary/elf_parser.h"
+#include "binary/elf.h"
 #include <fstream>
 #include <gtest/gtest.h>
 
 using namespace binary;
-using namespace binary::elf;
 
 TEST(BinaryElf, load) {
   std::ifstream fs;
@@ -13,5 +12,17 @@ TEST(BinaryElf, load) {
                      std::istreambuf_iterator<char>()};
 
   BinaryBuffer bb(dynElf.c_str(), dynElf.size());
-  std::unique_ptr<BinaryElf> be = createBinaryElf(bb);
+  std::unique_ptr<Elf> be = createBinaryElf(bb);
+  size_t size = be->s_size();
+  for (size_t i = 0; i < size; ++i) {
+    std::unique_ptr<Section> s = be->s_at(i);
+    const auto* c = s->dynCast<ExecuteSection>();
+    if (c == nullptr) {
+
+    }
+    if (s->flags() & SHFlags::SHF_EXECINSTR) {
+      auto* a = static_cast<ExecuteSection*>(s.get());
+      if (a == nullptr) return;
+    }
+  }
 }
