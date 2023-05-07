@@ -11,8 +11,10 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#include "binary/elf.h"
+#include "binary/elf/elf.h"
+#include "elf/elf.h"
 #include "llvm/BinaryFormat/ELF.h"
+#include <iostream>
 #include <optional>
 #include <vector>
 
@@ -22,26 +24,8 @@ using binary::BinaryBuffer;
 namespace elf {
 namespace {
 
-struct Bit32Arch {
-  using Ehdr = Elf32_Ehdr;
-  using Phdr = Elf32_Phdr;
-  using Shdr = Elf32_Shdr;
-};
-
-struct Bit64Arch {
-  using Ehdr = Elf64_Ehdr;
-  using Phdr = Elf64_Phdr;
-  using Shdr = Elf64_Shdr;
-};
-
 template <typename BitNArch> struct Program {
   const typename BitNArch::Phdr* hdr;
-};
-
-template <typename BitNArch> struct Section {
-  std::string_view name;
-  const typename BitNArch::Shdr* hdr;
-  BinaryBuffer content;
 };
 
 template <typename BitNArch> struct ElfN {
@@ -51,7 +35,7 @@ template <typename BitNArch> struct ElfN {
 
   const Ehdr* ehdr;
   std::vector<Program<BitNArch>> programs;
-  std::vector<Section<BitNArch>> sections;
+  std::vector<Section<Shdr>> sections;
 
   ElfN(BinaryBuffer bb) {
     ehdr = bb.peek<Ehdr>();
@@ -65,7 +49,7 @@ private:
     if (ehdr->e_phoff == 0)
       return;
 
-    const Shdr& entry = getSectionEntry(bb);
+    const Shdr& entry = getInitialShdr(bb);
     // If the number of entries in the program header table is
     // larger than or equal to PN_XNUM (0xffff), this member
     // holds PN_XNUM (0xffff) and the real number of entries in
@@ -83,62 +67,16 @@ private:
   }
 
   void loadSections(BinaryBuffer bb) {
-    // If the file has no section header table, this member(e_shoff) holds zero.
-    if (ehdr->e_shoff == 0)
-      return;
-
-    const Shdr& entry = getSectionEntry(bb);
-    // If the number of entries in the section header table is
-    // larger than or equal to SHN_LORESERVE (0xff00), e_shnum
-    // holds the value zero and the real number of entries in the
-    // section header table is held in the sh_size member of the
-    // initial entry in section header table.  Otherwise, the
-    // sh_size member of the initial entry in the section header
-    // table holds the value zero.
-    size_t shSize = ehdr->e_shnum == 0 ? entry.sh_size : ehdr->e_shnum;
-
-    // If the file has no section name string table, this member holds the value
-    // SHN_UNDEF.
-    std::optional<BinaryBuffer> shStrTbl;
-    if (ehdr->e_shstrndx != SHN_UNDEF) {
-      // If the index of section name string table section is
-      // larger than or equal to SHN_LORESERVE (0xff00), this
-      // member holds SHN_XINDEX (0xffff) and the real index of the
-      // section name string table section is held in the sh_link
-      // member of the initial entry in section header table.
-      // Otherwise, the sh_link member of the initial entry in
-      // section header table contains the value zero.
-      size_t shStrNdx =
-          ehdr->e_shstrndx == SHN_XINDEX ? entry.sh_link : ehdr->e_shstrndx;
-      bb.seekg(ehdr->e_shoff + ehdr->e_shentsize * shStrNdx);
-      auto* str = bb.peek<Shdr>();
-      shStrTbl = getSectionContent(bb, str);
-    }
-
-    bb.seekg(ehdr->e_shoff);
-    for (size_t i = 0; i < shSize; ++i) {
-      auto* shdr = bb.get<Shdr>();
-      std::string_view shName;
-      if (shStrTbl.has_value()) {
-        shName = getSectionName(shStrTbl.value(), shdr);
-      }
-      sections.push_back({shName, shdr, getSectionContent(bb, shdr)});
+    if constexpr (std::is_same_v<BitNArch, Bit32Arch>) {
+      sections = loadElf32Sections(bb.data());
+    } else if constexpr (std::is_same_v<BitNArch, Bit64Arch>) {
+      sections = loadElf64Sections(bb.data());
     }
   }
 
-  const Shdr& getSectionEntry(BinaryBuffer& bb) const {
+  const Shdr& getInitialShdr(BinaryBuffer& bb) const {
     bb.seekg(ehdr->e_shoff);
     return *(bb.peek<Shdr>());
-  }
-
-  std::string_view getSectionName(BinaryBuffer shStrTbl,
-                                  const Shdr* shdr) const {
-    shStrTbl.seekg(shdr->sh_name);
-    return shStrTbl.peekc();
-  }
-
-  BinaryBuffer getSectionContent(BinaryBuffer bb, const Shdr* shdr) const {
-    return bb.slice(shdr->sh_offset, shdr->sh_size);
   }
 };
 } // namespace
@@ -169,15 +107,29 @@ public:
   virtual size_t s_size() const { return elfn.sections.size(); }
 
   virtual std::unique_ptr<Section> s_at(size_t ndx) const {
-    const elf::Section<BitNArch>& s = elfn.sections.at(ndx);
+    const elf::Section<typename BitNArch::Shdr>& s = elfn.sections.at(ndx);
     if (s.hdr->sh_flags & SHF_EXECINSTR) {
       return std::make_unique<ExecuteSection>(
           s.name, static_cast<SHType>(s.hdr->sh_type),
-          static_cast<SHFlags>(s.hdr->sh_flags), s.content);
+          static_cast<SHFlags>(s.hdr->sh_flags), BinaryBuffer(s.content));
     }
     return std::make_unique<Section>(s.name,
                                      static_cast<SHType>(s.hdr->sh_type),
                                      static_cast<SHFlags>(s.hdr->sh_flags));
+  }
+
+  virtual void dump() const {
+    for (const auto& sym : elfn.sections) {
+      auto symTab = BinaryBuffer(sym.content);
+      while (symTab.tellg() != symTab.eob) {
+        auto* st = symTab.get<typename BitNArch::Sym>();
+        if (st->st_info == STT_FUNC) {
+          auto strTab = BinaryBuffer(elfn.sections[sym.hdr->sh_link].content);
+          strTab.seekg(st->st_name);
+          std::cout << strTab.getc() << std::endl;
+        }
+      }
+    }
   }
 
 private:

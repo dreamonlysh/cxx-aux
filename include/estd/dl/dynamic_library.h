@@ -14,6 +14,7 @@
 #ifndef ESTD_DYNAMIC_LIBRARY_H
 #define ESTD_DYNAMIC_LIBRARY_H
 #include <dlfcn.h>
+#include <functional>
 #include <optional>
 #include "estd/meta/void.h"
 #include "estd/utils.h"

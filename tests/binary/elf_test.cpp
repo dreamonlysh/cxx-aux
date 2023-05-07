@@ -1,4 +1,4 @@
-#include "binary/elf.h"
+#include "binary/elf/elf.h"
 #include <fstream>
 #include <gtest/gtest.h>
 
@@ -25,4 +25,5 @@ TEST(BinaryElf, load) {
       if (a == nullptr) return;
     }
   }
+  be->dump();
 }

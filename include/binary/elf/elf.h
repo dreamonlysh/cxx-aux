@@ -11,9 +11,9 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef TONY_BINARY_ELF_H
-#define TONY_BINARY_ELF_H
-#include "buffer.h"
+#ifndef BINARY_ELF_H
+#define BINARY_ELF_H
+#include "binary/buffer.h"
 #include "elf_macro.h"
 #include <memory>
 
@@ -83,10 +83,12 @@ public:
   virtual size_t s_size() const = 0;
 
   virtual std::unique_ptr<Section> s_at(size_t ndx) const = 0;
+
+  virtual void dump() const = 0;
 };
 
 std::unique_ptr<Elf> createBinaryElf(BinaryBuffer be);
 
 } // namespace binary
 
-#endif // TONY_BINARY_ELF_H
+#endif // BINARY_ELF_H

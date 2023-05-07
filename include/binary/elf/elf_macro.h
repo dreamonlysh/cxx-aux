@@ -13,8 +13,8 @@
 //
 // The macros are from https://man7.org/linux/man-pages/man5/elf.5.html
 
-#ifndef TONY_BINARY_ELF_MACRO_H
-#define TONY_BINARY_ELF_MACRO_H
+#ifndef BINARY_ELF_MACRO_H
+#define BINARY_ELF_MACRO_H
 #include <cstdint>
 
 namespace binary {
@@ -148,4 +148,4 @@ inline bool operator&(const SHFlags& lhs, const SHFlags& rhs) {
 
 } // namespace binary
 
-#endif // TONY_BINARY_ELF_MACRO_H
+#endif // BINARY_ELF_MACRO_H

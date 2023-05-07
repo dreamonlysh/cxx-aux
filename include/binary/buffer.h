@@ -11,8 +11,9 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef TONY_BINARY_BUFFER_H
-#define TONY_BINARY_BUFFER_H
+#ifndef BINARY_BUFFER_H
+#define BINARY_BUFFER_H
+#include <cassert>
 #include <string_view>
 
 namespace binary {
@@ -33,6 +34,14 @@ public:
   BinaryBuffer& operator=(BinaryBuffer&&) = default;
 
   ~BinaryBuffer() = default;
+
+  size_t size() const {
+    return buf.size();
+  }
+
+  std::string_view data() const {
+    return buf;
+  }
 
   // Set cursor position in the buffer.
   // If out of buffer, the end of the buffer will set `eob`
@@ -119,4 +128,4 @@ private:
 
 } // namespace binary
 
-#endif // TONY_BINARY_BUFFER_H
+#endif // BINARY_BUFFER_H
