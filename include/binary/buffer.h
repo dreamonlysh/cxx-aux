@@ -25,6 +25,7 @@ class BinaryBuffer {
 public:
   static constexpr size_t eob = std::string_view::npos;
 
+  BinaryBuffer() = default;
   BinaryBuffer(const char* data, size_t size) : buf({data, size}) {}
   explicit BinaryBuffer(std::string_view buf) : buf(buf) {}
 

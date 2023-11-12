@@ -64,7 +64,7 @@ public:
   virtual ~ExecuteSection() noexcept = default;
 
   static bool instanceOf(const Section& s) {
-    return s.flags() & SHFlags::SHF_EXECINSTR;
+    return s.type() != SHType::SHT_NOBITS;
   }
 };
 

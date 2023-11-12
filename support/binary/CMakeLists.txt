@@ -7,3 +7,4 @@ set(SRC_FILES
 
 add_library(binary STATIC ${SRC_FILES})
 
+set_property(TARGET binary PROPERTY POSITION_INDEPENDENT_CODE Os)

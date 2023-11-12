@@ -52,7 +52,7 @@ public:
   }
 
   template <typename RetT, typename... Args>
-  auto invoke(CCString name, Args&&... args) const
+  auto invoke(CCString name, Args... args) const
   -> substitute_void_t<RetT, bool, std::optional<RetT>> {
     auto func = load<RetT, Args...>(name);
     if (!func.has_value()) {
@@ -84,5 +84,12 @@ std::optional<DynamicLibrary> loadDynamicLibrary(CCString dllPath) {
   return std::make_optional<DynamicLibrary>(handler);
 }
 
+#ifdef LM_ID_NEWLM
+std::optional<DynamicLibrary> loadDynamicLibraryDeepBind(CCString dllPath) {
+  void* handler = dlmopen(LM_ID_NEWLM, dlPath, RTLD_LAZY | RTLD_LOCAL | RTLD_DEEPBIND);
+  if (handler == nullptr) return std::nullopt;
+  return std::make_optional<DynamicLibrary>(handler);
+}
+#endif
 }
 #endif //ESTD_DYNAMIC_LIBRARY_H

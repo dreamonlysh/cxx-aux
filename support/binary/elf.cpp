@@ -108,7 +108,7 @@ public:
 
   virtual std::unique_ptr<Section> s_at(size_t ndx) const {
     const elf::Section<typename BitNArch::Shdr>& s = elfn.sections.at(ndx);
-    if (s.hdr->sh_flags & SHF_EXECINSTR) {
+    if (s.hdr->sh_type != SHT_NOBITS) {
       return std::make_unique<ExecuteSection>(
           s.name, static_cast<SHType>(s.hdr->sh_type),
           static_cast<SHFlags>(s.hdr->sh_flags), BinaryBuffer(s.content));
