@@ -24,11 +24,13 @@ using binary::BinaryBuffer;
 namespace elf {
 namespace {
 
-template <typename BitNArch> struct Program {
+template <typename BitNArch>
+struct Program {
   const typename BitNArch::Phdr* hdr;
 };
 
-template <typename BitNArch> struct ElfN {
+template <typename BitNArch>
+struct ElfN {
   using Ehdr = typename BitNArch::Ehdr;
   using Shdr = typename BitNArch::Shdr;
   using Phdr = typename BitNArch::Phdr;
@@ -84,7 +86,8 @@ private:
 
 namespace binary {
 
-template <typename BitNArch> class ElfImpl : public Elf {
+template <typename BitNArch>
+class ElfImpl : public Elf {
 public:
   ElfImpl(BinaryBuffer bb) : elfn(bb) {}
 

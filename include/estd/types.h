@@ -21,6 +21,6 @@ using CString = char*;
 using CCString = const char*;
 using LiteralString = CCString;
 
-}
+} // namespace es
 
-#endif //ESTD_TYPES_H
+#endif // ESTD_TYPES_H

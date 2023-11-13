@@ -38,6 +38,6 @@ META_HAS_MEMBER_TYPE(iterator);
 META_HAS_MEMBER_FUNCTION(begin);
 META_HAS_MEMBER_FUNCTION(end);
 
-}// namespace es
+} // namespace es
 
-#endif//ES_HAS_MEMBER_H
+#endif // ES_HAS_MEMBER_H

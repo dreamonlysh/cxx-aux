@@ -18,7 +18,8 @@ namespace {
 using namespace elf;
 using namespace binary;
 
-template <typename BitNArch> class SectionLoader {
+template <typename BitNArch>
+class SectionLoader {
   using Ehdr = typename BitNArch::Ehdr;
   using Shdr = typename BitNArch::Shdr;
 

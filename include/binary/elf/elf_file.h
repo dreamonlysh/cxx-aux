@@ -24,9 +24,7 @@ class ElfFile : public BinaryFile {
 public:
   virtual ~ElfFile() noexcept = default;
 
-  virtual FileType type() const override {
-    return binary::FT_ELF;
-  }
+  virtual FileType type() const override { return binary::FT_ELF; }
 
   virtual uint32_t bits() const = 0;
 
@@ -41,6 +39,6 @@ public:
 
 std::unique_ptr<ElfFile> analyzeElfFile(const char* file, size_t size);
 
-}
+} // namespace elf
 
 #endif // BINARY_ELF_FILE_H

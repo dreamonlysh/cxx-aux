@@ -7,9 +7,9 @@ list(APPEND SRC_FILES
         invoke_test.cpp
         factory_test.cpp
         structured_binding_declaration_test.cpp)
-list(APPEND SRC_FILES dl/test.cpp)
+list(APPEND SRC_FILES dl/dl_load_test.cpp)
 
 add_subdirectory(dl)
 
 add_executable(estd_test main.cpp ${SRC_FILES})
-target_link_libraries(estd_test gmock al_sum ${CMAKE_DL_LIBS})
+target_link_libraries(estd_test gmock ${CMAKE_DL_LIBS})

@@ -1,18 +1,16 @@
 #include <gtest/gtest.h>
 
-#include <any>
 #include <array>
 #include <climits>
 #include <estd/meta/range.h>
 #include <estd/meta/fill.h>
-#include <iostream>
 
 using namespace es::meta;
 constexpr auto chars = partial_initializer<std::array<bool, CHAR_MAX>>(
     true,
-    es::meta::char_enumerate_slice{'_', '$', ';', '/', '|', '.', '?', '@'},
-    es::meta::char_slice_number, es::meta::char_slice_lower_alphabet,
-    es::meta::char_slice_upper_alphabet);
+    char_enumerate_slice{'_', '$', ';', '/', '|', '.', '?', '@'},
+    char_slice_number, char_slice_lower_alphabet,
+    char_slice_upper_alphabet);
 
 TEST(fill_range, partial_initializer) {
   std::string rst;

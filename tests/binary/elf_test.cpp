@@ -18,11 +18,11 @@ TEST(BinaryElf, load) {
     std::unique_ptr<Section> s = be->s_at(i);
     const auto* c = s->dynCast<ExecuteSection>();
     if (c == nullptr) {
-
     }
     if (s->flags() & SHFlags::SHF_EXECINSTR) {
       auto* a = static_cast<ExecuteSection*>(s.get());
-      if (a == nullptr) return;
+      if (a == nullptr)
+        return;
     }
   }
   be->dump();

@@ -1,4 +1,4 @@
-add_library(al_sum STATIC al_sum.cpp)
-
-add_library(dl_sum MODULE dl_sum.cpp)
-set_target_properties(dl_sum PROPERTIES PREFIX "lib")
+add_library(dll0 MODULE dll0.cpp)
+add_library(dll1 MODULE dll1.cpp)
+set_target_properties(dll0 PROPERTIES PREFIX "lib")
+set_target_properties(dll1 PROPERTIES PREFIX "lib")

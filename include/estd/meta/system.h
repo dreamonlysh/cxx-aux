@@ -13,8 +13,8 @@
 
 #ifndef ESTD_SYSTEM_H
 #define ESTD_SYSTEM_H
-#include <type_traits>
 #include "meta.h"
+#include <type_traits>
 
 namespace es {
 
@@ -83,5 +83,5 @@ struct is_android : std::false_type {};
 #endif
 constexpr bool is_android_v = is_android::value;
 
-}
-#endif //ESTD_SYSTEM_H
+} // namespace es
+#endif // ESTD_SYSTEM_H

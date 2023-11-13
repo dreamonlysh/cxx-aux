@@ -15,7 +15,8 @@ TEST(Invoke, GeneralFunction) { ASSERT_EQ(std::invoke(sum, 1, 1), 2); }
 
 TEST(Invoke, GeneralFunctionPointer) { ASSERT_EQ(std::invoke(&sum, 1, 1), 2); }
 
-template <typename T> using binary_method = int (T::*)(int, int);
+template <typename T>
+using binary_method = int (T::*)(int, int);
 
 TEST(Invoke, ClassMethod) {
   SumObj obj;

@@ -13,11 +13,11 @@
 
 #ifndef ESTD_FACTORY_H
 #define ESTD_FACTORY_H
-#include <functional>
-#include <optional>
-#include <map>
-#include <type_traits>
 #include "estd/meta/void.h"
+#include <functional>
+#include <map>
+#include <optional>
+#include <type_traits>
 
 namespace es {
 
@@ -28,9 +28,10 @@ public:
   class FactoryType;
 
   template <typename FactoryT>
-  static constexpr size_t initialize(
-      typename std::initializer_list<std::pair<typename FactoryT::key_type,
-                                               typename FactoryT::op_type>> init) {
+  static constexpr size_t
+  initialize(typename std::initializer_list<
+             std::pair<typename FactoryT::key_type, typename FactoryT::op_type>>
+                 init) {
     for (auto p : init)
       FactoryT::holder.emplace(std::move(p));
     return init.size();
@@ -38,20 +39,21 @@ public:
 
   template <typename FactoryT>
   static void initialize_once(
-      typename std::initializer_list<std::pair<typename FactoryT::key_type,
-                                               typename FactoryT::op_type>> init) {
+      typename std::initializer_list<
+          std::pair<typename FactoryT::key_type, typename FactoryT::op_type>>
+          init) {
     static auto dummy = initialize<FactoryT>(std::move(init));
     (void)dummy;
   }
 
   template <typename FactoryT, typename... Args>
   auto invoke(typename FactoryT::key_type c, Args&&... args)
-  -> substitute_void_t<typename FactoryT::ret_type,
-                       bool,
-                       std::optional<typename FactoryT::ret_type>> {
+      -> substitute_void_t<typename FactoryT::ret_type, bool,
+                           std::optional<typename FactoryT::ret_type>> {
     auto it = FactoryT::holder.find(c);
     if (it == FactoryT::holder.end()) {
-      return substitute_void_v<typename FactoryT::ret_type>(false, std::nullopt);
+      return substitute_void_v<typename FactoryT::ret_type>(false,
+                                                            std::nullopt);
     }
 
     if constexpr (std::is_void_v<typename FactoryT::ret_type>) {
@@ -81,10 +83,11 @@ private:
 
 template <typename ConcreteT>
 template <typename KeyT, typename RetT, typename... Args>
-typename MemberFunctionFactory<ConcreteT>::template FactoryType<KeyT, RetT, Args...>::CreatorHolder
-    MemberFunctionFactory<ConcreteT>::FactoryType<KeyT, RetT, Args...>::holder = {};
+typename MemberFunctionFactory<ConcreteT>::template FactoryType<
+    KeyT, RetT, Args...>::CreatorHolder
+    MemberFunctionFactory<ConcreteT>::FactoryType<KeyT, RetT, Args...>::holder =
+        {};
 
-} // estd
+} // namespace es
 
 #endif // ESTD_FACTORY_H
-

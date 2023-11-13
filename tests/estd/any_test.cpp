@@ -43,7 +43,8 @@ public:
     commands[option] = std::any(true);
   }
 
-  template <typename T> T get(const std::string& key, T&& defRet) {
+  template <typename T>
+  T get(const std::string& key, T&& defRet) {
     auto it = commands.find(key);
     if (it == commands.end())
       return std::forward<T>(defRet);

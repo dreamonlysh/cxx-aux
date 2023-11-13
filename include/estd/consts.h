@@ -19,6 +19,6 @@ namespace estd {
 constexpr char kLineBreak = '\n';
 constexpr char kStringTerminator = '\0';
 
-}
+} // namespace estd
 
-#endif //ESTD_CONSTS_H
+#endif // ESTD_CONSTS_H

@@ -36,7 +36,8 @@ struct Bit64Arch {
   using Sym = Elf64_Sym;
 };
 
-template <typename ElfN_Shdr> struct Section {
+template <typename ElfN_Shdr>
+struct Section {
   const std::string_view name;
   const std::string_view content;
   const ElfN_Shdr* hdr;

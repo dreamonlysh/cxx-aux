@@ -15,7 +15,8 @@
 #define ESTD_META_RANGE_H
 #include <initializer_list>
 
-namespace es { namespace meta {
+namespace es {
+namespace meta {
 
 template <typename T, typename Size = size_t>
 class range_slice {
@@ -23,8 +24,7 @@ public:
   using value_type = T;
   using size_type = Size;
 
-  constexpr range_slice(T first, T last)
-      : first(first), last(last) {}
+  constexpr range_slice(T first, T last) : first(first), last(last) {}
 
   constexpr value_type begin() const { return first; }
   constexpr value_type end() const { return last; }
@@ -45,8 +45,7 @@ public:
   using value_type = T;
   using size_type = typename std::initializer_list<T>::size_type;
 
-  constexpr enumerate_slice(std::initializer_list<T> init)
-    : data(init) {}
+  constexpr enumerate_slice(std::initializer_list<T> init) : data(init) {}
 
   constexpr auto begin() const { return data.begin(); }
   constexpr auto end() const { return data.end(); }
@@ -60,12 +59,14 @@ using char_enumerate_slice = enumerate_slice<char>;
 
 /// Overload fill in `fill.h`, to enable `fill_n` with `enumerate_slice`
 template <typename ArrayT, typename ValueT, typename PositionT>
-constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos, ValueT&& value) {
+constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos,
+                    ValueT&& value) {
   for (auto it = pos.begin(); it != pos.end(); ++it) {
     cont[static_cast<size_t>(*it)] = value;
   }
 }
 
-}}
+} // namespace meta
+} // namespace es
 
-#endif //ESTD_META_RANGE_H
+#endif // ESTD_META_RANGE_H

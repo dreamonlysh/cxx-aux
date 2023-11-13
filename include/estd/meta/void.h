@@ -13,30 +13,32 @@
 
 #ifndef ESTD_VOID_H
 #define ESTD_VOID_H
+#include <type_traits>
 
 namespace es {
 
 /// To replace void with VoidSubstituteT and none void with NoneVoidSubstituteT.
-template <typename MayVoidT,
-  typename VoidSubstituteT, typename NoneVoidSubstituteT = MayVoidT>
+template <typename MayVoidT, typename VoidSubstituteT,
+          typename NoneVoidSubstituteT = MayVoidT>
 struct substitute_void {
-  using type = std::conditional_t<std::is_void_v<MayVoidT>,
-  VoidSubstituteT, NoneVoidSubstituteT>;
+  using type = std::conditional_t<std::is_void_v<MayVoidT>, VoidSubstituteT,
+                                  NoneVoidSubstituteT>;
 };
-template <typename MayVoidT,
-  typename VoidSubstituteT, typename NoneVoidSubstituteT = MayVoidT>
-using substitute_void_t = typename substitute_void<MayVoidT,
-                                                   VoidSubstituteT,
+template <typename MayVoidT, typename VoidSubstituteT,
+          typename NoneVoidSubstituteT = MayVoidT>
+using substitute_void_t = typename substitute_void<MayVoidT, VoidSubstituteT,
                                                    NoneVoidSubstituteT>::type;
 
 /// Choose the initialization value for substitute_void_t.
-template <typename MayVoidT,
-  typename VoidSubstituteT, typename NoneVoidSubstituteT>
+template <typename MayVoidT, typename VoidSubstituteT,
+          typename NoneVoidSubstituteT>
 constexpr auto substitute_void_v(VoidSubstituteT&& t1,
                                  NoneVoidSubstituteT&& t2) {
-  if constexpr (std::is_void_v<MayVoidT>) return t1;
-  else                                    return t2;
+  if constexpr (std::is_void_v<MayVoidT>)
+    return t1;
+  else
+    return t2;
 }
 
-}
-#endif //ESTD_VOID_H
+} // namespace es
+#endif // ESTD_VOID_H

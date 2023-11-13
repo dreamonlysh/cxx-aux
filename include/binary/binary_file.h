@@ -17,9 +17,7 @@
 
 namespace binary {
 
-enum FileType {
-  FT_ELF
-};
+enum FileType { FT_ELF };
 
 class BinaryFile {
 public:
@@ -36,6 +34,6 @@ public:
   virtual uint32_t endian() const = 0;
 };
 
-}
+} // namespace binary
 
 #endif // BINARY_FILE_H

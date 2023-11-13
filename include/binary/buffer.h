@@ -36,13 +36,9 @@ public:
 
   ~BinaryBuffer() = default;
 
-  size_t size() const {
-    return buf.size();
-  }
+  size_t size() const { return buf.size(); }
 
-  std::string_view data() const {
-    return buf;
-  }
+  std::string_view data() const { return buf; }
 
   // Set cursor position in the buffer.
   // If out of buffer, the end of the buffer will set `eob`

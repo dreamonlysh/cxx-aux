@@ -29,5 +29,5 @@ struct disabled_copy_move {
   disabled_copy_move& operator=(disabled_copy_move&&) = delete;
 };
 
-}
-#endif //ESTD_UTILS_H
+} // namespace es
+#endif // ESTD_UTILS_H
