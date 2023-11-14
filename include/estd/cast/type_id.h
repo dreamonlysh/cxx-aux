@@ -19,20 +19,20 @@ namespace es {
 
 namespace __es_impl {
 template <typename T>
-inline size_t __type_id() noexcept {
+size_t __type_id() noexcept {
   static const char id = '\0';
   return reinterpret_cast<size_t>(&id);
 }
 } // namespace __es_impl
 
 template <typename T>
-inline size_t type_id() noexcept {
+size_t type_id() noexcept {
   static_assert(std::is_class_v<T>);
   return __es_impl::__type_id<std::remove_cv_t<T>>();
 }
 
 template <typename T>
-inline size_t type_id(T&&) noexcept {
+size_t type_id(T&&) noexcept {
   return type_id<std::remove_reference_t<T>>();
 }
 

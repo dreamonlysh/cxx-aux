@@ -11,12 +11,11 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD_META_RANGE_H
-#define ESTD_META_RANGE_H
+#ifndef ESTD_CONTAINER_RANGE_H
+#define ESTD_CONTAINER_RANGE_H
 #include <initializer_list>
 
 namespace es {
-namespace meta {
 
 template <typename T, typename Size = size_t>
 class range_slice {
@@ -57,16 +56,5 @@ private:
 
 using char_enumerate_slice = enumerate_slice<char>;
 
-/// Overload fill in `fill.h`, to enable `fill_n` with `enumerate_slice`
-template <typename ArrayT, typename ValueT, typename PositionT>
-constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos,
-                    ValueT&& value) {
-  for (auto it = pos.begin(); it != pos.end(); ++it) {
-    cont[static_cast<size_t>(*it)] = value;
-  }
-}
-
-} // namespace meta
 } // namespace es
-
 #endif // ESTD_META_RANGE_H

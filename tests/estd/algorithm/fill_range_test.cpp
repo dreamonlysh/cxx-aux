@@ -2,15 +2,12 @@
 
 #include <array>
 #include <climits>
-#include <estd/meta/range.h>
-#include <estd/meta/fill.h>
+#include <estd/algorithm/fill.h>
 
-using namespace es::meta;
+using namespace es;
 constexpr auto chars = partial_initializer<std::array<bool, CHAR_MAX>>(
-    true,
-    char_enumerate_slice{'_', '$', ';', '/', '|', '.', '?', '@'},
-    char_slice_number, char_slice_lower_alphabet,
-    char_slice_upper_alphabet);
+    true, char_enumerate_slice{'_', '$', ';', '/', '|', '.', '?', '@'},
+    char_slice_number, char_slice_lower_alphabet, char_slice_upper_alphabet);
 
 TEST(fill_range, partial_initializer) {
   std::string rst;

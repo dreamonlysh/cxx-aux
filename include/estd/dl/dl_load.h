@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD_DYNAMIC_LIBRARY_H
-#define ESTD_DYNAMIC_LIBRARY_H
+#ifndef ESTD_DL_LOAD_H
+#define ESTD_DL_LOAD_H
 #include "estd/meta/void.h"
 #include "estd/utils.h"
 #include <dlfcn.h>

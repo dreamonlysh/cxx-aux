@@ -11,17 +11,26 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD_META_FILL_H
-#define ESTD_META_FILL_H
+#ifndef ESTD_ALGORITHM_FILL_H
+#define ESTD_ALGORITHM_FILL_H
+#include <estd/container/range.h>
 
 namespace es {
-namespace meta {
 
 // Fill the array with `value` on the range positions [first, last).
 template <typename ArrayT, typename ValueT>
 constexpr void fill(ArrayT& cont, size_t first, size_t last, ValueT&& value) {
   for (; first != last; ++first) {
     cont[first] = value;
+  }
+}
+
+/// Overload fill in `fill.h`, to enable `fill_n` with `enumerate_slice`
+template <typename ArrayT, typename ValueT, typename PositionT>
+constexpr void fill(ArrayT& cont, enumerate_slice<PositionT> pos,
+                    ValueT&& value) {
+  for (auto it = pos.begin(); it != pos.end(); ++it) {
+    cont[static_cast<size_t>(*it)] = value;
   }
 }
 
@@ -32,7 +41,7 @@ constexpr void fill(ArrayT& cont, RangeT&& range, ValueT&& value) {
 
 template <typename ContainerT, typename ValueT, typename... Args>
 constexpr void fill_n(ContainerT& cont, ValueT&& value, Args&&... args) {
-  (..., es::meta::fill(cont, std::forward<Args>(args), value));
+  (..., fill(cont, std::forward<Args>(args), value));
 }
 
 template <typename ContainerT, typename ValueT, typename... Args>
@@ -42,7 +51,5 @@ constexpr ContainerT partial_initializer(ValueT&& value, Args&&... args) {
   return cont;
 }
 
-} // namespace meta
 } // namespace es
-
 #endif // ESTD_META_FILL_H
