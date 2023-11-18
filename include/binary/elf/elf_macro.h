@@ -17,7 +17,7 @@
 #define BINARY_ELF_MACRO_H
 #include <cstdint>
 
-namespace binary {
+namespace cxxaux { namespace elf {
 
 // Architecture for this binary:
 enum class EIClass {
@@ -146,6 +146,5 @@ inline bool operator&(const SHFlags& lhs, const SHFlags& rhs) {
   return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
 }
 
-} // namespace binary
-
+}}     // namespace cxxaux::elf
 #endif // BINARY_ELF_MACRO_H

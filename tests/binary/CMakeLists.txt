@@ -1,7 +1,7 @@
 project(binary_test)
 
 list(APPEND SRC_FILES
-        buffer_test.cpp
+        binary_decoder_test.cpp
         elf_test.cpp
         )
 

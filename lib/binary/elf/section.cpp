@@ -11,12 +11,13 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#include "elf.h"
+#include "elfn.h"
+#include <binary/elf/elf.h>
 #include <optional>
 
 namespace {
-using namespace elf;
-using namespace binary;
+using namespace cxxaux::elf;
+using cxxaux::BinaryDecoder;
 
 template <typename BitNArch>
 class SectionLoader {
@@ -24,9 +25,10 @@ class SectionLoader {
   using Shdr = typename BitNArch::Shdr;
 
 public:
-  SectionLoader(std::string_view buf) : bb(buf), ehdr(bb.peek<Ehdr>()) {}
+  explicit SectionLoader(std::string_view buf)
+      : decoder(buf.data(), buf.size()), ehdr(decoder.peek<Ehdr>()) {}
 
-  std::vector<Section<Shdr>> doit() {
+  std::vector<ElfNSection<BitNArch>> doit() {
     // If the file has no section header table, this member(e_shoff) holds zero.
     if (ehdr->e_shoff == 0)
       return {};
@@ -43,7 +45,7 @@ public:
 
     // If the file has no section name string table, this member holds the value
     // SHN_UNDEF.
-    std::optional<BinaryBuffer> shstr;
+    std::optional<BinaryDecoder> shstr;
     if (ehdr->e_shstrndx != SHN_UNDEF) {
       // If the index of section name string table section is
       // larger than or equal to SHN_LORESERVE (0xff00), this
@@ -54,15 +56,15 @@ public:
       // section header table contains the value zero.
       size_t shstrndx =
           ehdr->e_shstrndx == SHN_XINDEX ? initial.sh_link : ehdr->e_shstrndx;
-      bb.seekg(ehdr->e_shoff + ehdr->e_shentsize * shstrndx);
-      auto* str = bb.peek<Shdr>();
+      decoder.seekg(ehdr->e_shoff + ehdr->e_shentsize * shstrndx);
+      auto* str = decoder.peek<Shdr>();
       shstr = getSectionContent(str);
     }
 
-    std::vector<Section<Shdr>> sections;
-    bb.seekg(ehdr->e_shoff);
+    std::vector<ElfNSection<BitNArch>> sections;
+    decoder.seekg(ehdr->e_shoff);
     for (size_t i = 0; i < shnum; ++i) {
-      auto* shdr = bb.get<Shdr>();
+      auto* shdr = decoder.get<Shdr>();
       std::string_view shName;
       if (shstr.has_value()) {
         shName = getSectionName(shstr.value(), shdr);
@@ -75,35 +77,35 @@ public:
 
 private:
   const Shdr& getShdrInitializer() {
-    bb.seekg(ehdr->e_shoff);
-    return *(bb.peek<Shdr>());
+    decoder.seekg(ehdr->e_shoff);
+    return *(decoder.peek<Shdr>());
   }
 
-  std::string_view getSectionName(BinaryBuffer shStrTbl,
+  std::string_view getSectionName(BinaryDecoder shStrTbl,
                                   const Shdr* shdr) const {
     shStrTbl.seekg(shdr->sh_name);
     return shStrTbl.peekc();
   }
 
-  BinaryBuffer getSectionContent(const Shdr* shdr) {
-    return bb.slice(shdr->sh_offset, shdr->sh_size);
+  BinaryDecoder getSectionContent(const Shdr* shdr) {
+    return decoder.slice(shdr->sh_offset, shdr->sh_size);
   }
 
 private:
-  BinaryBuffer bb;
+  BinaryDecoder decoder;
   const Ehdr* ehdr;
 };
 
 } // namespace
 
-namespace elf {
+namespace cxxaux { namespace elf {
 
-std::vector<Section<Bit32Arch::Shdr>> loadElf32Sections(std::string_view buf) {
+std::vector<ElfNSection<Bit32Arch>> loadElf32Sections(std::string_view buf) {
   return SectionLoader<Bit32Arch>(buf).doit();
 }
 
-std::vector<Section<Bit64Arch::Shdr>> loadElf64Sections(std::string_view buf) {
+std::vector<ElfNSection<Bit64Arch>> loadElf64Sections(std::string_view buf) {
   return SectionLoader<Bit64Arch>(buf).doit();
 }
 
-} // namespace elf
+}} // namespace cxxaux::elf

@@ -13,27 +13,10 @@
 
 #ifndef BINARY_FILE_H
 #define BINARY_FILE_H
-#include <cstdint>
 
-namespace binary {
+namespace cxxaux {
 
-enum FileType { FT_ELF };
+bool isElfFile(const char* data, size_t size);
 
-class BinaryFile {
-public:
-  virtual ~BinaryFile() noexcept = default;
-
-  virtual FileType type() const = 0;
-
-  /// \brief Bit width of architecture.
-  /// \return 0 if there is no arch bit width
-  virtual uint32_t bits() const = 0;
-
-  /// \brief Endian of the binary.
-  /// \return LITTLE_ENDIAN/BIG_ENDIAN, 0 if there is no endian
-  virtual uint32_t endian() const = 0;
-};
-
-} // namespace binary
-
+} // namespace cxxaux
 #endif // BINARY_FILE_H

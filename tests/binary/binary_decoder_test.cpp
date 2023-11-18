@@ -1,11 +1,11 @@
-#include "binary/buffer.h"
+#include <binary/binary_decoder.h>
 #include <gtest/gtest.h>
 
-using namespace binary;
+using cxxaux::BinaryDecoder;
 
 TEST(BinaryBuffer, tellg0seekg) {
   std::string_view data("that is a demo");
-  BinaryBuffer buf(data);
+  BinaryDecoder buf(data.data(), data.size());
 
   ASSERT_EQ(buf.tellg(), 0);
   buf.seekg(4);
@@ -14,14 +14,14 @@ TEST(BinaryBuffer, tellg0seekg) {
 
 TEST(BinaryBuffer, ignore) {
   std::string_view data("that is a demo");
-  BinaryBuffer buf(data);
+  BinaryDecoder buf(data.data(), data.size());
 
   buf.seekg(2);
   ASSERT_EQ(buf.ignore("is"), strlen("that "));
   buf.seekg(2);
   ASSERT_EQ(buf.ignore("demo"), strlen("that is a "));
   buf.seekg(2);
-  ASSERT_EQ(buf.ignore("are"), BinaryBuffer::eob);
+  ASSERT_EQ(buf.ignore("are"), BinaryDecoder::eob);
   ASSERT_EQ(buf.tellg(), 2);
 }
 
@@ -33,7 +33,7 @@ TEST(BinaryBuffer, get) {
                         "\x23\x01"
                         "\x78\x56\x04\x00",
                         21);
-  BinaryBuffer buf(data);
+  BinaryDecoder buf(data.data(), data.size());
 
   ASSERT_EQ(buf.get<uint8_t>(), 0xaa);
   ASSERT_EQ(buf.get<uint16_t>(), 0xbbbb);
@@ -50,7 +50,7 @@ TEST(BinaryBuffer, get) {
 
 TEST(BinaryBuffer, getn) {
   std::string_view data("that is a demo");
-  BinaryBuffer buf(data);
+  BinaryDecoder buf(data.data(), data.size());
 
   buf.seekg(strlen("this "));
   ASSERT_EQ(buf.getn(2), "is");
@@ -58,7 +58,7 @@ TEST(BinaryBuffer, getn) {
 
 TEST(BinaryBuffer, getc) {
   std::string_view data("that is\0 a demo", 15);
-  BinaryBuffer buf(data);
+  BinaryDecoder buf(data.data(), data.size());
 
   buf.seekg(strlen("this "));
   ASSERT_EQ(buf.getc(), "is");
@@ -66,8 +66,8 @@ TEST(BinaryBuffer, getc) {
 
 TEST(BinaryBuffer, slice) {
   std::string_view data("that is a demo");
-  BinaryBuffer buf(data);
+  BinaryDecoder buf(data.data(), data.size());
 
-  BinaryBuffer sub = buf.slice(strlen("this "), 2);
+  BinaryDecoder sub = buf.slice(strlen("this "), 2);
   ASSERT_EQ(sub.getn(2), "is");
 }

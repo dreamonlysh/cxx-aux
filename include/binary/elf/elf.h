@@ -13,64 +13,37 @@
 
 #ifndef BINARY_ELF_H
 #define BINARY_ELF_H
-#include "binary/buffer.h"
 #include "elf_macro.h"
 #include <memory>
+#include <string_view>
 
-namespace binary {
+namespace cxxaux { namespace elf {
 
 class Section {
 public:
-  Section(std::string_view s_name, SHType s_type, SHFlags s_flags)
-      : s_name(s_name), s_type(s_type), s_flags(s_flags) {}
+  Section(std::string_view name, SHType type, SHFlags flags,
+          std::pair<const char*, size_t> content = {})
+      : name_(name), type_(type), flags_(flags), content_(content) {}
+  ~Section() noexcept = default;
 
-  virtual ~Section() noexcept = default;
+  std::string_view name() const { return name_; }
 
-  template <typename T>
-  const T* dynCast() {
-    if (T::instanceOf(*this))
-      return static_cast<const T*>(this);
-    return nullptr;
-  }
+  SHType type() const { return type_; }
 
-  std::string_view name() const { return s_name; }
+  SHFlags flags() const { return flags_; }
 
-  SHType type() const { return s_type; }
-
-  SHFlags flags() const { return s_flags; }
+  std::pair<const char*, size_t> content() const { return content_; }
 
 private:
-  std::string_view s_name;
-  SHType s_type;
-  SHFlags s_flags;
-};
-
-class WithContent {
-public:
-  WithContent(BinaryBuffer s_content) : s_content(s_content) {}
-
-  BinaryBuffer content() const { return s_content; }
-
-private:
-  BinaryBuffer s_content;
-};
-
-class ExecuteSection : public Section, public WithContent {
-public:
-  ExecuteSection(std::string_view s_name, SHType s_type, SHFlags s_flags,
-                 BinaryBuffer s_content)
-      : Section(s_name, s_type, s_flags), WithContent(s_content) {}
-
-  virtual ~ExecuteSection() noexcept = default;
-
-  static bool instanceOf(const Section& s) {
-    return s.type() != SHType::SHT_NOBITS;
-  }
+  std::string_view name_;
+  SHType type_;
+  SHFlags flags_;
+  std::pair<const char*, size_t> content_;
 };
 
 class Elf {
 public:
-  virtual ~Elf() noexcept {}
+  virtual ~Elf() noexcept = default;
 
   virtual EIClass archBits() const = 0;
 
@@ -87,8 +60,7 @@ public:
   virtual void dump() const = 0;
 };
 
-std::unique_ptr<Elf> createBinaryElf(BinaryBuffer be);
-
-} // namespace binary
+std::unique_ptr<Elf> createBinaryElf(const char* data, uint32_t size);
+}} // namespace cxxaux::elf
 
 #endif // BINARY_ELF_H
