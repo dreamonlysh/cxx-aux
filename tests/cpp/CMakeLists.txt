@@ -6,5 +6,5 @@ list(APPEND SRC_FILES
         invoke_test.cpp
         structured_binding_declaration_test.cpp)
 
-add_executable(cpp_test ${GMOCK_ROOT}/googletest/src/gtest_main.cc ${SRC_FILES})
-target_link_libraries(cpp_test gmock ${CMAKE_DL_LIBS})
+add_executable(cpp_test ${SRC_FILES})
+target_link_libraries(cpp_test gtest gtest_main ${CMAKE_DL_LIBS})

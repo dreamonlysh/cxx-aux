@@ -1,4 +1,4 @@
-set(GMOCK_ROOT ${PROJECT_SOURCE_DIR}/tools/googletest)
+set(GMOCK_ROOT ${PROJECT_SOURCE_DIR}/third_party/googletest)
 
 include_directories(${GMOCK_ROOT}/googlemock/include)
 include_directories(${GMOCK_ROOT}/googletest/include)
