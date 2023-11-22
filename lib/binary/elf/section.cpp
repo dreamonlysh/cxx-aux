@@ -69,7 +69,8 @@ public:
       if (shstr.has_value()) {
         shName = getSectionName(shstr.value(), shdr);
       }
-      sections.push_back({shName, getSectionContent(shdr).data(), shdr});
+      BinaryDecoder cnt = getSectionContent(shdr);
+      sections.push_back({shName, {cnt.data(), cnt.size()}, shdr});
     }
 
     return sections;

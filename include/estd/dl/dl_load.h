@@ -75,7 +75,7 @@ private:
   void* handler{};
 };
 
-static std::optional<DynamicLinkingLibrary> dlLoad(const char* dlPath,
+inline std::optional<DynamicLinkingLibrary> dlLoad(const char* dlPath,
                                                    int mode = RTLD_LAZY) {
   void* handler = dlopen(dlPath, mode);
   if (handler == nullptr)
@@ -88,7 +88,7 @@ static std::optional<DynamicLinkingLibrary> dlLoad(const char* dlPath,
 /// The situation met is hacking a dl by another dl. For example, to hack
 /// libxxx.so, create a new libxxx.so that uses dl load to invoke the old,
 /// dlopen is failed with recursive call, but dlmopen with new lm makes it.
-static std::optional<DynamicLinkingLibrary>
+inline std::optional<DynamicLinkingLibrary>
 dlLoadNewLM(const char* dlPath,
             int mode = RTLD_LAZY | RTLD_LOCAL | RTLD_DEEPBIND) {
   void* handler = dlmopen(LM_ID_NEWLM, dlPath, mode);

@@ -90,17 +90,17 @@ public:
 private:
   void loadPrograms(BinaryDecoder decoder) {
     if constexpr (std::is_same_v<BitNArch, Bit32Arch>) {
-      programs_ = loadElf32Programs(decoder.data());
+      programs_ = loadElf32Programs({decoder.data(), decoder.size()});
     } else if constexpr (std::is_same_v<BitNArch, Bit64Arch>) {
-      programs_ = loadElf64Programs(decoder.data());
+      programs_ = loadElf64Programs({decoder.data(), decoder.size()});
     }
   }
 
   void loadSections(BinaryDecoder decoder) {
     if constexpr (std::is_same_v<BitNArch, Bit32Arch>) {
-      sections_ = loadElf32Sections(decoder.data());
+      sections_ = loadElf32Sections({decoder.data(), decoder.size()});
     } else if constexpr (std::is_same_v<BitNArch, Bit64Arch>) {
-      sections_ = loadElf64Sections(decoder.data());
+      sections_ = loadElf64Sections({decoder.data(), decoder.size()});
     }
   }
 
