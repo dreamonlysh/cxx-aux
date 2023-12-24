@@ -7,4 +7,5 @@ list(APPEND SRC_FILES
         structured_binding_declaration_test.cpp)
 
 add_executable(cpp_test ${SRC_FILES})
-target_link_libraries(cpp_test gtest gtest_main ${CMAKE_DL_LIBS})
+
+target_link_libraries(cpp_test GTest::gtest GTest::gtest_main ${CMAKE_DL_LIBS})

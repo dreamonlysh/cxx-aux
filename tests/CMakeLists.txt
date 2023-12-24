@@ -1,8 +1,12 @@
-set(GMOCK_ROOT ${PROJECT_SOURCE_DIR}/third_party/googletest)
-
-include_directories(${GMOCK_ROOT}/googlemock/include)
-include_directories(${GMOCK_ROOT}/googletest/include)
 include_directories(${PROJECT_SOURCE_DIR}/include)
+
+# find system or package controller first
+find_package(GTest)
+if (NOT GTest_FOUND)
+    message(STATUS "Try to import googletest by FetchContent")
+    include(${CMAKE_SOURCE_DIR}/cmake/fetch_content_googletest.cmake)
+    find_package(GTest)
+endif()
 
 add_subdirectory(cpp)
 add_subdirectory(estd)

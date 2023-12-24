@@ -7,4 +7,5 @@ list(APPEND SRC_FILES pattern/factory_test.cpp)
 add_subdirectory(dl)
 
 add_executable(estd_test ${SRC_FILES})
-target_link_libraries(estd_test gtest gtest_main ${CMAKE_DL_LIBS})
+
+target_link_libraries(estd_test GTest::gtest GTest::gtest_main ${CMAKE_DL_LIBS})

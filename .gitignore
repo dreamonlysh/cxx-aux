@@ -37,4 +37,8 @@
 # Clion
 .idea/
 cmake-build-debug/
+
+.cache
 build/
+build_debug/
+build_release/

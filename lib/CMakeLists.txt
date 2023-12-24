@@ -1,3 +1,5 @@
+add_compile_options(-Wall -Wextra)
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

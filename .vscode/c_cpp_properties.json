@@ -7,7 +7,7 @@
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64",
             "includePath": [
-                "${workspaceFolder}/tools/llvm/include",
+                "${workspaceFolder}/third_party/llvm/include",
                 "${workspaceFolder}/include"
             ],
             "browse": {
