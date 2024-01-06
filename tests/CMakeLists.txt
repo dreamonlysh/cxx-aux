@@ -8,6 +8,8 @@ if (NOT GTest_FOUND)
     find_package(GTest)
 endif()
 
+include(GoogleTest)
+
 add_subdirectory(cpp)
 add_subdirectory(estd)
 add_subdirectory(binary)

@@ -9,3 +9,5 @@ list(APPEND SRC_FILES
 add_executable(cpp_test ${SRC_FILES})
 
 target_link_libraries(cpp_test GTest::gtest GTest::gtest_main ${CMAKE_DL_LIBS})
+
+gtest_discover_tests(cpp_test)

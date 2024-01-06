@@ -9,3 +9,5 @@ add_subdirectory(dl)
 add_executable(estd_test ${SRC_FILES})
 
 target_link_libraries(estd_test GTest::gtest GTest::gtest_main ${CMAKE_DL_LIBS})
+
+gtest_discover_tests(estd_test)

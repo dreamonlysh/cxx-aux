@@ -38,7 +38,12 @@
 .idea/
 cmake-build-debug/
 
-.cache
+# cache
+.cache/
+
+# ctest
+Testing/
+
 build/
 build_debug/
 build_release/
