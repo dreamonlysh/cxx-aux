@@ -68,7 +68,7 @@ struct is_free_bsd : std::false_type {};
 constexpr bool is_free_bsd_v = is_free_bsd::value;
 
 /// Mac OS X
-#if defined(__APPLE__) && defined(__ARCH__)
+#if defined(__APPLE__)
 struct is_macos : std::true_type {};
 #else
 struct is_macos : std::false_type {};

@@ -1,6 +1,10 @@
 project(estd_test)
 
 list(APPEND SRC_FILES algorithm/fill_range_test.cpp)
+list(APPEND SRC_FILES bit/bit_count_test.cpp)
+list(APPEND SRC_FILES bit/bit_hl_dim_test.cpp)
+list(APPEND SRC_FILES bit/bit_set_reset_test.cpp)
+list(APPEND SRC_FILES bit/bit_pow2_test.cpp)
 list(APPEND SRC_FILES dl/dl_load_test.cpp)
 list(APPEND SRC_FILES pattern/factory_test.cpp)
 
