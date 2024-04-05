@@ -13,7 +13,7 @@
 
 #ifndef ESTD_FACTORY_H
 #define ESTD_FACTORY_H
-#include "estd/meta/void.h"
+#include "estd/meta.h"
 #include <functional>
 #include <map>
 #include <optional>
@@ -48,22 +48,19 @@ public:
 
   template <typename FactoryT, typename... Args>
   auto invoke(typename FactoryT::key_type c, Args&&... args)
-      -> substitute_void_t<typename FactoryT::ret_type, bool,
-                           std::optional<typename FactoryT::ret_type>> {
+      -> std::conditional_t<std::is_void_v<typename FactoryT::ret_type>, void,
+                            std::optional<typename FactoryT::ret_type>> {
     auto it = FactoryT::holder.find(c);
     if (it == FactoryT::holder.end()) {
-      return substitute_void_v<typename FactoryT::ret_type>(false,
-                                                            std::nullopt);
+      if constexpr (std::is_void_v<typename FactoryT::ret_type>) {
+        return;
+      } else {
+        return std::nullopt;
+      }
     }
 
-    if constexpr (std::is_void_v<typename FactoryT::ret_type>) {
-      std::invoke(it->second, static_cast<ConcreteT*>(this),
-                  std::forward<Args>(args)...);
-      return true;
-    } else {
-      return std::invoke(it->second, static_cast<ConcreteT*>(this),
-                         std::forward<Args>(args)...);
-    }
+    return std::invoke(it->second, static_cast<ConcreteT*>(this),
+                       std::forward<Args>(args)...);
   }
 };
 

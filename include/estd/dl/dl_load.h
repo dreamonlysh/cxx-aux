@@ -13,7 +13,7 @@
 
 #ifndef ESTD_DL_LOAD_H
 #define ESTD_DL_LOAD_H
-#include "estd/meta/void.h"
+#include "estd/meta.h"
 #include "estd/utils.h"
 #include <dlfcn.h>
 #include <functional>
@@ -50,18 +50,16 @@ public:
   /// \brief call function in the linking library
   template <typename RetT, typename... Args>
   auto invoke(const char* fname, Args... args) const
-      -> substitute_void_t<RetT, bool, std::optional<RetT>> {
+      -> std::conditional_t<std::is_void_v<RetT>, void, std::optional<RetT>> {
     auto func = load<RetT, Args...>(fname);
     if (func == nullptr) {
-      return substitute_void_v<RetT>(false, std::nullopt);
+      if constexpr (std::is_void_v<RetT>) {
+        return;
+      } else {
+        return std::nullopt;
+      }
     }
-
-    if constexpr (std::is_void_v<RetT>) {
-      std::invoke(func, std::forward<Args>(args)...);
-      return true;
-    } else {
-      return std::invoke(func, std::forward<Args>(args)...);
-    }
+    return std::invoke(func, std::forward<Args>(args)...);
   }
 
   void reset() {

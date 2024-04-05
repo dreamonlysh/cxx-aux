@@ -14,7 +14,7 @@
 #ifndef ESTD___BIT_BIT_COUNT_H
 #define ESTD___BIT_BIT_COUNT_H
 #include "bit_hl_dim.h"
-#include <estd/meta/system.h>
+#include <estd/meta.h>
 #include <limits>
 
 namespace es {
