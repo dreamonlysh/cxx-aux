@@ -1,6 +1,6 @@
 // Copyright (c) 2024 guyuemeng
 //
-// Tony is licensed under Mulan PSL v2.
+// cxxaux is licensed under Mulan PSL v2.
 // You can use this software according to the terms and conditions of the Mulan
 // PSL v2. You may obtain a copy of Mulan PSL v2 at:
 //             http://license.coscl.org.cn/MulanPSL2
@@ -49,11 +49,9 @@ constexpr unsigned count_bit0(T v) noexcept {
 /// @return number of bit 0
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 constexpr unsigned countl_bit0(T v) noexcept {
-  if constexpr (is_macos_v) {
-    // __builtin_clz is undefined with 0
-    if (v == 0)
-      return std::numeric_limits<T>::digits;
-  }
+  // __builtin_clz is undefined with 0
+  if (v == 0)
+    return std::numeric_limits<T>::digits;
 
   if constexpr (std::is_same_v<T, unsigned>) {
     return static_cast<unsigned>(__builtin_clz(v));
@@ -83,11 +81,9 @@ constexpr unsigned countl_bit1(T v) noexcept {
 /// @return number of bit 0
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 constexpr unsigned countr_bit0(T v) noexcept {
-  if constexpr (is_macos_v) {
-    // __builtin_clz is undefined with 0
-    if (v == 0)
-      return std::numeric_limits<T>::digits;
-  }
+  // __builtin_clz is undefined with 0
+  if (v == 0)
+    return std::numeric_limits<T>::digits;
 
   if constexpr (std::is_same_v<T, unsigned>) {
     return static_cast<unsigned>(__builtin_ctz(v));
