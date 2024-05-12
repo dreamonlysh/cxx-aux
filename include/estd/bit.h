@@ -35,7 +35,7 @@
 // bit1: bit 1, hidden when reset
 // pow2: 2**n, only one bit 1
 
-#include <estd/__bit/bit_count.h>
+#include "__bit/bit_count.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr unsigned count_bit1(T v) noexcept;
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -49,7 +49,7 @@
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr unsigned countr_bit1(T v) noexcept;
 
-#include <estd/__bit/bit_hl_dim.h>
+#include "__bit/bit_hl_dim.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T hl_first_bit0(T v) noexcept;
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -65,7 +65,7 @@
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T hlr_bit1_inc(T v) noexcept;
 
-#include <estd/__bit/bit_pow2.h>
+#include "__bit/bit_pow2.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr bool is_pow2(T v) noexcept;
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -77,7 +77,7 @@
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T ceil_to_pow2(T v) noexcept;
 
-#include <estd/__bit/bit_set_reset.h>
+#include "__bit/bit_set_reset.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T set_bit(T v, unsigned pos) noexcept;
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

@@ -19,7 +19,9 @@
 namespace es {
 
 /// @brief type unique integer
+///
 /// used to define units like index/byte/bit/metre/kilometre and so on
+///
 /// @tparam T integer type used to keep data
 /// @tparam   unique type to make each Integer unique
 template <typename T, typename = void,

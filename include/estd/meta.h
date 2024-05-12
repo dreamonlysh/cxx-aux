@@ -15,7 +15,7 @@
 #ifndef ESTD_META_H
 #define ESTD_META_H
 
-#include <estd/__meta/has_member.h>
+#include "__meta/has_member.h"
 // #define META_HAS_MEMBER_TYPE(type)
 // #define META_HAS_MEMBER_DATA(data)
 // #define META_HAS_MEMBER_FUNCTION(func)
@@ -28,7 +28,7 @@
 // - META_HAS_MEMBER_FUNCTION(end);
 //   Defined: has_member_end, has_member_end_v
 
-#include <estd/__meta/operators.h>
+#include "__meta/operators.h"
 // template <typename... T>
 // struct meta_and;
 // template <typename... T>
@@ -48,7 +48,7 @@
 // template <typename T>
 // constexpr bool meta_not_v = meta_not_t<T>::value;
 
-#include <estd/__meta/system.h>
+#include "__meta/system.h"
 // struct is_win;
 // constexpr bool is_win_v = is_win::value;
 // struct is_win64;
@@ -67,5 +67,11 @@
 // constexpr bool is_macos_v = is_macos::value;
 // struct is_android;
 // constexpr bool is_android_v = is_android::value;
+
+#include "__meta/add_const_as.h"
+// template <typename T, typename U>
+// using add_const_as;
+// template <typename T, typename U>
+// using add_const_as_t = typename add_const_as<T, U>::type;
 
 #endif
