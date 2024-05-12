@@ -13,7 +13,7 @@
 
 #ifndef BINARY_ELF_ELFN_H
 #define BINARY_ELF_ELFN_H
-#include <binary/binary_decoder.h>
+#include <cxxaux/binary/binary_decoder.h>
 #include <llvm/BinaryFormat/ELF.h>
 #include <vector>
 

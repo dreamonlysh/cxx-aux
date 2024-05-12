@@ -12,7 +12,7 @@
 // See the Mulan PSL v2 for more details.
 
 #include "elfn.h"
-#include <binary/elf/elf.h>
+#include <cxxaux/binary/elf/elf.h>
 #include <optional>
 
 namespace {

@@ -20,7 +20,8 @@ namespace es {
 /// @brief traits of pimpl to get the impl and pimpl type
 ///
 /// impl_type is the T impl type, it must be defined.
-/// pimpl_type is a must for multi Pimpl inheritance, it is always the direct inherited Pimpl type.
+/// pimpl_type is a must for multi Pimpl inheritance, it is always the direct
+/// inherited Pimpl type.
 ///
 /// @tparam T type derived the Pimpl
 template <typename T>
@@ -37,7 +38,7 @@ struct pimpl_traits {
 /// public:
 ///   void func();
 /// };
-/// 
+///
 /// a.cpp:
 /// class AImpl {
 /// public:
@@ -46,17 +47,17 @@ struct pimpl_traits {
 ///   }
 ///   uint64_t data;
 /// };
-/// 
+///
 /// template <>
 /// struct pimpl_traits<A> {
 ///   using impl_type = AImpl;
 ///   using pimpl_type = Pimpl<A, 8>; // optional
 /// };
-/// 
+///
 /// void A::func() {
-///   pimpl_cast(this)->func(); 
+///   pimpl_cast(this)->func();
 /// }
-/// 
+///
 /// @tparam T type derived the Pimpl
 /// @tparam storage_size memory byte size enough to hold the impl class
 template <typename T, uint32_t storage_size>
@@ -118,5 +119,5 @@ auto pimpl_cast(T& ref) {
   return *pimpl_cast(&ref);
 }
 
-}
+} // namespace es
 #endif

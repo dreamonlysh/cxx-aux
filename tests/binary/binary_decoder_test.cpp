@@ -1,4 +1,4 @@
-#include <binary/binary_decoder.h>
+#include <cxxaux/binary/binary_decoder.h>
 #include <gtest/gtest.h>
 
 using cxxaux::BinaryDecoder;

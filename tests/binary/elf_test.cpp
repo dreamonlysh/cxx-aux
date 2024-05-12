@@ -1,4 +1,4 @@
-#include "binary/elf/elf.h"
+#include "cxxaux/binary/elf/elf.h"
 #include <fstream>
 #include <gtest/gtest.h>
 

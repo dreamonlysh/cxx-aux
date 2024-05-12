@@ -22,8 +22,7 @@ namespace es {
 /// @tparam U type to traits const
 template <typename T, typename U>
 struct add_const_as {
-  using type = std::conditional_t<
-      std::is_const_v<U>, std::add_const_t<T>, T>;
+  using type = std::conditional_t<std::is_const_v<U>, std::add_const_t<T>, T>;
 };
 
 /// @brief add const to T if U is const
@@ -32,5 +31,5 @@ struct add_const_as {
 template <typename T, typename U>
 using add_const_as_t = typename add_const_as<T, U>::type;
 
-}
+} // namespace es
 #endif

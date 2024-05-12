@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(CXXAUX_ENABLE_TESTS "Enable all of the cxxaux own tests." OFF)
 mark_as_advanced(CXXAUX_ENABLE_TESTS)
 
-add_subdirectory(lib)
+add_subdirectory(src)
 
 if (CXXAUX_ENABLE_TESTS)
   enable_testing()

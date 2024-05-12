@@ -11,7 +11,7 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#include "binary/elf/elf.h"
+#include "cxxaux/binary/elf/elf.h"
 #include "elfn.h"
 #include <iostream>
 #include <llvm/BinaryFormat/ELF.h>
