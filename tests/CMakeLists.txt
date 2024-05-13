@@ -12,4 +12,5 @@ include(GoogleTest)
 
 add_subdirectory(cpp)
 add_subdirectory(estd)
+add_subdirectory(utility)
 add_subdirectory(binary)
