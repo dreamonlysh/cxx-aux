@@ -23,18 +23,18 @@ class MemoryPool {
 public:
   static void* allocate(size_t bytes);
 
-  static void deallocate(void* ptr, size_t bytes);
+  static void deallocate(void* p, size_t bytes);
 
   template <typename T, typename... Args>
   static T* operator_new(Args&&... args) {
-    void* ptr = allocate(sizeof(T));
-    return new (ptr) T(std::forward<Args>(args)...);
+    void* p = allocate(sizeof(T));
+    return new (p) T(std::forward<Args>(args)...);
   }
 
   template <typename T>
-  static void operator_delete(T* ptr) {
-    std::destroy_at(ptr);
-    deallocate(ptr, sizeof(T));
+  static void operator_delete(T* p) {
+    std::destroy_at(p);
+    deallocate(p, sizeof(T));
   }
 
   template <class T>
@@ -47,11 +47,11 @@ public:
     template <class U>
     default_delete(const default_delete<U[]>&) noexcept {}
 
-    void operator()(T* ptr) const { operator_delete(ptr); }
+    void operator()(T* p) const { operator_delete(p); }
 
     template <class U>
-    void operator()(U* ptr) const {
-      operator_delete(ptr);
+    void operator()(U* p) const {
+      operator_delete(p);
     }
   };
 };
@@ -77,9 +77,9 @@ public:
     return reinterpret_cast<T*>(MemoryPool::allocate(sizeof(value_type) * n));
   }
 
-  void deallocate(T* ptr, size_t n) {
+  void deallocate(T* p, size_t n) {
     for (size_t i = 0; i < n; ++i) {
-      MemoryPool::deallocate(std::next(ptr, n), sizeof(value_type));
+      MemoryPool::deallocate(std::next(p, n), sizeof(value_type));
     }
   }
 };

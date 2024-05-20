@@ -35,7 +35,7 @@ public:
     return std::next(blocks.back().m, curCursor);
   }
 
-  void deallocate(void* ptr) { idle.push_back(ptr); }
+  void deallocate(void* p) { idle.push_back(p); }
 
 private:
   const uint32_t slotBytes = 0;
@@ -74,12 +74,12 @@ public:
     return singleton.findPool(bytes).allocate();
   }
 
-  static void deallocate(void* ptr, size_t bytes) {
+  static void deallocate(void* p, size_t bytes) {
     if (bytes > kMemoryPoolMaximum) {
-      free(static_cast<void*>(ptr));
+      free(static_cast<void*>(p));
     }
 
-    singleton.findPool(bytes).deallocate(ptr);
+    singleton.findPool(bytes).deallocate(p);
   }
 
 private:
@@ -90,7 +90,7 @@ private:
       return pool2Bytes;
     if (bytes <= 4)
       return pool4Bytes;
-    return *pools[bytes / kMemoryPoolInterval - 1];
+    return *pools[(bytes - 1) / kMemoryPoolInterval];
   }
 
 private:
@@ -111,7 +111,7 @@ void* MemoryPool::allocate(size_t bytes) {
   return MemoryPoolImpl::allocate(bytes);
 }
 
-void MemoryPool::deallocate(void* ptr, size_t bytes) {
-  MemoryPoolImpl::deallocate(ptr, bytes);
+void MemoryPool::deallocate(void* p, size_t bytes) {
+  MemoryPoolImpl::deallocate(p, bytes);
 }
 } // namespace cxxaux

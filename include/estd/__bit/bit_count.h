@@ -96,7 +96,7 @@ constexpr unsigned countr_bit0(T v) noexcept {
   }
 }
 
-/// @brief count the adjacent zero bits from right
+/// @brief count the adjacent non-zero bits from right
 /// @tparam T unsigned integer type
 /// @param v value to count
 /// @return number of bit 1

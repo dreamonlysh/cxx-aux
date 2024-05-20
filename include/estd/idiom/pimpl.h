@@ -14,6 +14,7 @@
 #ifndef ESTD___IDIOM_PIMPL_H
 #define ESTD___IDIOM_PIMPL_H
 #include <estd/meta.h>
+#include <utility>
 
 namespace es {
 
@@ -60,11 +61,11 @@ struct pimpl_traits {
 ///
 /// @tparam T type derived the Pimpl
 /// @tparam storage_size memory byte size enough to hold the impl class
-template <typename T, uint32_t storage_size>
+template <typename T, unsigned storage_size>
 class Pimpl {
 public:
   /// @brief memory byte size alloced
-  static constexpr uint32_t pimpl_storage_size = storage_size;
+  static constexpr unsigned pimpl_storage_size = storage_size;
 
   template <typename U>
   friend auto pimpl_cast(U*);
