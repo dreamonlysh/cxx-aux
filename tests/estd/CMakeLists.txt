@@ -11,6 +11,7 @@ list(APPEND SRC_FILES idiom/guard_test.cpp)
 list(APPEND SRC_FILES meta/operators_test.cpp)
 list(APPEND SRC_FILES dl/dl_load_test.cpp)
 list(APPEND SRC_FILES pattern/factory_test.cpp)
+list(APPEND SRC_FILES utility/type_name_test.cpp)
 
 add_subdirectory(dl)
 
