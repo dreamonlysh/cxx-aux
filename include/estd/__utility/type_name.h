@@ -37,6 +37,10 @@ constexpr std::string_view type_name() {
 #endif
 }
 
+/// @brief get type name of T
+/// @tparam T a type
+/// @param dummy arg used to infer T
+/// @return string view of the T
 template <typename T>
 constexpr std::string_view type_name(T&&) {
   return type_name<T>();
