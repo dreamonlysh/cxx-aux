@@ -11,12 +11,12 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD___IDIOM_PIMPL_H
-#define ESTD___IDIOM_PIMPL_H
+#ifndef CXXAUX_UTILITY_PIMPL_H
+#define CXXAUX_UTILITY_PIMPL_H
 #include <estd/meta.h>
 #include <utility>
 
-namespace es {
+namespace cxxaux {
 
 /// @brief traits of pimpl to get the impl and pimpl type
 ///
@@ -100,11 +100,11 @@ template <typename T>
 auto pimpl_cast(T* ptr) {
   using PureT = std::remove_cv_t<T>;
   using ImplType = typename pimpl_traits<PureT>::impl_type;
-  using RetT = std::add_pointer_t<add_const_as_t<ImplType, T>>;
+  using RetT = std::add_pointer_t<es::add_const_as_t<ImplType, T>>;
   // traits pimpl type, designed for multi Pimpl inheritance case
   if constexpr (has_member_pimpl_type_v<pimpl_traits<PureT>>) {
     using PimplType = typename pimpl_traits<PureT>::pimpl_type;
-    using SrcT = std::add_pointer_t<add_const_as_t<PimplType, T>>;
+    using SrcT = std::add_pointer_t<es::add_const_as_t<PimplType, T>>;
     return reinterpret_cast<RetT>(static_cast<SrcT>(ptr)->__pimpl_storage);
   } else {
     return reinterpret_cast<RetT>(ptr->__pimpl_storage);
@@ -120,5 +120,5 @@ auto pimpl_cast(T& ref) {
   return *pimpl_cast(&ref);
 }
 
-} // namespace es
+} // namespace cxxaux
 #endif

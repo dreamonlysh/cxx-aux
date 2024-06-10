@@ -11,13 +11,9 @@ TEST(TypeName, Numeric) {
 
 struct A;
 
-TEST(TypeName, Struct) {
-  ASSERT_EQ(es::type_name<A>(), "A");
-}
+TEST(TypeName, Struct) { ASSERT_EQ(es::type_name<A>(), "A"); }
 
 template <typename>
 struct B;
 
-TEST(TypeName, Template) {
-  ASSERT_EQ(es::type_name<B<int>>(), "B<int>");
-}
+TEST(TypeName, Template) { ASSERT_EQ(es::type_name<B<int>>(), "B<int>"); }

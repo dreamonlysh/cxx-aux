@@ -11,11 +11,11 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD___IDIOM_GUARD_H
-#define ESTD___IDIOM_GUARD_H
+#ifndef CXXAUX_UTILITY_GUARD_H
+#define CXXAUX_UTILITY_GUARD_H
 #include <utility>
 
-namespace es {
+namespace cxxaux {
 
 template <typename T>
 class __Guard {
@@ -31,15 +31,15 @@ template <typename T>
 __Guard(T&&) -> __Guard<T>;
 
 /// this is a general guard like a lambda to release objects
-#define ES_GUARD(obj) es::__Guard __guard_dummy_##__COUNTER__ = [&obj]
+#define CXXAUX_GUARD(obj) cxxaux::__Guard __guard_dummy_##__COUNTER__ = [&obj]
 
 /// this ia a special guard to release a pointer
-#define ES_OBJECT_GUARD(p)                                                     \
-  ES_GUARD(p) { delete p; }
+#define CXXAUX_OBJECT_GUARD(p)                                                 \
+  CXXAUX_GUARD(p) { delete p; }
 
 /// this ia a special guard to release a pointer that is not by delete
-#define ES_OBJECT_GUARD_WITH_DELETER(p, deleter)                               \
-  ES_GUARD(p) { deleter(p); }
+#define CXXAUX_OBJECT_GUARD_WITH_DELETER(p, deleter)                           \
+  CXXAUX_GUARD(p) { deleter(p); }
 
-} // namespace es
+} // namespace cxxaux
 #endif

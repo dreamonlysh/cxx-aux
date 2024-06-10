@@ -1,8 +1,8 @@
-#include <estd/idiom/pimpl.h>
+#include <cxxaux/utility/pimpl.h>
 #include <gtest/gtest.h>
 #include <sstream>
 
-class A : public es::Pimpl<A, 64> {
+class A : public cxxaux::Pimpl<A, 64> {
 public:
   A(std::ostringstream& oss, int delta);
 
@@ -15,13 +15,9 @@ public:
     oss << "AImpl";
   }
 
-  ~AImpl() noexcept {
-    oss << "~AImpl";
-  }
+  ~AImpl() noexcept { oss << "~AImpl"; }
 
-  int add(int lhs, int rhs) {
-    return lhs + rhs + delta;
-  }
+  int add(int lhs, int rhs) { return lhs + rhs + delta; }
 
 private:
   std::ostringstream& oss;
@@ -29,16 +25,14 @@ private:
 };
 
 template <>
-struct es::pimpl_traits<A> {
+struct cxxaux::pimpl_traits<A> {
   using impl_type = AImpl;
-  using pimpl_type = es::Pimpl<A, 64>; // optional
+  using pimpl_type = cxxaux::Pimpl<A, 64>; // optional
 };
 
-A::A(std::ostringstream& oss, int delta) : es::Pimpl<A, 64>(oss, delta) {}
+A::A(std::ostringstream& oss, int delta) : cxxaux::Pimpl<A, 64>(oss, delta) {}
 
-int A::add(int lhs, int rhs) {
-  return pimpl_cast(this)->add(lhs, rhs); 
-}
+int A::add(int lhs, int rhs) { return pimpl_cast(this)->add(lhs, rhs); }
 
 TEST(PimplTest, test) {
   std::ostringstream oss;

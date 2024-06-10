@@ -22,7 +22,7 @@ template <template <typename> typename SetT,
           template <typename> typename SequenceT, typename T = void>
 class StringTable {
 public:
-  static std::string_view signUp(std::string_view s) {
+  static std::string_view add(std::string_view s) {
     StringTable& tbl = instance();
 
     auto it = tbl.strtbl_.find(s);
