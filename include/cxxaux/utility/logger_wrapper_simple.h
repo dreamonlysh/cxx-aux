@@ -80,7 +80,7 @@ struct __cxxaux_logger_traits_simple_impl {
       print(logger, "fatal", std::forward<Args>(args)...);
       logger.os.flush();
     }
-    throw;
+    throw std::runtime_error("exception raised by logger fatal");
   }
 
 private:

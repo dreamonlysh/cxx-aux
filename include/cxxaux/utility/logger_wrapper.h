@@ -17,6 +17,7 @@
 #ifndef CXXAUX_UTILITY_LOGGER_WRAPPER_H
 #define CXXAUX_UTILITY_LOGGER_WRAPPER_H
 #include <string>
+#include <tuple>
 
 namespace cxxaux {
 
@@ -137,6 +138,67 @@ public:
 
 private:
   logger_type logger;
+};
+
+/// @brief a wrapper to hold multi concrete loggers
+///
+/// The most common case is log info to console and debug to file
+/// @tparam ...T concrete logger wrapper type
+template <typename... T>
+class LoggerWrapper {
+public:
+  /// @brief config logger for each logger
+  /// @tparam ...Args type of args passed to construct a logger
+  /// @tparam N position of the logger T
+  /// @param ...args args passed to construct a logger
+  template <size_t N, typename... Args>
+  void reset(Args&&... args) {
+    std::get<N>(loggers).reset(std::forward<Args>(args)...);
+  }
+
+  template <typename... Args>
+  void debug(Args&&... args) {
+    std::apply([&args...](auto&... loggers) { (loggers.debug(args...), ...); },
+               loggers);
+  }
+
+  template <typename... Args>
+  void info(Args&&... args) {
+    std::apply([&args...](auto&... loggers) { (loggers.info(args...), ...); },
+               loggers);
+  }
+
+  template <typename... Args>
+  void warn(Args&&... args) {
+    std::apply([&args...](auto&... loggers) { (loggers.warn(args...), ...); },
+               loggers);
+  }
+
+  template <typename... Args>
+  void error(Args&&... args) {
+    std::apply([&args...](auto&... loggers) { (loggers.error(args...), ...); },
+               loggers);
+  }
+
+  template <typename... Args>
+  [[noreturn]] void fatal(Args&&... args) {
+    std::apply(
+        [&args...](auto&... loggers) {
+          (
+              [&args...](auto& logger) {
+                try {
+                  logger.fatal(args...);
+                } catch (...) {
+                }
+              }(loggers),
+              ...);
+        },
+        loggers);
+    throw;
+  }
+
+private:
+  std::tuple<T...> loggers;
 };
 
 } // namespace cxxaux

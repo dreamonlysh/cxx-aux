@@ -141,7 +141,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_console_tag>
     } else {
       spdlog::critical(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
     }
-    throw;
+    throw std::runtime_error("exception raised by logger fatal");
   }
 };
 #endif
@@ -206,7 +206,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_file_tag>
       logger->critical(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
       logger->flush();
     }
-    throw;
+    throw std::runtime_error("exception raised by logger fatal");
   }
 };
 #endif
