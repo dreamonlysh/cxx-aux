@@ -1,6 +1,8 @@
 project(estd_test)
 
 list(APPEND SRC_FILES algorithm/fill_range_test.cpp)
+list(APPEND SRC_FILES cast/dyn_cast_variant_test.cpp)
+list(APPEND SRC_FILES cast/value_test.cpp)
 list(APPEND SRC_FILES container/integer_test.cpp)
 list(APPEND SRC_FILES bit/bit_count_test.cpp)
 list(APPEND SRC_FILES bit/bit_hl_dim_test.cpp)
