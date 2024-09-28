@@ -77,4 +77,25 @@
 //   static constexpr std::string_view short_name(NumericTypeCode code);
 // };
 
+#include "__utility/disabled_copy_move.h"
+// struct disabled_copy {
+//   disabled_copy() = default;
+//   disabled_copy(const disabled_copy&) = delete;
+//   disabled_copy& operator=(const disabled_copy&) = delete;
+// };
+// struct disabled_move {
+//   disabled_move() = default;
+//   disabled_move(disabled_copy&&) = delete;
+//   disabled_move& operator=(disabled_copy&&) = delete;
+// };
+// struct disabled_copy_move : disabled_copy, disabled_move {
+//   disabled_copy_move() = default;
+// };
+
+#include "__utility/overloaded.h"
+// template <class... Ts>
+// struct overloaded : Ts... {
+//   using Ts::operator()...;
+// };
+
 #endif

@@ -11,23 +11,19 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD_UTILS_H
-#define ESTD_UTILS_H
+#ifndef ESTD___UTILITY_OVERLOADED_H
+#define ESTD___UTILITY_OVERLOADED_H
 
 namespace es {
 
-template <typename T>
-constexpr bool not_null(T* p) {
-  return p != nullptr;
-}
-
-struct disabled_copy_move {
-  disabled_copy_move() = default;
-  disabled_copy_move(const disabled_copy_move&) = delete;
-  disabled_copy_move& operator=(const disabled_copy_move&) = delete;
-  disabled_copy_move(disabled_copy_move&&) = delete;
-  disabled_copy_move& operator=(disabled_copy_move&&) = delete;
+/// @brief Helper for lambda overload, mostly for std::visit
+template <class... Ts>
+struct overloaded : Ts... {
+  using Ts::operator()...;
 };
 
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
 } // namespace es
-#endif // ESTD_UTILS_H
+#endif

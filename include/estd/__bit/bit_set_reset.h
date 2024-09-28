@@ -13,7 +13,6 @@
 
 #ifndef ESTD___BIT_BIT_SET_RESET_H
 #define ESTD___BIT_BIT_SET_RESET_H
-#include <cassert>
 #include <limits>
 #include <type_traits>
 
@@ -30,7 +29,7 @@ namespace es {
 /// @param pos in range [0, bits_of(T))
 /// @return masked value of T type
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T set_bit(T v, unsigned pos) noexcept {
+[[nodiscard]] constexpr T set_bit(T v, unsigned pos) noexcept {
   return v | static_cast<T>(1u) << pos;
 }
 
@@ -46,7 +45,7 @@ constexpr T set_bit(T v, unsigned pos) noexcept {
 /// @param n in range (0, bits_of(T)]
 /// @return masked value of T type
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T set_bits(T v, unsigned pos, unsigned n) noexcept {
+[[nodiscard]] constexpr T set_bits(T v, unsigned pos, unsigned n) noexcept {
   return v | ((std::numeric_limits<T>::max() >>
                (std::numeric_limits<T>::digits - n))
               << pos);
@@ -61,7 +60,7 @@ constexpr T set_bits(T v, unsigned pos, unsigned n) noexcept {
 /// @param v value to reset the first bit 1
 /// @return reseted value
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T reset_first(T v) noexcept {
+[[nodiscard]] constexpr T reset_first(T v) noexcept {
   return v & (v - 1);
 }
 
@@ -74,7 +73,7 @@ constexpr T reset_first(T v) noexcept {
 /// @param v value to set the first bit 0
 /// @return seted value
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T set_first(T v) noexcept {
+[[nodiscard]] constexpr T set_first(T v) noexcept {
   return v | (v + 1);
 }
 
@@ -87,7 +86,7 @@ constexpr T set_first(T v) noexcept {
 /// @param v value to reset the trailing bit 1
 /// @return reseted value
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T resetr(T v) noexcept {
+[[nodiscard]] constexpr T resetr(T v) noexcept {
   return v & (v + 1);
 }
 
@@ -100,7 +99,7 @@ constexpr T resetr(T v) noexcept {
 /// @param v value to set the trailing bit 0
 /// @return seted value
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T setr(T v) noexcept {
+[[nodiscard]] constexpr T setr(T v) noexcept {
   return v | (v - 1);
 }
 
@@ -113,9 +112,9 @@ constexpr T setr(T v) noexcept {
 /// @param v value to reset the right most adjacent bit 1
 /// @return reseted value
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T reset_first_adjacent(T v) noexcept {
+[[nodiscard]] constexpr T reset_first_adjacent(T v) noexcept {
   return (setr(v) + 1) & v;
 }
-} // namespace es
 
+} // namespace es
 #endif

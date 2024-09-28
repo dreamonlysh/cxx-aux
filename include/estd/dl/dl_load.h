@@ -14,7 +14,7 @@
 #ifndef ESTD_DL_LOAD_H
 #define ESTD_DL_LOAD_H
 #include "estd/meta.h"
-#include "estd/utils.h"
+#include "estd/utility.h"
 #include <dlfcn.h>
 #include <functional>
 #include <optional>
@@ -42,7 +42,7 @@ public:
   auto load(const char* fname) const -> RetT (*)(Args...) {
     using FunctionType = RetT (*)(Args...);
     auto func = reinterpret_cast<FunctionType>(dlsym(handler, fname));
-    if (not_null(dlerror()))
+    if (dlerror() != nullptr)
       return nullptr;
     return func;
   }
@@ -63,7 +63,7 @@ public:
   }
 
   void reset() {
-    if (not_null(handler)) {
+    if (handler == nullptr) {
       dlclose(handler);
       handler = nullptr;
     }

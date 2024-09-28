@@ -25,12 +25,19 @@ size_t __type_id() noexcept {
 }
 } // namespace __es_impl
 
+/// @brief Get uique id for type T
+/// @tparam T type
+/// @return type code
 template <typename T>
 size_t type_id() noexcept {
   static_assert(std::is_class_v<T>);
   return __es_impl::__type_id<std::remove_cv_t<T>>();
 }
 
+/// @brief Get uique id for type T
+/// @tparam T type
+/// @param  help to infer T
+/// @return type code
 template <typename T>
 size_t type_id(T&&) noexcept {
   return type_id<std::remove_reference_t<T>>();

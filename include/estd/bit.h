@@ -77,6 +77,12 @@
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T ceil_to_pow2(T v) noexcept;
 
+#include "__bit/bit_get.h"
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// constexpr T get_bit(T v, unsigned pos) noexcept
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// constexpr T get_bits(T v, unsigned pos, unsigned n) noexcept
+
 #include "__bit/bit_set_reset.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T set_bit(T v, unsigned pos) noexcept;

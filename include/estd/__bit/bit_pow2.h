@@ -64,7 +64,7 @@ constexpr bool is_pow2_sub_pow2(T v) noexcept {
 /// @param v value to check
 /// @return value of pow2
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T floor_to_pow2(T v) noexcept {
+[[nodiscard]] constexpr T floor_to_pow2(T v) noexcept {
   // 0 is not suitable for the following algorithm
   if (v == 0)
     return 0;
@@ -81,7 +81,7 @@ constexpr T floor_to_pow2(T v) noexcept {
 /// @param v value to check
 /// @return value of pow2
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T ceil_to_pow2(T v) noexcept {
+[[nodiscard]] constexpr T ceil_to_pow2(T v) noexcept {
   // 0 and 1 is not suitable for the following algorithm
   if ((v >> 1) == 0)
     return v;

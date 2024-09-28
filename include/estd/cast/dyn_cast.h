@@ -15,6 +15,7 @@
 #define ESTD_CAST_DYN_CAST_H
 #include <algorithm>
 #include <estd/__meta/has_member.h>
+#include <stdexcept>
 
 namespace es {
 

@@ -26,7 +26,7 @@ namespace es {
 /// @param v value to highlight
 /// @return highlighed
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T hl_first_bit0(T v) noexcept {
+[[nodiscard]] constexpr T hl_first_bit0(T v) noexcept {
   return ~v & (v + 1);
 }
 
@@ -39,7 +39,7 @@ constexpr T hl_first_bit0(T v) noexcept {
 /// @param v value to highlight
 /// @return highlighed
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T hl_first_bit1(T v) noexcept {
+[[nodiscard]] constexpr T hl_first_bit1(T v) noexcept {
   return v & (-v);
 }
 
@@ -52,7 +52,7 @@ constexpr T hl_first_bit1(T v) noexcept {
 /// @param v value to dim
 /// @return dimed
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T dim_first_bit1(T v) noexcept {
+[[nodiscard]] constexpr T dim_first_bit1(T v) noexcept {
   return ~v | (v - 1);
 }
 
@@ -65,7 +65,7 @@ constexpr T dim_first_bit1(T v) noexcept {
 /// @param v value to highlight
 /// @return highlighted
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T hlr_bit0(T v) noexcept {
+[[nodiscard]] constexpr T hlr_bit0(T v) noexcept {
   return ~v & (v - 1);
 }
 
@@ -78,7 +78,7 @@ constexpr T hlr_bit0(T v) noexcept {
 /// @param v value to highlight
 /// @return highlighted
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T hlr_bit0_inc(T v) noexcept {
+[[nodiscard]] constexpr T hlr_bit0_inc(T v) noexcept {
   return v ^ (v - 1);
 }
 
@@ -91,7 +91,7 @@ constexpr T hlr_bit0_inc(T v) noexcept {
 /// @param v value to dim
 /// @return dimed
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T dimr_bit1(T v) noexcept {
+[[nodiscard]] constexpr T dimr_bit1(T v) noexcept {
   return ~v | (v + 1);
 }
 
@@ -104,7 +104,7 @@ constexpr T dimr_bit1(T v) noexcept {
 /// @param v value to highlight
 /// @return highlighted
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T hlr_bit1_inc(T v) noexcept {
+[[nodiscard]] constexpr T hlr_bit1_inc(T v) noexcept {
   return v ^ (v + 1);
 }
 
