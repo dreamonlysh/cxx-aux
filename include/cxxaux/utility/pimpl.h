@@ -61,7 +61,7 @@ struct pimpl_traits {
 ///
 /// @tparam T type derived the Pimpl
 /// @tparam storage_size memory byte size enough to hold the impl class
-template <typename T, unsigned storage_size>
+template <typename T, unsigned storage_size = 0>
 class Pimpl {
 public:
   /// @brief memory byte size alloced
@@ -88,6 +88,35 @@ public:
 
 private:
   char __pimpl_storage[pimpl_storage_size];
+};
+
+/// @brief a traditional pimpl aux class
+/// @tparam T type derived the Pimpl
+template <typename T>
+class Pimpl<T, 0> {
+public:
+  /// @brief memory byte size alloced
+  static constexpr unsigned pimpl_storage_size = 0;
+
+  template <typename U>
+  friend auto pimpl_cast(U*);
+
+  /// @brief construct of pimpl with args passed to the impl class
+  /// @tparam ...Args args type of the impl class construct
+  /// @param ...args args of the impl class construct
+  template <typename... Args>
+  Pimpl(Args&&... args) {
+    using impl_type = typename pimpl_traits<T>::impl_type;
+    __pimpl_storage = new impl_type(std::forward<Args>(args)...);
+  }
+
+  ~Pimpl() noexcept {
+    using impl_type = typename pimpl_traits<T>::impl_type;
+    delete static_cast<impl_type*>(__pimpl_storage);
+  }
+
+private:
+  void* __pimpl_storage = nullptr;
 };
 
 META_HAS_MEMBER_TYPE(pimpl_type);
