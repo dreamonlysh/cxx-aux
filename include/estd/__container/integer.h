@@ -13,7 +13,6 @@
 
 #ifndef ESTD___CONTAINER_INTEGER_H
 #define ESTD___CONTAINER_INTEGER_H
-#include <cstdint>
 #include <type_traits>
 
 namespace es {

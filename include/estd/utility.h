@@ -98,4 +98,12 @@
 //   using Ts::operator()...;
 // };
 
+#include "__utility/bytes_of.h"
+// template <typename T>
+// constexpr auto bytes_of(T);
+
+#include "__utility/bits_of.h"
+// template <typename T>
+// constexpr auto bits_of(T);
+
 #endif

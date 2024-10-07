@@ -13,6 +13,7 @@
 
 #ifndef ESTD_INTEGER_H
 #define ESTD_INTEGER_H
+#include <cstdint>
 
 #include "__container/integer.h"
 // template <typename T, typename = void,

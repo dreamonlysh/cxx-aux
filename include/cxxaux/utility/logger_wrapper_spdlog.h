@@ -100,46 +100,46 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_console_tag>
   static void debug(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                     Args&&... args) {
     if (logger)
-      logger->debug(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->debug(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     else
-      spdlog::debug(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      spdlog::debug(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
   }
 
   template <typename FormatT, typename... Args>
   static void info(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                    Args&&... args) {
     if (logger)
-      logger->info(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->info(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     else
-      spdlog::info(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      spdlog::info(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
   }
 
   template <typename FormatT, typename... Args>
   static void warn(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                    Args&&... args) {
     if (logger)
-      logger->warn(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->warn(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     else
-      spdlog::warn(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      spdlog::warn(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
   }
 
   template <typename FormatT, typename... Args>
   static void error(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                     Args&&... args) {
     if (logger)
-      logger->error(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->error(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     else
-      spdlog::error(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      spdlog::error(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
   }
 
   template <typename FormatT, typename... Args>
   [[noreturn]] static void fatal(std::shared_ptr<spdlog::logger> logger,
                                  FormatT&& fmt, Args&&... args) {
     if (logger) {
-      logger->critical(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->critical(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
       logger->flush();
     } else {
-      spdlog::critical(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      spdlog::critical(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     }
     throw std::runtime_error("exception raised by logger fatal");
   }
@@ -171,7 +171,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_file_tag>
   static void debug(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                     Args&&... args) {
     if (logger) {
-      logger->debug(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->debug(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     }
   }
 
@@ -179,7 +179,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_file_tag>
   static void info(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                    Args&&... args) {
     if (logger) {
-      logger->info(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->info(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     }
   }
 
@@ -187,7 +187,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_file_tag>
   static void warn(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                    Args&&... args) {
     if (logger) {
-      logger->warn(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->warn(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     }
   }
 
@@ -195,7 +195,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_file_tag>
   static void error(std::shared_ptr<spdlog::logger> logger, FormatT&& fmt,
                     Args&&... args) {
     if (logger) {
-      logger->error(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->error(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
     }
   }
 
@@ -203,7 +203,7 @@ struct __cxxaux_logger_traits<__cxxaux_spdlog_file_tag>
   [[noreturn]] static void fatal(std::shared_ptr<spdlog::logger> logger,
                                  FormatT&& fmt, Args&&... args) {
     if (logger) {
-      logger->critical(std::forward<FormatT>(fmt), std::forward<Args>(args)...);
+      logger->critical(fmt::v10::runtime(fmt), std::forward<Args>(args)...);
       logger->flush();
     }
     throw std::runtime_error("exception raised by logger fatal");
