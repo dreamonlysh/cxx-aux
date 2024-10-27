@@ -13,10 +13,10 @@
 
 #ifndef ESTD__MEMORY_MEMORY_POOL_UNIFORM_H
 #define ESTD__MEMORY_MEMORY_POOL_UNIFORM_H
+#include "estd/__utility/disabled_copy_move.h"
 #include "layout_bit_mapping.h"
 #include "layout_stack.h"
 #include <cstdlib>
-#include <estd/utility.h>
 #include <forward_list>
 
 namespace es { namespace memory {
@@ -24,7 +24,7 @@ namespace __impl {
 
 template <size_t Size, size_t BlockSize>
 class __MemoryPoolUniformSmall {
-  using LayoutType = es::memory::layout_bit_mapping<BlockSize, Size>;
+  using LayoutType = layout_bit_mapping<BlockSize, Size>;
 
 public:
   __MemoryPoolUniformSmall() = default;
@@ -98,8 +98,8 @@ private:
   };
   std::forward_list<Block> allocator_;
 
-  es::memory::layout_stack idle_;
-  es::memory::layout_stack::value_type bottom_ = nullptr;
+  layout_stack idle_;
+  layout_stack::value_type bottom_ = nullptr;
 };
 
 // Use std::forward_list as the container of the memory, there ware thought an
@@ -107,7 +107,7 @@ private:
 // actual block size will be `BlockSize - sizeof(void*)`
 template <size_t Size, size_t BlockSize>
 using MemoryPoolUniformSelector = std::conditional_t<
-    std::less()(Size, es::memory::layout_stack::memory_required_by_stack),
+    std::less()(Size, layout_stack::memory_required_by_stack),
     __impl::__MemoryPoolUniformSmall<Size, BlockSize - sizeof(void*)>,
     __impl::__MemoryPoolUniformLarge<Size, BlockSize - sizeof(void*)>>;
 
@@ -118,7 +118,7 @@ using MemoryPoolUniformSelector = std::conditional_t<
 /// @tparam BlockSize buffer size designed for a block
 template <size_t Size, size_t BlockSize = 4 * 1024>
 class MemoryPoolUniform : __impl::MemoryPoolUniformSelector<Size, BlockSize>,
-                          es::disabled_copy_move {
+                          disabled_copy_move {
   using impl_type = __impl::MemoryPoolUniformSelector<Size, BlockSize>;
 
 public:

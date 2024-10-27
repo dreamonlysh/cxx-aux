@@ -13,8 +13,10 @@
 
 #ifndef ESTD__MEMORY_OBJECT_POOL_H
 #define ESTD__MEMORY_OBJECT_POOL_H
+#include "estd/__bit/bit_pow2.h"
+#include "estd/__concurrency/is_mutex_like.h"
+#include "estd/__concurrency/mutex_silent.h"
 #include "memory_pool_uniform.h"
-#include <estd/bit.h>
 #include <memory>
 
 namespace es { namespace memory {
@@ -25,9 +27,9 @@ namespace es { namespace memory {
 /// @tparam BlockSize buffer size designed for a block
 template <typename T, size_t Align = std::alignment_of_v<T>,
           size_t BlockSize = 4 * 1024>
-class ObjectPool : es::disabled_copy_move {
+class ObjectPool : disabled_copy_move {
 public:
-  static_assert(es::is_pow2(Align), "The alignment should be pow of 2");
+  static_assert(is_pow2(Align), "The alignment should be pow of 2");
 
   using object_type = T;
 
@@ -76,14 +78,6 @@ auto make_unique(T& pool, Args&&... args) {
   return std::unique_ptr<object_type, decltype(deleter)>(p, deleter);
 }
 
-namespace __impl {
-struct SubObjectPoolDefaultLocker {
-  void lock() {}
-  void unlock() {}
-};
-inline SubObjectPoolDefaultLocker default_locker;
-} // namespace __impl
-
 /// @brief An object pool that belongs a main object pool
 ///
 /// The purpose of the sub object pool is safe thread local
@@ -92,13 +86,14 @@ inline SubObjectPoolDefaultLocker default_locker;
 /// @tparam Align alignment for the T to keep in memory
 /// @tparam BlockSize buffer size designed for a block
 template <typename T, size_t Align, size_t BlockSize,
-          typename LockerT = __impl::SubObjectPoolDefaultLocker>
+          typename LockerT = mutex_silent,
+          typename = std::enable_if_t<is_mutex_like_v<LockerT>>>
 class SubObjectPool : public ObjectPool<T, Align, BlockSize> {
   using object_pool_type = ObjectPool<T, Align, BlockSize>;
 
 public:
   SubObjectPool(object_pool_type& parent)
-      : parent_(parent), locker_(__impl::default_locker) {}
+      : parent_(parent), locker_(defalut_mutex_silent) {}
   SubObjectPool(object_pool_type& parent, LockerT& locker)
       : parent_(parent), locker_(locker) {}
   ~SubObjectPool() noexcept {

@@ -13,17 +13,21 @@
 
 #ifndef CXXAUX_UTILITY_STRING_TABLE_H
 #define CXXAUX_UTILITY_STRING_TABLE_H
+#include <deque>
+#include <mutex>
 #include <string>
 #include <string_view>
 
 namespace cxxaux {
 
-template <template <typename> typename SetT,
-          template <typename> typename SequenceT, typename T = void>
+template <template <typename> typename SetT, typename T = void>
 class StringTable {
 public:
   static std::string_view add(std::string_view s) {
     StringTable& tbl = instance();
+
+    static std::mutex mut;
+    std::lock_guard lock(mut);
 
     auto it = tbl.strtbl_.find(s);
     if (it != tbl.strtbl_.end())
@@ -45,7 +49,7 @@ private:
 
 private:
   SetT<std::string_view> strtbl_;
-  SequenceT<std::string> storage_;
+  std::deque<std::string> storage_;
 };
 
 } // namespace cxxaux

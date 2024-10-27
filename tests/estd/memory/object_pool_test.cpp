@@ -190,6 +190,7 @@ namespace {
 struct Locker {
   Locker(std::pair<int, int>& lockerStatus) : lockerStatus(lockerStatus) {}
   void lock() { lockerStatus.first = 2; }
+  bool try_lock() { return false; }
   void unlock() { lockerStatus.second = 9; }
   std::pair<int, int>& lockerStatus;
 };

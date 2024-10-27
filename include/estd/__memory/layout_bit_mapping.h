@@ -13,10 +13,10 @@
 
 #ifndef ESTD__MEMORY_LAYOUT_BIT_MAPPING_H
 #define ESTD__MEMORY_LAYOUT_BIT_MAPPING_H
+#include "estd/__utility/bits_of.h"
+#include "estd/__utility/bytes_of.h"
 #include <cassert>
 #include <cstring>
-#include <estd/bit.h>
-#include <estd/utility.h>
 #include <iterator>
 
 namespace es { namespace memory {
