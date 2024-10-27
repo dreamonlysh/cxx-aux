@@ -11,14 +11,15 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef CXXAUX_POOL_MEMORY_POOL_UNIFORM_H
-#define CXXAUX_POOL_MEMORY_POOL_UNIFORM_H
+#ifndef ESTD__MEMORY_MEMORY_POOL_UNIFORM_H
+#define ESTD__MEMORY_MEMORY_POOL_UNIFORM_H
+#include "layout_bit_mapping.h"
+#include "layout_stack.h"
 #include <cstdlib>
-#include <estd/memory.h>
 #include <estd/utility.h>
 #include <forward_list>
 
-namespace cxxaux {
+namespace es { namespace memory {
 namespace __impl {
 
 template <size_t Size, size_t BlockSize>
@@ -101,11 +102,14 @@ private:
   es::memory::layout_stack::value_type bottom_ = nullptr;
 };
 
+// Use std::forward_list as the container of the memory, there ware thought an
+// in-place ptr used as the next. To align each memory with a page size, the
+// actual block size will be `BlockSize - sizeof(void*)`
 template <size_t Size, size_t BlockSize>
 using MemoryPoolUniformSelector = std::conditional_t<
     std::less()(Size, es::memory::layout_stack::memory_required_by_stack),
-    __impl::__MemoryPoolUniformSmall<Size, BlockSize>,
-    __impl::__MemoryPoolUniformLarge<Size, BlockSize>>;
+    __impl::__MemoryPoolUniformSmall<Size, BlockSize - sizeof(void*)>,
+    __impl::__MemoryPoolUniformLarge<Size, BlockSize - sizeof(void*)>>;
 
 } // namespace __impl
 
@@ -118,6 +122,9 @@ class MemoryPoolUniform : __impl::MemoryPoolUniformSelector<Size, BlockSize>,
   using impl_type = __impl::MemoryPoolUniformSelector<Size, BlockSize>;
 
 public:
+  static_assert((BlockSize % 1024) == 0,
+                "The block size should be multi times of 1024 bytes");
+
   MemoryPoolUniform() = default;
   ~MemoryPoolUniform() noexcept = default;
 
@@ -134,5 +141,5 @@ public:
   void merge(MemoryPoolUniform& other) { impl_type::merge(other); }
 };
 
-} // namespace cxxaux
+}} // namespace es::memory
 #endif

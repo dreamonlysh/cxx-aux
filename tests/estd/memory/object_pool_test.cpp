@@ -1,8 +1,10 @@
-#include <cxxaux/pool/object_pool.h>
+#include <estd/__memory/object_pool.h>
 #include <gtest/gtest.h>
 
+using namespace es::memory;
+
 TEST(ObjectPoolTest, SmallCase) {
-  cxxaux::ObjectPool<int> pool;
+  ObjectPool<int> pool;
   int* a = pool.operator_new(1);
   int* b = pool.operator_new(2);
   int* c = pool.operator_new(3);
@@ -17,7 +19,7 @@ TEST(ObjectPoolTest, SmallCase) {
 }
 
 TEST(ObjectPoolTest, SmallCaseOverBlock) {
-  cxxaux::ObjectPool<int> pool;
+  ObjectPool<int> pool;
   int* a = pool.operator_new(1);
   int* b = pool.operator_new(2);
   std::vector<int*> tmp;
@@ -42,7 +44,7 @@ TEST(ObjectPoolTest, SmallCaseOverBlock) {
 }
 
 TEST(ObjectPoolTest, SmallCaseReuse) {
-  cxxaux::ObjectPool<int> pool;
+  ObjectPool<int> pool;
   int* a = pool.operator_new(1);
   int* b = pool.operator_new(2);
   int* c = pool.operator_new(3);
@@ -70,7 +72,7 @@ struct LargeObject {
 };
 
 TEST(ObjectPoolTest, LargeCase) {
-  cxxaux::ObjectPool<LargeObject> pool;
+  ObjectPool<LargeObject> pool;
   LargeObject* a = pool.operator_new(1);
   LargeObject* b = pool.operator_new(2);
   LargeObject* c = pool.operator_new(3);
@@ -85,7 +87,7 @@ TEST(ObjectPoolTest, LargeCase) {
 }
 
 TEST(ObjectPoolTest, LargeCaseOverBlock) {
-  cxxaux::ObjectPool<LargeObject> pool;
+  ObjectPool<LargeObject> pool;
   LargeObject* a = pool.operator_new(1);
   LargeObject* b = pool.operator_new(2);
   std::vector<LargeObject*> tmp;
@@ -110,7 +112,7 @@ TEST(ObjectPoolTest, LargeCaseOverBlock) {
 }
 
 TEST(ObjectPoolTest, LargeCaseReuse) {
-  cxxaux::ObjectPool<LargeObject> pool;
+  ObjectPool<LargeObject> pool;
   LargeObject* a = pool.operator_new(1);
   LargeObject* b = pool.operator_new(2);
   LargeObject* c = pool.operator_new(3);
@@ -131,25 +133,25 @@ TEST(ObjectPoolTest, LargeCaseReuse) {
 }
 
 TEST(ObjectPoolTest, MakeUnique) {
-  cxxaux::ObjectPool<int> pool;
-  auto a = cxxaux::make_unique(pool, 1);
+  ObjectPool<int> pool;
+  auto a = make_unique(pool, 1);
   ASSERT_EQ(*a, 1);
   {
-    auto b = cxxaux::make_unique(pool, 2);
+    auto b = make_unique(pool, 2);
     ASSERT_EQ(*b, 2);
     ASSERT_EQ(b.get(), std::next(a.get()));
   }
-  auto c = cxxaux::make_unique(pool, 3);
+  auto c = make_unique(pool, 3);
   ASSERT_EQ(*c, 3);
   ASSERT_EQ(c.get(), std::next(a.get()));
 }
 
 TEST(SubObjectPoolTest, SmallNoLock) {
-  cxxaux::ObjectPool<int> parent;
+  ObjectPool<int> parent;
   int* a = parent.operator_new(1);
   int* b;
   {
-    cxxaux::SubObjectPool pool(parent);
+    SubObjectPool pool(parent);
     b = pool.operator_new(2);
     ASSERT_EQ(*b, 2);
   }
@@ -165,11 +167,11 @@ TEST(SubObjectPoolTest, SmallNoLock) {
 }
 
 TEST(SubObjectPoolTest, LargeNoLock) {
-  cxxaux::ObjectPool<LargeObject> parent;
+  ObjectPool<LargeObject> parent;
   LargeObject* a = parent.operator_new(1);
   LargeObject* b;
   {
-    cxxaux::SubObjectPool pool(parent);
+    SubObjectPool pool(parent);
     b = pool.operator_new(2);
     ASSERT_EQ(b->first, 2);
   }
@@ -194,14 +196,14 @@ struct Locker {
 } // namespace
 
 TEST(SubObjectPoolTest, SmallLock) {
-  cxxaux::ObjectPool<int> parent;
+  ObjectPool<int> parent;
   int* a = parent.operator_new(1);
   int* b;
 
   std::pair<int, int> lockerStatus{};
   {
     Locker locker{lockerStatus};
-    cxxaux::SubObjectPool pool(parent, locker);
+    SubObjectPool pool(parent, locker);
     b = pool.operator_new(2);
     ASSERT_EQ(*b, 2);
 
@@ -223,14 +225,14 @@ TEST(SubObjectPoolTest, SmallLock) {
 }
 
 TEST(SubObjectPoolTest, LargeLock) {
-  cxxaux::ObjectPool<LargeObject> parent;
+  ObjectPool<LargeObject> parent;
   LargeObject* a = parent.operator_new(1);
   LargeObject* b;
 
   std::pair<int, int> lockerStatus{};
   {
     Locker locker{lockerStatus};
-    cxxaux::SubObjectPool pool(parent, locker);
+    SubObjectPool pool(parent, locker);
     b = pool.operator_new(2);
     ASSERT_EQ(b->first, 2);
 

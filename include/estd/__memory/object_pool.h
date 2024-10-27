@@ -11,13 +11,13 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef CXXAUX_POOL_OBJECT_POOL_H
-#define CXXAUX_POOL_OBJECT_POOL_H
+#ifndef ESTD__MEMORY_OBJECT_POOL_H
+#define ESTD__MEMORY_OBJECT_POOL_H
 #include "memory_pool_uniform.h"
 #include <estd/bit.h>
 #include <memory>
 
-namespace cxxaux {
+namespace es { namespace memory {
 
 /// @brief An object pool
 /// @tparam T object type
@@ -124,5 +124,5 @@ template <typename T, size_t Align, size_t BlockSize, typename LockerT>
 SubObjectPool(ObjectPool<T, Align, BlockSize>, LockerT)
     -> SubObjectPool<T, Align, BlockSize, LockerT>;
 
-} // namespace cxxaux
+}} // namespace es::memory
 #endif
