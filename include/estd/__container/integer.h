@@ -17,7 +17,7 @@
 
 namespace es {
 
-/// @brief type unique integer
+/// @brief Type unique integer
 ///
 /// used to define units like index/byte/bit/metre/kilometre and so on
 ///

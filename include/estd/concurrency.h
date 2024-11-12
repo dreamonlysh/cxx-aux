@@ -29,4 +29,42 @@
 // };
 // inline mutex_silent defalut_mutex_silent;
 
+#include "__concurrency/thread_safe_wrapper.h"
+// template <typename LockerT, typename T>
+// class ThreadSafeObjectWrapper {
+//   static_assert(is_mutex_like_v<LockerT>);
+//
+// public:
+//   ThreadSafeObjectWrapper(T& obj, LockerT& locker);
+//   ~ThreadSafeObjectWrapper() noexcept;
+//
+//   template <typename FnT, typename... Args>
+//   auto invoke(FnT&& fn, Args&&... args);
+// };
+//
+// template <typename LockerT, typename T, typename FnT>
+// class ThreadSafeFunctionWrapper {
+//   static_assert(is_mutex_like_v<LockerT>);
+//
+// public:
+//   ThreadSafeFunctionWrapper(T& obj, FnT fn, LockerT& locker);
+//   ~ThreadSafeFunctionWrapper() noexcept;
+//
+//   template <typename... Args>
+//   auto operator()(Args&&... args);
+// };
+//
+// template <typename LockerT, typename FnT>
+// class ThreadSafeFunctionWrapper<LockerT, void, FnT> {
+// public:
+//   static_assert(is_mutex_like_v<LockerT>);
+//
+// public:
+//   ThreadSafeFunctionWrapper(FnT fn, LockerT& locker);
+//   ~ThreadSafeFunctionWrapper() noexcept;
+//
+//   template <typename... Args>
+//   auto operator()(Args&&... args);
+// };
+
 #endif
