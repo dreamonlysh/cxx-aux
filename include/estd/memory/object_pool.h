@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD__MEMORY_OBJECT_POOL_H
-#define ESTD__MEMORY_OBJECT_POOL_H
+#ifndef ESTD_MEMORY_OBJECT_POOL_H
+#define ESTD_MEMORY_OBJECT_POOL_H
 #include "estd/__bit/bit_pow2.h"
 #include "estd/__concurrency/is_mutex_like.h"
 #include "estd/__concurrency/mutex_silent.h"

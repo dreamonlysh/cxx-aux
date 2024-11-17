@@ -1,4 +1,4 @@
-#include <estd/pattern/factory.h>
+#include <experiment/pattern/factory.h>
 #include <gtest/gtest.h>
 
 class OpCluster : public es::MemberFunctionFactory<OpCluster> {

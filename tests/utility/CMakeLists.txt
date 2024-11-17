@@ -3,7 +3,6 @@ project(utility_test)
 list(APPEND SRC_FILES
         memory_pool_test.cpp
         guard_test.cpp
-        pimpl_test.cpp
 )
 
 add_executable(utility_test ${SRC_FILES})

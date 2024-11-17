@@ -11,12 +11,12 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef CXXAUX_UTILITY_PIMPL_H
-#define CXXAUX_UTILITY_PIMPL_H
+#ifndef CXXAUX_IDIOM_PIMPL_H
+#define CXXAUX_IDIOM_PIMPL_H
 #include <estd/meta.h>
 #include <utility>
 
-namespace cxxaux {
+namespace es { namespace idiom {
 
 /// @brief traits of pimpl to get the impl and pimpl type
 ///
@@ -149,5 +149,5 @@ auto pimpl_cast(T& ref) {
   return *pimpl_cast(&ref);
 }
 
-} // namespace cxxaux
+}} // namespace es::idiom
 #endif

@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD__MEMORY_LAYOUT_BIT_MAPPING_H
-#define ESTD__MEMORY_LAYOUT_BIT_MAPPING_H
+#ifndef ESTD_MEMORY_LAYOUT_BIT_MAPPING_H
+#define ESTD_MEMORY_LAYOUT_BIT_MAPPING_H
 #include "estd/__utility/bits_of.h"
 #include "estd/__utility/bytes_of.h"
 #include <cassert>

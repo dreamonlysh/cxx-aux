@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD__MEMORY_MEMORY_POOL_UNIFORM_H
-#define ESTD__MEMORY_MEMORY_POOL_UNIFORM_H
+#ifndef ESTD_MEMORY_MEMORY_POOL_UNIFORM_H
+#define ESTD_MEMORY_MEMORY_POOL_UNIFORM_H
 #include "estd/__utility/disabled_copy_move.h"
 #include "layout_bit_mapping.h"
 #include "layout_stack.h"

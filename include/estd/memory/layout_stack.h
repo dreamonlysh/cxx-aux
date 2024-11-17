@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD__MEMORY_LAYOUT_STACK_H
-#define ESTD__MEMORY_LAYOUT_STACK_H
+#ifndef ESTD_MEMORY_LAYOUT_STACK_H
+#define ESTD_MEMORY_LAYOUT_STACK_H
 #include <cassert>
 #include <utility>
 

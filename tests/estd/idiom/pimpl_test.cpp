@@ -1,8 +1,8 @@
-#include <cxxaux/utility/pimpl.h>
+#include <estd/idiom/pimpl.h>
 #include <gtest/gtest.h>
 #include <sstream>
 
-class A : public cxxaux::Pimpl<A, 64> {
+class A : public es::idiom::Pimpl<A, 64> {
 public:
   A(std::ostringstream& oss, int delta);
 
@@ -25,12 +25,13 @@ private:
 };
 
 template <>
-struct cxxaux::pimpl_traits<A> {
+struct es::idiom::pimpl_traits<A> {
   using impl_type = AImpl;
-  using pimpl_type = cxxaux::Pimpl<A, 64>; // optional
+  using pimpl_type = es::idiom::Pimpl<A, 64>; // optional
 };
 
-A::A(std::ostringstream& oss, int delta) : cxxaux::Pimpl<A, 64>(oss, delta) {}
+A::A(std::ostringstream& oss, int delta)
+    : es::idiom::Pimpl<A, 64>(oss, delta) {}
 
 int A::add(int lhs, int rhs) { return pimpl_cast(this)->add(lhs, rhs); }
 
@@ -46,7 +47,7 @@ TEST(PimplTest, WithStorageEmbed) {
   ASSERT_EQ(oss.str(), "~AImpl");
 }
 
-class B : public cxxaux::Pimpl<B> {
+class B : public es::idiom::Pimpl<B> {
 public:
   B(std::ostringstream& oss, int delta);
 
@@ -69,12 +70,12 @@ private:
 };
 
 template <>
-struct cxxaux::pimpl_traits<B> {
+struct es::idiom::pimpl_traits<B> {
   using impl_type = BImpl;
-  using pimpl_type = cxxaux::Pimpl<B>; // optional
+  using pimpl_type = es::idiom::Pimpl<B>; // optional
 };
 
-B::B(std::ostringstream& oss, int delta) : cxxaux::Pimpl<B>(oss, delta) {}
+B::B(std::ostringstream& oss, int delta) : es::idiom::Pimpl<B>(oss, delta) {}
 
 int B::add(int lhs, int rhs) { return pimpl_cast(this)->add(lhs, rhs); }
 
