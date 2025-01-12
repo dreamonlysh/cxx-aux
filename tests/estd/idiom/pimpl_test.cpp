@@ -90,3 +90,67 @@ TEST(PimplTest, Default) {
 
   ASSERT_EQ(oss.str(), "~BImpl");
 }
+
+class C : public es::idiom::Pimpl<C, 4> {
+public:
+  C(int data);
+  int get() const;
+};
+
+class CImpl {
+public:
+  CImpl(int data) : data(data) {}
+  int get() const { return data; }
+
+private:
+  int data;
+};
+
+template <>
+struct es::idiom::pimpl_traits<C> {
+  using impl_type = CImpl;
+};
+
+C::C(int data) : es::idiom::Pimpl<C, 4>(data) {}
+
+int C::get() const { return pimpl_cast(this)->get(); }
+
+TEST(PimplTest, MoveWithStorageEmbed) {
+  C c(10);
+  C c2 = std::move(c);
+  ASSERT_EQ(c2.get(), 10);
+  C c3 = std::move(c2);
+  ASSERT_EQ(c3.get(), 10);
+}
+
+class D : public es::idiom::Pimpl<D> {
+public:
+  D(int data);
+  int get() const;
+};
+
+class DImpl {
+public:
+  DImpl(int data) : data(data) {}
+  int get() const { return data; }
+
+private:
+  int data;
+};
+
+template <>
+struct es::idiom::pimpl_traits<D> {
+  using impl_type = DImpl;
+};
+
+D::D(int data) : es::idiom::Pimpl<D>(data) {}
+
+int D::get() const { return pimpl_cast(this)->get(); }
+
+TEST(PimplTest, MoveDefault) {
+  D d(10);
+  D d2 = std::move(d);
+  ASSERT_EQ(d2.get(), 10);
+  D d3 = std::move(d2);
+  ASSERT_EQ(d3.get(), 10);
+}

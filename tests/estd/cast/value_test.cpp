@@ -21,6 +21,27 @@ public:
 };
 } // namespace
 
+TEST(CastTest, CopyMove) {
+  A a;
+  ASSERT_EQ(a.v, 1);
+  {
+    A b = a;
+    ASSERT_EQ(b.v, 1);
+    ASSERT_TRUE(es::isa<A>(b));
+    A c = std::move(b);
+    ASSERT_EQ(c.v, 1);
+    ASSERT_TRUE(es::isa<A>(c));
+  }
+  {
+    A b(a);
+    ASSERT_EQ(b.v, 1);
+    ASSERT_TRUE(es::isa<A>(b));
+    A c(std::move(b));
+    ASSERT_EQ(c.v, 1);
+    ASSERT_TRUE(es::isa<A>(c));
+  }
+}
+
 TEST(CastTest, ISAValue) {
   A a;
   es::Value<void>& ar = a;

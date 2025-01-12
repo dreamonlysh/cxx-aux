@@ -4,7 +4,7 @@
 class IndexTag;
 using Index = es::Integer<int32_t, IndexTag>;
 
-TEST(IntegerTest, construct) {
+TEST(IntegerTest, Construct) {
   Index a;
   ASSERT_EQ(a.value(), 0);
   Index b(10);
@@ -13,7 +13,7 @@ TEST(IntegerTest, construct) {
   ASSERT_EQ(Index(std::move(b)).value(), 10);
 }
 
-TEST(IntegerTest, copy_construct) {
+TEST(IntegerTest, OperatorAssign) {
   Index c(11);
   Index a = c;
   ASSERT_EQ(a.value(), 11);
@@ -21,24 +21,24 @@ TEST(IntegerTest, copy_construct) {
   ASSERT_EQ(b.value(), 11);
 }
 
-TEST(IntegerTest, reset) {
+TEST(IntegerTest, Reset) {
   Index a(20);
   a.reset(8);
   ASSERT_EQ(a.value(), 8);
 }
 
-TEST(IntegerTest, swap) {
+TEST(IntegerTest, Swap) {
   Index a(20);
   a.reset(8);
   ASSERT_EQ(a.value(), 8);
 }
 
-TEST(IntegerTest, cast) {
+TEST(IntegerTest, Cast) {
   Index a(20);
   ASSERT_EQ(static_cast<int32_t>(a), 20);
 }
 
-TEST(IntegerTest, assignment_operators) {
+TEST(IntegerTest, AssignmentOperators) {
   Index a(20);
 
   a += 1;
@@ -83,7 +83,7 @@ TEST(IntegerTest, assignment_operators) {
   ASSERT_EQ(a.value(), 2);
 }
 
-TEST(IntegerTest, incdec_operators) {
+TEST(IntegerTest, IncdecOperators) {
   Index a(20);
 
   ASSERT_EQ((++a).value(), 21);
@@ -94,7 +94,7 @@ TEST(IntegerTest, incdec_operators) {
   ASSERT_EQ(a.value(), 20);
 }
 
-TEST(IntegerTest, comparison_operators) {
+TEST(IntegerTest, ComparisonOperators) {
   Index a(20);
   Index b(16);
 
@@ -153,7 +153,7 @@ TEST(IntegerTest, comparison_operators) {
   ASSERT_TRUE(16 <= a);
 }
 
-TEST(IntegerTest, arithmetic_operators) {
+TEST(IntegerTest, ArithmeticOperators) {
   Index a(20);
   Index b(16);
 
@@ -194,7 +194,7 @@ TEST(IntegerTest, arithmetic_operators) {
   ASSERT_EQ(20 >> b, 10);
 }
 
-TEST(IntegerTest, logic_operators) {
+TEST(IntegerTest, LogicOperators) {
   Index a(20);
   Index b(16);
 

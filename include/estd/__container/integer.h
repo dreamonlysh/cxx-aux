@@ -33,22 +33,12 @@ public:
 
   constexpr explicit Integer(value_type v) : data(v) {}
 
-  constexpr Integer(const Integer& other) : data(other.data) {}
-
-  constexpr Integer(Integer&& other) noexcept : data(other.data) {}
-
   ~Integer() noexcept = default;
 
-  constexpr Integer& operator=(const Integer& other) {
-    if (this != &other)
-      data = other.data;
-    return *this;
-  }
-
-  constexpr Integer& operator=(Integer&& other) noexcept {
-    data = other.data;
-    return *this;
-  }
+  constexpr Integer(const Integer& other) = default;
+  constexpr Integer(Integer&& other) noexcept = default;
+  constexpr Integer& operator=(const Integer& other) = default;
+  constexpr Integer& operator=(Integer&& other) noexcept = default;
 
   constexpr void reset(value_type v = 0) { data = v; }
 

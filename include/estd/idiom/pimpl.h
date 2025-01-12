@@ -86,6 +86,19 @@ public:
     reinterpret_cast<impl_type*>(__pimpl_storage)->~impl_type();
   }
 
+  Pimpl(const Pimpl&) = delete;
+
+  Pimpl(Pimpl&& other) noexcept {
+    std::swap(__pimpl_storage, other.__pimpl_storage);
+  }
+
+  Pimpl& operator=(const Pimpl&) = delete;
+
+  Pimpl& operator=(Pimpl&& other) noexcept {
+    std::swap(__pimpl_storage, other.__pimpl_storage);
+    return *this;
+  }
+
 private:
   char __pimpl_storage[pimpl_storage_size];
 };
@@ -113,6 +126,19 @@ public:
   ~Pimpl() noexcept {
     using impl_type = typename pimpl_traits<T>::impl_type;
     delete static_cast<impl_type*>(__pimpl_storage);
+  }
+
+  Pimpl(const Pimpl&) = delete;
+
+  Pimpl(Pimpl&& other) noexcept {
+    std::swap(__pimpl_storage, other.__pimpl_storage);
+  }
+
+  Pimpl& operator=(const Pimpl&) = delete;
+
+  Pimpl& operator=(Pimpl&& other) noexcept {
+    std::swap(__pimpl_storage, other.__pimpl_storage);
+    return *this;
   }
 
 private:

@@ -31,18 +31,10 @@ protected:
   Value(unsigned uid) : uid(uid) {}
   ~Value() noexcept = default;
 
-  Value(const Value& other) { uid = other.uid; }
-  Value(Value&& other) noexcept { std::swap(uid, other.uid); }
-  Value& operator=(const Value& other) {
-    if (this != &other) {
-      uid = other.uid;
-    }
-    return *this;
-  }
-  Value& operator=(Value&& other) noexcept {
-    std::swap(uid, other.uid);
-    return *this;
-  }
+  Value(const Value& other) = default;
+  Value(Value&& other) noexcept = default;
+  Value& operator=(const Value& other) = default;
+  Value& operator=(Value&& other) noexcept = default;
 
 private:
   template <typename T, typename U>
