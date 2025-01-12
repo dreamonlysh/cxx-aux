@@ -23,10 +23,6 @@
 // Default member element validation provided
 // - META_HAS_MEMBER_TYPE(iterator);
 //   Defined: has_member_iterator, has_member_iterator_v
-// - META_HAS_MEMBER_FUNCTION(begin);
-//   Defined: has_member_begin, has_member_begin_v
-// - META_HAS_MEMBER_FUNCTION(end);
-//   Defined: has_member_end, has_member_end_v
 
 #include "__meta/operators.h"
 // template <typename... T>
@@ -73,5 +69,20 @@
 // using add_const_as;
 // template <typename T, typename U>
 // using add_const_as_t = typename add_const_as<T, U>::type;
+
+#include "__meta/is_iterable.h"
+// template <typename T>
+// struct has_member_begin;
+// template <typename T>
+// constexpr bool has_member_begin_v;
+// template <typename T>
+// struct has_member_end;
+// template <typename T>
+// constexpr has_member_end_v
+//
+// template <typename T>
+// struct is_iterable;
+// template <typename T>
+// constexpr bool is_iterable_v = is_iterable<T>::value;
 
 #endif

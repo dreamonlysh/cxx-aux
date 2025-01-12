@@ -40,10 +40,5 @@ namespace es {
 /// @brief has_member_iterator, has_member_iterator_v
 META_HAS_MEMBER_TYPE(iterator);
 
-/// @brief has_member_begin, has_member_begin_v
-META_HAS_MEMBER_FUNCTION(begin);
-/// @brief has_member_end, has_member_end_v
-META_HAS_MEMBER_FUNCTION(end);
-
 } // namespace es
 #endif // ESTD___META_HAS_MEMBER_H
