@@ -14,6 +14,8 @@
 #ifndef ESTD_STRING_STRING_TABLE_H
 #define ESTD_STRING_STRING_TABLE_H
 #include "estd/__utility/disabled_copy_move.h"
+#include <cstdint>
+#include <cstdlib>
 #include <forward_list>
 #include <string_view>
 
