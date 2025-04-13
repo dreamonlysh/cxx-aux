@@ -34,8 +34,9 @@ namespace es {
   __META_VALIDATE_CONTEXT(has_member_##data, decltype(std::declval<T>().data))
 
 /// @brief macro use to define the `has_member_{func}` meta function
-#define META_HAS_MEMBER_FUNCTION(func)                                         \
-  __META_VALIDATE_CONTEXT(has_member_##func, decltype(std::declval<T>().func()))
+#define META_HAS_MEMBER_FUNCTION(func, ...)                                    \
+  __META_VALIDATE_CONTEXT(has_member_##func,                                   \
+                          decltype(std::declval<T>().func(__VA_ARGS__)))
 
 /// @brief has_member_iterator, has_member_iterator_v
 META_HAS_MEMBER_TYPE(iterator);

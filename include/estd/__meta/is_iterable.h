@@ -31,7 +31,7 @@ struct is_iterable
 /// @brief whether a container can be visited by begin and end
 /// @tparam T a container
 template <typename T>
-constexpr bool is_iterable_v = is_iterable<T>::value;
+inline constexpr bool is_iterable_v = is_iterable<T>::value;
 
 } // namespace es
 #endif

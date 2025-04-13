@@ -14,14 +14,20 @@
 #ifndef ESTD___CONTAINER_FLAT_VECTOR_H
 #define ESTD___CONTAINER_FLAT_VECTOR_H
 #include <algorithm>
-#include <cassert>
 #include <iterator>
 #include <type_traits>
 
 namespace es {
 
-template <std::size_t N, typename T>
+struct __flat_vector_default_out_of_range_assert {
+  constexpr void operator()(bool cond, const char* const msg) const {}
+};
+
+template <std::size_t N, typename T,
+          typename OutOfRangeAssert = __flat_vector_default_out_of_range_assert>
 class flat_vector {
+  static constexpr inline OutOfRangeAssert out_of_range_assert{};
+
 public:
   using value_type = T;
   using size_type = std::size_t;
@@ -38,12 +44,12 @@ public:
   constexpr flat_vector() noexcept : cursor_(data_) {}
 
   constexpr explicit flat_vector(size_type n) {
-    assert(n <= N && "flat_vector size is out of range");
+    out_of_range_assert(n <= N, "flat_vector size is out of range");
     cursor_ = data_ + n;
   }
 
   constexpr flat_vector(size_type n, const T& value) {
-    assert(n <= N && "flat_vector size is out of range");
+    out_of_range_assert(n <= N, "flat_vector size is out of range");
     cursor_ = data_ + n;
     std::fill(data_, cursor_, value);
   }
@@ -52,13 +58,13 @@ public:
             typename = std::void_t<
                 typename std::iterator_traits<InputIterator>::value_type>>
   constexpr flat_vector(InputIterator first, InputIterator last) {
-    assert(std::distance(first, last) <= N &&
-           "flat_vector size is out of range");
+    out_of_range_assert(std::distance(first, last) <= N,
+                        "flat_vector size is out of range");
     cursor_ = std::copy(first, last, data_);
   }
 
   constexpr flat_vector(std::initializer_list<T> il) {
-    assert(il.size() <= N && "flat_vector size is out of range");
+    out_of_range_assert(il.size() <= N, "flat_vector size is out of range");
     cursor_ = std::copy(il.begin(), il.end(), data_);
   }
 
@@ -85,7 +91,7 @@ public:
   ~flat_vector() noexcept = default;
 
   constexpr void assign(size_type n, const T& value) {
-    assert(n <= N && "flat_vector size is out of range");
+    out_of_range_assert(n <= N, "flat_vector size is out of range");
     cursor_ = data_ + n;
     std::fill(data_, cursor_, value);
   }
@@ -94,13 +100,13 @@ public:
             typename = std::void_t<
                 typename std::iterator_traits<InputIterator>::value_type>>
   constexpr void assign(InputIterator first, InputIterator last) {
-    assert(std::distance(first, last) <= N &&
-           "flat_vector size is out of range");
+    out_of_range_assert(std::distance(first, last) <= N,
+                        "flat_vector size is out of range");
     cursor_ = std::copy(first, last, data_);
   }
 
   constexpr void assign(std::initializer_list<T> il) {
-    assert(il.size() <= N && "flat_vector size is out of range");
+    out_of_range_assert(il.size() <= N, "flat_vector size is out of range");
     cursor_ = std::copy(il.begin(), il.end(), data_);
   }
 
@@ -108,8 +114,8 @@ public:
   constexpr void assign_range(const RangeT& range) {
     auto first = std::begin(range);
     auto last = std::end(range);
-    assert(std::distance(first, last) <= N &&
-           "flat_vector size is out of range");
+    out_of_range_assert(std::distance(first, last) <= N,
+                        "flat_vector size is out of range");
     cursor_ = std::copy(first, last, data_);
   }
 
@@ -194,18 +200,21 @@ public:
   constexpr void clear() noexcept { cursor_ = data_; }
 
   constexpr iterator insert(const_iterator pos, const T& value) {
-    assert(pos >= begin() && pos <= end() && "flat_vector insert out of range");
+    out_of_range_assert(pos >= begin() && pos <= end(),
+                        "flat_vector insert out of range");
     if (cursor_ == std::end(data_)) {
       throw std::out_of_range("flat_vector insert out of range");
     }
-    std::copy_backward(pos, cursor_, cursor_ + 1);
-    *pos = value;
+    auto new_pos = begin() + std::distance(cbegin(), pos);
+    std::copy_backward(new_pos, end(), cursor_ + 1);
+    *new_pos = value;
     ++cursor_;
-    return pos;
+    return new_pos;
   }
 
   constexpr iterator insert(const_iterator pos, T&& value) {
-    assert(pos >= begin() && pos <= end() && "flat_vector insert out of range");
+    out_of_range_assert(pos >= begin() && pos <= end(),
+                        "flat_vector insert out of range");
     if (cursor_ == std::end(data_)) {
       throw std::out_of_range("flat_vector insert out of range");
     }
@@ -218,27 +227,33 @@ public:
 
   constexpr iterator insert(const_iterator pos, size_type count,
                             const T& value) {
-    assert(pos >= begin() && pos <= end() && "flat_vector insert out of range");
+    out_of_range_assert(pos >= begin() && pos <= end(),
+                        "flat_vector insert out of range");
     if ((cursor_ + count) > std::end(data_)) {
       throw std::out_of_range("flat_vector insert out of range");
     }
-    std::copy_backward(pos, cursor_, cursor_ + count);
-    std::fill(pos, pos + count, value);
+    auto new_pos = begin() + std::distance(cbegin(), pos);
+    std::copy_backward(new_pos, end(), cursor_ + count);
+    std::fill(new_pos, new_pos + count, value);
     cursor_ += count;
-    return pos;
+    return new_pos;
   }
 
   template <typename InputIterator>
   constexpr iterator insert(const_iterator pos, InputIterator first,
                             InputIterator last) {
-    assert(pos >= begin() && pos <= end() && "flat_vector insert out of range");
-    if ((cursor_ + std::distance(first, last)) > std::end(data_)) {
+    out_of_range_assert(pos >= begin() && pos <= end(),
+                        "flat_vector insert out of range");
+    size_type range_size = std::distance(first, last);
+    if ((size() + range_size) > capacity()) {
       throw std::out_of_range("flat_vector insert out of range");
     }
-    std::copy_backward(pos, cursor_, cursor_ + std::distance(first, last));
-    std::copy(first, last, pos);
-    cursor_ += std::distance(first, last);
-    return pos;
+
+    auto new_pos = begin() + std::distance(cbegin(), pos);
+    std::copy_backward(new_pos, end(), end() + range_size);
+    std::copy(first, last, new_pos);
+    cursor_ += range_size;
+    return new_pos;
   }
 
   constexpr iterator insert(const_iterator pos, std::initializer_list<T> il) {
@@ -252,8 +267,8 @@ public:
 
   template <typename... Args>
   constexpr iterator emplace(const_iterator pos, Args&&... args) {
-    assert(pos >= begin() && pos <= end() &&
-           "flat_vector emplace out of range");
+    out_of_range_assert(pos >= begin() && pos <= end(),
+                        "flat_vector emplace out of range");
     if (cursor_ == std::end(data_)) {
       throw std::out_of_range("flat_vector emplace out of range");
     }
@@ -265,7 +280,8 @@ public:
   }
 
   constexpr iterator erase(const_iterator pos) {
-    assert(pos >= begin() && pos < end() && "flat_vector erase out of range");
+    out_of_range_assert(pos >= begin() && pos < end(),
+                        "flat_vector erase out of range");
     auto tmp = const_cast<iterator>(pos);
     std::copy(tmp + 1, cursor_, tmp);
     --cursor_;
@@ -273,12 +289,14 @@ public:
   }
 
   constexpr iterator erase(const_iterator first, const_iterator last) {
-    assert(first <= last && "flat_vector erase invalid range");
-    assert(first >= begin() && "flat_vector erase out of range");
-    assert(last <= end() && "flat_vector erase out of range");
-    std::copy(last, cursor_, first);
+    out_of_range_assert(first <= last, "flat_vector erase invalid range");
+    out_of_range_assert(first >= begin(), "flat_vector erase out of range");
+    out_of_range_assert(last <= end(), "flat_vector erase out of range");
+    iterator range_first = begin() + std::distance(cbegin(), first);
+    iterator range_last = begin() + std::distance(cbegin(), last);
+    std::copy(range_last, end(), range_first);
     cursor_ -= std::distance(first, last);
-    return first;
+    return range_first;
   }
 
   constexpr void push_back(const T& value) {
@@ -311,9 +329,9 @@ public:
   constexpr void append_range(const RangeT& range) {
     auto first = std::begin(range);
     auto last = std::end(range);
-    assert(std::distance(first, last) <=
-               std::distance(cursor_, std::end(data_)) &&
-           "flat_vector append_range out of range");
+    out_of_range_assert(std::distance(first, last) <=
+                            std::distance(cursor_, std::end(data_)),
+                        "flat_vector append_range out of range");
     cursor_ = std::copy(first, last, cursor_);
   }
 
@@ -324,23 +342,30 @@ public:
     --cursor_;
   }
 
-  constexpr void resize(size_type count) {
-    assert(count <= N && "flat_vector resize out of range");
-    cursor_ = data_ + count;
-  }
+  constexpr void resize(size_type count) { resize(count, T{}); }
 
   constexpr void resize(size_type count, const T& value) {
-    assert(count <= N && "flat_vector resize out of range");
+    out_of_range_assert(count <= N, "flat_vector resize out of range");
     if (count > size()) {
       std::fill(cursor_, data_ + count, value);
     }
     cursor_ = data_ + count;
   }
 
+  template <typename Operation>
+  constexpr void resize_and_overwrite(size_type count, Operation op) {
+    auto size = op(data_, capacity());
+    out_of_range_assert(size <= N, "flat_vector resize out of range");
+    cursor_ = data_ + size;
+  }
+
   constexpr void swap(flat_vector& other) noexcept {
     auto max = std::max(size(), other.size());
     std::swap_ranges(data_, data_ + max, other.data_);
-    std::swap(cursor_, other.cursor_);
+    auto this_size = size();
+    auto other_size = other.size();
+    cursor_ = data_ + other_size;
+    other.cursor_ = other.data_ + this_size;
   }
 
 private:
