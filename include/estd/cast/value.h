@@ -28,13 +28,13 @@ public:
   using dyn_cast_aux_type = Value<DummyT>;
 
 protected:
-  Value(unsigned uid) : uid(uid) {}
+  constexpr Value(unsigned uid) : uid(uid) {}
   ~Value() noexcept = default;
 
-  Value(const Value& other) = default;
-  Value(Value&& other) noexcept = default;
-  Value& operator=(const Value& other) = default;
-  Value& operator=(Value&& other) noexcept = default;
+  constexpr Value(const Value& other) = default;
+  constexpr Value(Value&& other) noexcept = default;
+  constexpr Value& operator=(const Value& other) = default;
+  constexpr Value& operator=(Value&& other) noexcept = default;
 
 private:
   template <typename T, typename U>
