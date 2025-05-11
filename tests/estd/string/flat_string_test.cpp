@@ -8,7 +8,7 @@ TEST(FlatStringTest, DefaultConstructor) {
   flat_string<16> str;
   EXPECT_TRUE(str.empty());
   EXPECT_EQ(str.size(), 0);
-  EXPECT_EQ(str.capacity(), 16);
+  EXPECT_EQ(str.capacity(), 15);
 }
 
 TEST(FlatStringTest, ConstructorWithSizeAndChar) {
