@@ -88,7 +88,7 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 
   if constexpr (std::is_same_v<T, unsigned>) {
     // use clzll instead of clz will avoid one jmp instruction,
-    // also saved total 4-6 instrutions compared each with clang and gcc
+    // also saved total 4-6 instructions compared each with clang and gcc
     // return v > LAST_BIT_ON ? 0u : (LAST_BIT_ON >> (__builtin_clz(v - 1) -
     // 1));
     return static_cast<T>(

@@ -26,7 +26,7 @@ struct __flat_vector_default_out_of_range_assert {
 template <std::size_t N, typename T,
           typename OutOfRangeAssert = __flat_vector_default_out_of_range_assert>
 class flat_vector {
-  static constexpr inline OutOfRangeAssert out_of_range_assert{};
+  static constexpr OutOfRangeAssert out_of_range_assert{};
 
 public:
   using value_type = T;

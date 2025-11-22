@@ -26,7 +26,7 @@ public:
   void unlock() {}
 };
 
-inline mutex_silent defalut_mutex_silent;
+inline mutex_silent default_mutex_silent;
 
 } // namespace es
 #endif

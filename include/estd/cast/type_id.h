@@ -13,7 +13,7 @@
 
 #ifndef ESTD_CASE_TYPE_ID_H
 #define ESTD_CASE_TYPE_ID_H
-#include <cstddef>
+#include <type_traits>
 
 namespace es {
 
@@ -34,7 +34,7 @@ size_t type_id() noexcept {
   return __es_impl::__type_id<std::remove_cv_t<T>>();
 }
 
-/// @brief Get uique id for type T
+/// @brief Get unique id for type T
 /// @tparam T type
 /// @param  help to infer T
 /// @return type code

@@ -19,7 +19,7 @@ namespace es {
 
 /// @brief Base class with uid to enable the dyn_cast
 ///
-/// the final concret class should has an static constexprt unsigned member
+/// the final concrete class should has an static constexpr unsigned member
 /// CLASSID
 /// @tparam DummyT Unique type
 template <typename DummyT>

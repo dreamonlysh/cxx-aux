@@ -40,8 +40,8 @@ public:
       (sizeof(T) + (Align - 1)) & (~(Align - 1));
 
   /// @brief Create an object in pool
-  /// @tparam ...Args args type to construct the object
-  /// @param ...args args to construct the object
+  /// @tparam Args args type to construct the object
+  /// @param args args to construct the object
   /// @return an object in pool
   template <typename... Args>
   T* operator_new(Args&&... args) {
@@ -65,10 +65,10 @@ private:
 };
 
 /// @brief Helper to create an object in pool like std::make_unique
-/// @tparam ...Args args type to construct the object
+/// @tparam Args args type to construct the object
 /// @tparam T Concrete ObjectPool
 /// @param pool pool to hold the object
-/// @param ...args args to construct the object
+/// @param args args to construct the object
 /// @return an object in pool
 template <typename T, typename... Args>
 auto make_unique(T& pool, Args&&... args) {
@@ -93,7 +93,7 @@ class SubObjectPool : public ObjectPool<T, Align, BlockSize> {
 
 public:
   SubObjectPool(object_pool_type& parent)
-      : parent_(parent), locker_(defalut_mutex_silent) {}
+      : parent_(parent), locker_(default_mutex_silent) {}
   SubObjectPool(object_pool_type& parent, LockerT& locker)
       : parent_(parent), locker_(locker) {}
   ~SubObjectPool() noexcept {

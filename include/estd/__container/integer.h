@@ -52,7 +52,10 @@ public:
   /// Assignment operators
   /// @{
 
-  Integer& operator=(value_type v) { data = v; }
+  Integer& operator=(value_type v) {
+    data = v;
+    return *this;
+  }
 
 #define __INTEGER_ASSIGNMENT_OPERTOR(op)                                       \
   template <typename U, typename = std::enable_if_t<std::is_integral_v<U>>>    \

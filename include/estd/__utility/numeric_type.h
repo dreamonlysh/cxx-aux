@@ -479,7 +479,7 @@ public:
   }
 
   /// @brief get the related numeric type code by type
-  /// @tparam T numberic type
+  /// @tparam T numeric type
   /// @param an arg help to infer T
   /// @return numeric type code
   template <typename T>

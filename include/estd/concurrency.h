@@ -27,7 +27,7 @@
 //   bool try_lock();
 //   void unlock();
 // };
-// inline mutex_silent defalut_mutex_silent;
+// inline mutex_silent default_mutex_silent;
 
 #include "__concurrency/thread_safe_wrapper.h"
 // template <typename LockerT, typename T>

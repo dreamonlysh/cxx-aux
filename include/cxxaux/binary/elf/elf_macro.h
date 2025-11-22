@@ -146,5 +146,5 @@ inline bool operator&(const SHFlags& lhs, const SHFlags& rhs) {
   return static_cast<uint32_t>(lhs) & static_cast<uint32_t>(rhs);
 }
 
-}}     // namespace cxxaux::elf
+}} // namespace cxxaux::elf
 #endif // BINARY_ELF_MACRO_H

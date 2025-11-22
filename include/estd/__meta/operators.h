@@ -34,17 +34,17 @@ struct __meta_and<T, U...>
                          std::false_type> {};
 
 /// @brief logic operator &&(and) for meta
-/// @tparam ...T bool_constant meta data, at least one
+/// @tparam T bool_constant meta data, at least one
 template <typename... T>
 struct meta_and : __meta_and<T...> {};
 
 /// @brief bool_constant type for meta_and
-/// @tparam ...T bool_constant meta data, at least one
+/// @tparam T bool_constant meta data, at least one
 template <typename... T>
 using meta_and_t = typename meta_and<T...>::type;
 
 /// @brief bool_constant value for meta_and
-/// @tparam ...T bool_constant meta data, at least one
+/// @tparam T bool_constant meta data, at least one
 template <typename... T>
 constexpr bool meta_and_v = meta_and_t<T...>::value;
 
@@ -61,17 +61,17 @@ struct __meta_or<T, U...>
                          __meta_or<U...>> {};
 
 /// @brief logic operator ||(or) for meta
-/// @tparam ...T bool_constant meta data, at least one
+/// @tparam T bool_constant meta data, at least one
 template <typename... T>
 struct meta_or : __meta_or<T...> {};
 
 /// @brief bool_constant type for meta_or
-/// @tparam ...T bool_constant meta data, at least one
+/// @tparam T bool_constant meta data, at least one
 template <typename... T>
 using meta_or_t = typename meta_or<T...>::type;
 
 /// @brief bool_constant value for meta_or
-/// @tparam ...T bool_constant meta data, at least one
+/// @tparam T bool_constant meta data, at least one
 template <typename... T>
 constexpr bool meta_or_v = meta_or<T...>::value;
 
@@ -81,12 +81,12 @@ template <typename T>
 struct meta_not : std::bool_constant<!static_cast<bool>(T::value)> {};
 
 /// @brief bool_constant type for meta_not
-/// @tparam ...T bool_constant meta data
+/// @tparam T bool_constant meta data
 template <typename T>
 using meta_not_t = typename meta_not<T>::type;
 
 /// @brief bool_constant value for meta_not
-/// @tparam ...T bool_constant meta data
+/// @tparam T bool_constant meta data
 template <typename T>
 constexpr bool meta_not_v = meta_not_t<T>::value;
 

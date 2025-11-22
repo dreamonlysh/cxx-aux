@@ -31,7 +31,7 @@ struct pimpl_traits {
   // using pimpl_type = Pimpl<T, N>;
 };
 
-/// @brief a performace optimized pimpl aux class
+/// @brief a performance optimized pimpl aux class
 ///
 /// e.g.
 /// a.h
@@ -71,8 +71,8 @@ public:
   friend auto pimpl_cast(U*);
 
   /// @brief construct of pimpl with args passed to the impl class
-  /// @tparam ...Args args type of the impl class construct
-  /// @param ...args args of the impl class construct
+  /// @tparam Args args type of the impl class construct
+  /// @param args args of the impl class construct
   template <typename... Args>
   Pimpl(Args&&... args) {
     using impl_type = typename pimpl_traits<T>::impl_type;
@@ -115,8 +115,8 @@ public:
   friend auto pimpl_cast(U*);
 
   /// @brief construct of pimpl with args passed to the impl class
-  /// @tparam ...Args args type of the impl class construct
-  /// @param ...args args of the impl class construct
+  /// @tparam Args args type of the impl class construct
+  /// @param args args of the impl class construct
   template <typename... Args>
   Pimpl(Args&&... args) {
     using impl_type = typename pimpl_traits<T>::impl_type;
@@ -168,7 +168,7 @@ auto pimpl_cast(T* ptr) {
 
 /// @brief aux to get the reference of the impl
 /// @tparam T type derived the Pimpl
-/// @param ptr T type object, always be this
+/// @param ref T type object, always be this
 /// @return reference to the T impl
 template <typename T>
 auto pimpl_cast(T& ref) {

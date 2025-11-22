@@ -155,7 +155,7 @@ constexpr void append(StringLike& s, const StringViewLike& sv,
   append(s, sv.data() + pos, std::min(n, sv.size() - pos));
 }
 
-/// @brief Append a integer to the end of string
+/// @brief Append an integer to the end of string
 /// @tparam StringLike std::string like type
 /// @tparam IntegralT integral type
 /// @param s string to be appended
@@ -206,9 +206,9 @@ constexpr void append(StringLike& s, InputIterator first, InputIterator last) {
 
 /// @brief Append numbers of data to the end of string
 /// @tparam StringLike std::string like type
-/// @tparam ...Args data types
+/// @tparam Args data types
 /// @param s string to be appended
-/// @param ...args datas to be appended
+/// @param args datas to be appended
 template <typename StringLike, typename... Args>
 constexpr void append_n(StringLike& s, Args&&... args) {
   (append(s, std::forward<Args>(args)), ...);

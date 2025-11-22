@@ -31,7 +31,7 @@ template <size_t MemoryBytes, size_t MemberBytes, typename MappingType>
 class layout_bit_mapping_impl<MemoryBytes, MemberBytes, MappingType, 1> {
 public:
   // `bytes_of<MappingType> + n_member * MemberBytes = MemoryBytes`
-  // the maxium of `n_member` is bits_of<MappingType>
+  // the maximum of `n_member` is bits_of<MappingType>
   static_assert(
       MemoryBytes <=
           (bytes_of<MappingType> + bits_of<MappingType> * MemberBytes),
@@ -96,8 +96,8 @@ class layout_bit_mapping_impl<MemoryBytes, MemberBytes, MappingType, 2> {
 public:
   // clang-format off
   // bytes_of<MappingType> + n_bit_mapping * bytes_of<MappingType> + n_member * MemberBytes = MemoryBytes
-  // the maxium of `n_bit_mapping` is `bits_of<MappingType>`
-  // the maxium of `n_member` is `bits_of<MappingType> * bits_of<MappingType>`
+  // the maximum of `n_bit_mapping` is `bits_of<MappingType>`
+  // the maximum of `n_member` is `bits_of<MappingType> * bits_of<MappingType>`
   // clang-format on
   static_assert(
       MemoryBytes <=
@@ -113,8 +113,8 @@ public:
   // bytes_of<MappingType> + n_bit_mapping * bytes_of<MappingType> + n_member * MemberBytes = MemoryBytes
   // => n_member = (MemoryBytes - bytes_of<MappingType> - n_bit_mapping * bytes_of<MappingType>) / MemberBytes
   //
-  // the maxium of `n_bit_mapping` is `bits_of<MappingType>`
-  // the maxium of `n_member` is `bits_of<MappingType> * bits_of<MappingType>`
+  // the maximum of `n_bit_mapping` is `bits_of<MappingType>`
+  // the maximum of `n_member` is `bits_of<MappingType> * bits_of<MappingType>`
 
   // n_bit_mapping * bits_of<MappingType> >= n_member
   // => n_bit_mapping * bits_of<MappingType> >=

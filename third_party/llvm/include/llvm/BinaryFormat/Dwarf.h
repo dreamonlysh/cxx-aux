@@ -168,7 +168,7 @@ enum DecimalSignEncoding {
 };
 
 enum EndianityEncoding {
-  // Endianity attribute values
+// Endianity attribute values
 #define HANDLE_DW_END(ID, NAME) DW_END_##NAME = ID,
 #include "llvm/BinaryFormat/Dwarf.def"
   DW_END_lo_user = 0x40,
@@ -696,7 +696,8 @@ enum AcceleratorTable {
 //
 // /// \defgroup DwarfConstantsVersioning Dwarf version for constants
 // ///
-// /// For constants defined by DWARF, returns the DWARF version when the constant
+// /// For constants defined by DWARF, returns the DWARF version when the
+// constant
 // /// was first defined. For vendor extensions, if there is a version-related
 // /// policy for when to emit it, returns a version number for that policy.
 // /// Otherwise returns 0.
@@ -712,7 +713,8 @@ enum AcceleratorTable {
 //
 // /// \defgroup DwarfConstantsVendor Dwarf "vendor" for constants
 // ///
-// /// These functions return an identifier describing "who" defined the constant,
+// /// These functions return an identifier describing "who" defined the
+// constant,
 // /// either the DWARF standard itself or the vendor who defined the extension.
 // ///
 // /// @{
@@ -780,7 +782,8 @@ enum AcceleratorTable {
 // ///
 // /// If the form has a fixed byte size, then an Optional with a value will be
 // /// returned. If the form is always encoded using a variable length storage
-// /// format (ULEB or SLEB numbers or blocks) then std::nullopt will be returned.
+// /// format (ULEB or SLEB numbers or blocks) then std::nullopt will be
+// returned.
 // ///
 // /// \param Form DWARF form to get the fixed byte size for.
 // /// \param Params DWARF parameters to help interpret forms.
@@ -791,7 +794,8 @@ enum AcceleratorTable {
 //
 // /// Tells whether the specified form is defined in the specified version,
 // /// or is an extension if extensions are allowed.
-// bool isValidFormForVersion(Form F, unsigned Version, bool ExtensionsOk = true);
+// bool isValidFormForVersion(Form F, unsigned Version, bool ExtensionsOk =
+// true);
 //
 // /// Returns the symbolic string representing Val when used as a value
 // /// for attribute Attr.
@@ -809,18 +813,21 @@ enum AcceleratorTable {
 // /// 4-6  symbol kind
 // /// 7    0 == global, 1 == static
 // ///
-// /// A gdb_index descriptor includes the above kind, shifted 24 bits up with the
+// /// A gdb_index descriptor includes the above kind, shifted 24 bits up with
+// the
 // /// offset of the cu within the debug_info section stored in those 24 bits.
 // struct PubIndexEntryDescriptor {
 //   GDBIndexEntryKind Kind;
 //   GDBIndexEntryLinkage Linkage;
-//   PubIndexEntryDescriptor(GDBIndexEntryKind Kind, GDBIndexEntryLinkage Linkage)
+//   PubIndexEntryDescriptor(GDBIndexEntryKind Kind, GDBIndexEntryLinkage
+//   Linkage)
 //       : Kind(Kind), Linkage(Linkage) {}
 //   /* implicit */ PubIndexEntryDescriptor(GDBIndexEntryKind Kind)
 //       : Kind(Kind), Linkage(GIEL_EXTERNAL) {}
 //   explicit PubIndexEntryDescriptor(uint8_t Value)
 //       : Kind(
-//             static_cast<GDBIndexEntryKind>((Value & KIND_MASK) >> KIND_OFFSET)),
+//             static_cast<GDBIndexEntryKind>((Value & KIND_MASK) >>
+//             KIND_OFFSET)),
 //         Linkage(static_cast<GDBIndexEntryLinkage>((Value & LINKAGE_MASK) >>
 //                                                   LINKAGE_OFFSET)) {}
 //   uint8_t toBits() const {
@@ -865,7 +872,8 @@ enum AcceleratorTable {
 //
 // template <> struct EnumTraits<LocationAtom> : public std::true_type {
 //   static constexpr char Type[3] = "OP";
-//   static constexpr StringRef (*StringFn)(unsigned) = &OperationEncodingString;
+//   static constexpr StringRef (*StringFn)(unsigned) =
+//   &OperationEncodingString;
 // };
 //
 // inline uint64_t computeTombstoneAddress(uint8_t AddressByteSize) {
@@ -876,11 +884,13 @@ enum AcceleratorTable {
 
 // /// Dwarf constants format_provider
 // ///
-// /// Specialization of the format_provider template for dwarf enums. Unlike the
+// /// Specialization of the format_provider template for dwarf enums. Unlike
+// the
 // /// dumping functions above, these format unknown enumerator values as
 // /// DW_TYPE_unknown_1234 (e.g. DW_TAG_unknown_ffff).
 // template <typename Enum>
-// struct format_provider<Enum, std::enable_if_t<dwarf::EnumTraits<Enum>::value>> {
+// struct format_provider<Enum,
+// std::enable_if_t<dwarf::EnumTraits<Enum>::value>> {
 //   static void format(const Enum &E, raw_ostream &OS, StringRef Style) {
 //     StringRef Str = dwarf::EnumTraits<Enum>::StringFn(E);
 //     if (Str.empty()) {

@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD___BIT_BIT_HIGHLIGHY_DIM_H
-#define ESTD___BIT_BIT_HIGHLIGHY_DIM_H
+#ifndef ESTD___BIT_BIT_HIGHLIGHT_DIM_H
+#define ESTD___BIT_BIT_HIGHLIGHT_DIM_H
 #include <type_traits>
 
 namespace es {
@@ -24,7 +24,7 @@ namespace es {
 ///
 /// @tparam T unsigned integer type
 /// @param v value to highlight
-/// @return highlighed
+/// @return highlighted
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr T hl_first_bit0(T v) noexcept {
   return ~v & (v + 1);
@@ -37,7 +37,7 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 ///
 /// @tparam T unsigned integer type
 /// @param v value to highlight
-/// @return highlighed
+/// @return highlighted
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr T hl_first_bit1(T v) noexcept {
   return v & (-v);

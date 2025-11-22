@@ -99,5 +99,5 @@ public:
 private:
   std::vector<const Type*> fields_;
 };
-}}     // namespace bin::type
+}} // namespace bin::type
 #endif // COMPILER_TYPE_SYSTEM_TYPE_H
