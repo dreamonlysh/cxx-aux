@@ -1,0 +1,51 @@
+#!/usr/bin/python3
+from typing import List
+import sys
+import re
+
+# # format: [module] brief
+# # `module`: can be cxx-aux, estd, estd/string, estd/algorithm ...
+# # `brief`: start with upper char and not end with .
+# [estd/string] This is a bugfix for the cxxaux
+#
+# # optional section to describe the detail
+#
+# # optional section to list the references for the commit
+# # reference:
+# #   - https://www.guyuemeng.com/xxx.md
+
+def validate_commit_message(lines: List[str]) -> bool:
+    if not lines:
+        print("Error: Commit message is empty.")
+        return False
+
+    lines = [line for line in lines if not line.strip().startswith('#')]
+
+    # Validate the first line
+    brief_pattern = r"^\[(.+)\] (.+)$"
+    first_line = lines[0].strip()
+    match = re.match(brief_pattern, first_line)
+    if not match:
+        print(f"Error: The first line must be in the format: {brief_pattern}")
+        return False
+
+    module, brief = match.groups()
+    if not brief[0].isupper():
+        print("Error: The brief description must start with an uppercase letter.")
+        return False
+    if brief.endswith('.'):
+        print("Error: The brief description must not end with a period.")
+        return False
+
+    # Additional validations can be added here if needed
+
+    return True
+
+if __name__ == "__main__":
+    commit_msg_file = sys.argv[1]
+    with open(commit_msg_file, 'r') as fs:
+        commit_lines = fs.readlines()
+
+    if not validate_commit_message(commit_lines):
+        sys.exit(1)
+    sys.exit(0)

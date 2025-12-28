@@ -1,0 +1,10 @@
+# format: [module] brief
+# `module`: can be cxx-aux, estd, estd/string, estd/algorithm ...
+# `brief`: start with upper char and not end with .
+[estd/string] This is a bugfix for the cxxaux
+
+# optional section to describe the detail
+
+# optional section to list the references for the commit
+# reference:
+#   - https://www.guyuemeng.com/xxx.md
