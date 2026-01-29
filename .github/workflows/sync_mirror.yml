@@ -1,0 +1,57 @@
+name: Sync Upstream (Keep GitHub Workflows)
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync upstream while keeping .github
+        shell: bash
+        run: |
+          set -e
+
+          UPSTREAM_URL="https://gitee.com/dreamonlyxl/cxx-aux.git"
+
+          git config --global user.email "dreamonlysh@gmail.com"
+          git config --global user.name "dreamonly"
+
+          # 1. 添加 upstream（幂等）
+          git remote | grep upstream || git remote add upstream "$UPSTREAM_URL"
+
+          # 2. 抓取 upstream 所有 refs（分支、tag、默认分支变化都安全）
+          git fetch upstream --prune --tags
+
+          # 3. 找到 upstream 默认分支（自动适配 master/main 变化）
+          DEFAULT_BRANCH=$(git remote show upstream | sed -n '/HEAD branch/s/.*: //p')
+
+          echo "Upstream default branch: $DEFAULT_BRANCH"
+
+          # 4. 备份 .github 目录
+          mkdir -p /tmp/github_backup
+          cp -r .github /tmp/github_backup || true
+
+          # 5. 用 upstream 内容**完全覆盖工作区**
+          git checkout "upstream/$DEFAULT_BRANCH" -- .
+
+          # 6. 恢复 .github
+          rm -rf .github
+          cp -r /tmp/github_backup/.github .github || true
+
+          # 7. 提交变更（如果有）
+          git add -A
+          git diff --cached --quiet || git commit -m "Sync from upstream"
+
+          # 8. 推送到当前分支
+          git push origin HEAD
