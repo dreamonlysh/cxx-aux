@@ -13,14 +13,14 @@
 
 #ifndef ESTD_STRING_STRING_TABLE_H
 #define ESTD_STRING_STRING_TABLE_H
-#include "estd/__utility/disabled_copy_move.h"
 #include <cstdint>
 #include <cstdlib>
+#include <estd/__utility/disabled_copy_move.h>
 #include <forward_list>
 #include <string_view>
 
 namespace es { namespace string {
-namespace __impl {
+namespace __impl_string_table {
 
 class BasicStringTableSmallImpl : disabled_copy_move {
   // generally, a pointer size is used by the forward list
@@ -107,19 +107,19 @@ protected:
   }
 
 private:
-  __impl::BasicStringTableSmallImpl small_;
-  __impl::BasicStringTableLargeImpl large_;
+  __impl_string_table::BasicStringTableSmallImpl small_;
+  __impl_string_table::BasicStringTableLargeImpl large_;
 };
 
-} // namespace __impl
+} // namespace __impl_string_table
 
 /// @brief A simple string table to help pass string_view instread of string
 /// @tparam SetT is a set like container with find and insert to make the
 /// storage of string unique
 /// @tparam T is a type to make the StringTable unique
 template <template <typename...> typename SetT, typename T = void>
-class StringTable : __impl::BasicStringTable<T, 16> {
-  using base_type = __impl::BasicStringTable<T, 16>;
+class StringTable : __impl_string_table::BasicStringTable<T, 16> {
+  using base_type = __impl_string_table::BasicStringTable<T, 16>;
 
 public:
   StringTable() = default;

@@ -16,7 +16,7 @@
 #include "is_mutex_like.h"
 
 namespace es {
-namespace __impl {
+namespace __impl_thread_safe_wrapper {
 template <typename LockerT>
 struct ThreadSafeWrapperLockerGuard {
   ThreadSafeWrapperLockerGuard(LockerT& locker) : locker_(locker) {
@@ -26,7 +26,7 @@ struct ThreadSafeWrapperLockerGuard {
 
   LockerT& locker_;
 };
-} // namespace __impl
+} // namespace __impl_thread_safe_wrapper
 
 /// @brief Wrapper of an object for thread safe access
 ///
@@ -46,7 +46,7 @@ public:
   auto invoke(FnT&& fn, Args&&... args) {
     static_assert(std::is_member_function_pointer_v<FnT>);
 
-    __impl::ThreadSafeWrapperLockerGuard _(locker_);
+    __impl_thread_safe_wrapper::ThreadSafeWrapperLockerGuard _(locker_);
     return std::invoke(std::forward<FnT>(fn), obj_,
                        std::forward<Args>(args)...);
   }
@@ -78,7 +78,7 @@ public:
 
   template <typename... Args>
   auto operator()(Args&&... args) {
-    __impl::ThreadSafeWrapperLockerGuard _(locker_);
+    __impl_thread_safe_wrapper::ThreadSafeWrapperLockerGuard _(locker_);
     return std::invoke(fn_, obj_, std::forward<Args>(args)...);
   }
 
@@ -105,7 +105,7 @@ public:
 
   template <typename... Args>
   auto operator()(Args&&... args) {
-    __impl::ThreadSafeWrapperLockerGuard _(locker_);
+    __impl_thread_safe_wrapper::ThreadSafeWrapperLockerGuard _(locker_);
     return std::invoke(fn_, std::forward<Args>(args)...);
   }
 

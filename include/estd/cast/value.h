@@ -43,13 +43,13 @@ private:
   unsigned uid;
 };
 
-namespace __value_impl {
+namespace __impl_value {
 META_HAS_MEMBER_DATA(CLASSID);
 }
 
 template <typename T, typename U>
 struct isa_traits<T, Value<U>> {
-  static_assert(__value_impl::has_member_CLASSID_v<T>);
+  static_assert(__impl_value::has_member_CLASSID_v<T>);
   static_assert(std::is_base_of_v<Value<U>, T>);
 
   static bool doit(const Value<U>& v) { return T::CLASSID == v.uid; }

@@ -23,7 +23,7 @@ namespace es {
   template <typename T>                                                        \
   struct name<T, std::void_t<cond>> : std::true_type {};                       \
   template <typename T>                                                        \
-  constexpr bool name##_v = name<T>::value
+  constexpr inline bool name##_v = name<T>::value
 
 /// @brief macro use to define the `has_member_{type}` meta function
 #define META_HAS_MEMBER_TYPE(type)                                             \

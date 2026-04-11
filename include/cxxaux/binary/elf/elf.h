@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef BINARY_ELF_H
-#define BINARY_ELF_H
+#ifndef CXXAUX_BINARY_ELF_H
+#define CXXAUX_BINARY_ELF_H
 #include "elf_macro.h"
 #include <memory>
 #include <string_view>

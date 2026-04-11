@@ -13,8 +13,8 @@
 //
 // The macros are from https://man7.org/linux/man-pages/man5/elf.5.html
 
-#ifndef BINARY_ELF_MACRO_H
-#define BINARY_ELF_MACRO_H
+#ifndef CXXAUX_BINARY_ELF_MACRO_H
+#define CXXAUX_BINARY_ELF_MACRO_H
 #include <cstdint>
 
 namespace cxxaux { namespace elf {

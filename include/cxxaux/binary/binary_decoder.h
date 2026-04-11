@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef BINARY_BINARY_DECODER_H
-#define BINARY_BINARY_DECODER_H
+#ifndef CXXAUX_BINARY_BINARY_DECODER_H
+#define CXXAUX_BINARY_BINARY_DECODER_H
 #include <cassert>
 #include <cstdint>
 #include <string_view>

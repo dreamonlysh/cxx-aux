@@ -11,12 +11,12 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef COMPILER_TYPE_SYSTEM_TYPE_H
-#define COMPILER_TYPE_SYSTEM_TYPE_H
+#ifndef CXXAUX_COMPILER_TYPE_SYSTEM_TYPE_H
+#define CXXAUX_COMPILER_TYPE_SYSTEM_TYPE_H
 #include <cstdint>
 #include <vector>
 
-namespace bin { namespace type {
+namespace cxxaux { namespace type {
 
 enum TypeID : uint32_t {
   TID_UNKNOWN,
@@ -99,5 +99,5 @@ public:
 private:
   std::vector<const Type*> fields_;
 };
-}} // namespace bin::type
+}} // namespace cxxaux::type
 #endif // COMPILER_TYPE_SYSTEM_TYPE_H

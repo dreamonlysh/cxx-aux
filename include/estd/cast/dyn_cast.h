@@ -19,7 +19,7 @@
 
 namespace es {
 
-namespace __dyn_cast_impl {
+namespace __impl_dyn_cast {
 META_HAS_MEMBER_TYPE(dyn_cast_aux_type);
 }
 
@@ -36,7 +36,7 @@ struct isa_traits {};
 /// @return is a
 template <typename T, typename U>
 bool isa(U& v) {
-  if constexpr (__dyn_cast_impl::has_member_dyn_cast_aux_type_v<U>)
+  if constexpr (__impl_dyn_cast::has_member_dyn_cast_aux_type_v<U>)
     return isa_traits<std::remove_cv_t<T>, typename U::dyn_cast_aux_type>::doit(
         v);
   else
@@ -66,7 +66,7 @@ struct cast_traits {};
 /// @return reference to object with dest type
 template <typename T, typename U>
 std::conditional_t<std::is_const_v<U>, std::add_const_t<T>, T>& cast(U& v) {
-  if constexpr (__dyn_cast_impl::has_member_dyn_cast_aux_type_v<U>)
+  if constexpr (__impl_dyn_cast::has_member_dyn_cast_aux_type_v<U>)
     return cast_traits<std::remove_cv_t<T>,
                        typename U::dyn_cast_aux_type>::doit(v);
   else

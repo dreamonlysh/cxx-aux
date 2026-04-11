@@ -13,19 +13,20 @@
 
 #ifndef ESTD__CONCURRENCY_IS_MUTEX_LIKE_H
 #define ESTD__CONCURRENCY_IS_MUTEX_LIKE_H
-#include "estd/__meta/has_member.h"
+#include <estd/__meta/has_member.h>
 
 namespace es {
-namespace __impl {
+namespace __impl_is_mutex_like {
 META_HAS_MEMBER_FUNCTION(lock);
 META_HAS_MEMBER_FUNCTION(unlock);
 META_HAS_MEMBER_FUNCTION(try_lock);
-} // namespace __impl
+} // namespace __impl_is_mutex_like
 
 template <typename T>
-struct is_mutex_like : std::bool_constant<__impl::has_member_lock_v<T> &&
-                                          __impl::has_member_unlock_v<T> &&
-                                          __impl::has_member_try_lock_v<T>> {};
+struct is_mutex_like
+    : std::bool_constant<__impl_is_mutex_like::has_member_lock_v<T> &&
+                         __impl_is_mutex_like::has_member_unlock_v<T> &&
+                         __impl_is_mutex_like::has_member_try_lock_v<T>> {};
 
 template <typename T>
 constexpr bool is_mutex_like_v = is_mutex_like<T>::value;

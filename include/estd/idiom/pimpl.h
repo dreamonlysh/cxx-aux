@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef CXXAUX_IDIOM_PIMPL_H
-#define CXXAUX_IDIOM_PIMPL_H
+#ifndef ESTD_IDIOM_PIMPL_H
+#define ESTD_IDIOM_PIMPL_H
 #include <estd/meta.h>
 #include <utility>
 

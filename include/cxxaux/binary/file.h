@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef BINARY_FILE_H
-#define BINARY_FILE_H
+#ifndef CXXAUX_BINARY_FILE_H
+#define CXXAUX_BINARY_FILE_H
 
 namespace cxxaux {
 

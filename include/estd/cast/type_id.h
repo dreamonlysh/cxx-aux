@@ -11,19 +11,19 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD_CASE_TYPE_ID_H
-#define ESTD_CASE_TYPE_ID_H
+#ifndef ESTD_CAST_TYPE_ID_H
+#define ESTD_CAST_TYPE_ID_H
 #include <type_traits>
 
 namespace es {
 
-namespace __es_impl {
+namespace __impl_type_id {
 template <typename T>
 size_t __type_id() noexcept {
   static const char id = '\0';
   return reinterpret_cast<size_t>(&id);
 }
-} // namespace __es_impl
+} // namespace __impl_type_id
 
 /// @brief Get uique id for type T
 /// @tparam T type
@@ -31,7 +31,7 @@ size_t __type_id() noexcept {
 template <typename T>
 size_t type_id() noexcept {
   static_assert(std::is_class_v<T>);
-  return __es_impl::__type_id<std::remove_cv_t<T>>();
+  return __impl_type_id::__type_id<std::remove_cv_t<T>>();
 }
 
 /// @brief Get unique id for type T
@@ -45,4 +45,4 @@ size_t type_id(T&&) noexcept {
 
 } // namespace es
 
-#endif // ESTD_CASE_TYPE_ID_H
+#endif // ESTD_CAST_TYPE_ID_H

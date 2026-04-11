@@ -22,8 +22,10 @@ META_HAS_MEMBER_TYPE(size_type);
 
 META_HAS_MEMBER_FUNCTION(data);
 META_HAS_MEMBER_FUNCTION(size);
+META_HAS_MEMBER_FUNCTION(capacity);
 
 META_HAS_MEMBER_FUNCTION(resize, 1u);
+META_HAS_MEMBER_FUNCTION(reserve, 1u);
 META_HAS_MEMBER_FUNCTION(resize_and_overwrite, 1u,
                          std::declval<void (*)(void*, std::size_t)>());
 

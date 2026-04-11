@@ -1,0 +1,58 @@
+CompileFlags:
+  Add:
+    - -std=c++17
+    - -Wall
+    # Always meet -Wsign-compare, -Wunused-parameter
+    - -Wextra
+    # Ignore the error of unknown warning maybe from gcc
+    - -Wno-unknown-warning-option
+    # Ignore the error of unused command line argument
+    - -Qunused-arguments
+  Remove:
+    - -W*
+    - -fconcepts-diagnostics-depth=10
+InlayHints:
+  Enabled: Yes
+  BlockEnd: Yes
+  Designators: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  TypeNameLimit: 24
+Diagnostics:
+  ClangTidy:
+    Add: ["*"]
+    Remove:
+      # For the llvm c standard library development
+      - llvmlibc-*
+      # For the fuchsia os, it's extremely strict
+      - fuchsia-*
+      # For the intel/altera fpga development with opencl
+      - altera-*
+      # Force to use the abseil library
+      - abseil-string-find-str-contains
+      # Trailing return type is not better, prefer to older style
+      - modernize-use-trailing-return-type
+      # It will force all the return type to be discarded
+      - modernize-use-nodiscard
+      # Although it may be a good idea to define different types for different purposes,
+      # but it's not always possible and may be too strict
+      - bugprone-easily-swappable-parameters
+      # It should not warn about a struct that just is a data structure
+      - misc-non-private-member-variables-in-classes
+      # clang-format can do this
+      - "*-namespace-comment*"
+      # Not friendly for the abbreviations like i and j
+      - "*-identifier-length"
+      # Personally do not like the style, it seems to be not clear
+      - modernize-concat-nested-namespaces
+      # Personally prefer to use private member functions and then private member variables
+      - readability-redundant-access-specifiers
+      # Personally do not like the uppercase literal suffix
+      - "*-uppercase-literal-suffix"
+      # For a stl like library, it is needed to have some reserved identifiers
+      - "bugprone-reserved-identifier"
+      - "cert-dcl51-cpp"
+      - "cert-dcl37-c"
+    CheckOptions:
+      # It's should be small to keep a function in a single window
+      readability-function-size.LineThreshold: 50

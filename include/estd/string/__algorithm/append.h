@@ -16,6 +16,7 @@
 #include "type_traits_string.h"
 #include <algorithm>
 #include <charconv>
+#include <cstdint>
 #include <iterator>
 
 namespace es { namespace string {
@@ -70,6 +71,33 @@ constexpr void adjust_range_to_be_append(StringLike& s,
     s.resize(size_after_replace);
   }
 }
+
+template <typename CharT>
+constexpr CharT* assign(CharT* s, CharT c) {
+  *s = c;
+  return std::next(s);
+}
+
+template <typename CharT>
+constexpr CharT* assign(CharT* s, size_t n, CharT c) {
+  return std::fill_n(s, n, c);
+}
+
+template <typename CharT>
+constexpr CharT* assign(CharT* s, const CharT* p, size_t n) {
+  return std::copy_n(p, n, s);
+}
+
+template <typename CharT, typename IntegralT,
+          typename = std::enable_if_t<std::is_integral_v<IntegralT> &&
+                                      !std::is_same_v<IntegralT, CharT>>>
+constexpr void assign(CharT* s, IntegralT v) {
+  constexpr unsigned digits = __impl_append::digits10<IntegralT>::value;
+  CharT data[digits];
+  std::to_chars_result rst = std::to_chars(data, data + digits, v);
+  assign(s, &data[0], static_cast<size_t>(std::distance(data, rst.ptr)));
+}
+
 } // namespace __impl_append
 
 /// @brief Append a character to the end of string

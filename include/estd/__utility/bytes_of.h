@@ -16,7 +16,7 @@
 
 namespace es {
 
-namespace __impl {
+namespace __impl_bytes_of {
 template <typename T>
 struct bytes_of_impl {
   static constexpr auto value = sizeof(T);
@@ -26,12 +26,12 @@ template <typename T, unsigned N>
 struct bytes_of_impl<T[N]> {
   static constexpr auto value = sizeof(T) * N;
 };
-} // namespace __impl
+} // namespace __impl_bytes_of
 
 /// @brief A constant of type bytes count
 /// @tparam T type to deduce bytes
 template <typename T>
-constexpr auto bytes_of = __impl::bytes_of_impl<T>::value;
+constexpr auto bytes_of = __impl_bytes_of::bytes_of_impl<T>::value;
 
 } // namespace es
 #endif

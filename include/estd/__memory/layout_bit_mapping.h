@@ -13,15 +13,17 @@
 
 #ifndef ESTD_MEMORY_LAYOUT_BIT_MAPPING_H
 #define ESTD_MEMORY_LAYOUT_BIT_MAPPING_H
-#include "estd/__utility/bits_of.h"
-#include "estd/__utility/bytes_of.h"
 #include <cassert>
 #include <cstring>
+#include <estd/__bit/bit_count.h>
+#include <estd/__bit/bit_set_reset.h>
+#include <estd/__utility/bits_of.h>
+#include <estd/__utility/bytes_of.h>
 #include <iterator>
 
 namespace es { namespace memory {
 
-namespace __impl {
+namespace __impl_layout_bit_mapping {
 
 template <size_t MemoryBytes, size_t MemberBytes, typename MappingType,
           unsigned Hierarchy>
@@ -224,7 +226,7 @@ using layout_bit_mapping_selector_t =
     typename layout_bit_mapping_selector<MemoryBytes, MemberBytes,
                                          MappingType>::value_type;
 
-} // namespace __impl
+} // namespace __impl_layout_bit_mapping
 
 /// @brief Configure the memory with the leading N bits mapping the following
 /// fixed size member
@@ -245,11 +247,10 @@ using layout_bit_mapping_selector_t =
 template <size_t MemoryBytes, size_t MemberBytes,
           typename MappingType = unsigned long long>
 class layout_bit_mapping
-    : __impl::layout_bit_mapping_selector_t<MemoryBytes, MemberBytes,
-                                            MappingType> {
-  using impl_type =
-      __impl::layout_bit_mapping_selector_t<MemoryBytes, MemberBytes,
-                                            MappingType>;
+    : __impl_layout_bit_mapping::layout_bit_mapping_selector_t<
+          MemoryBytes, MemberBytes, MappingType> {
+  using impl_type = __impl_layout_bit_mapping::layout_bit_mapping_selector_t<
+      MemoryBytes, MemberBytes, MappingType>;
 
 public:
   static constexpr size_t memory_bytes = MemoryBytes;

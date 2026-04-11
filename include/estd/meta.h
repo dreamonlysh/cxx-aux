@@ -18,7 +18,7 @@
 #include "__meta/has_member.h"
 // #define META_HAS_MEMBER_TYPE(type)
 // #define META_HAS_MEMBER_DATA(data)
-// #define META_HAS_MEMBER_FUNCTION(func)
+// #define META_HAS_MEMBER_FUNCTION(func, ...)
 //
 // Default member element validation provided
 // - META_HAS_MEMBER_TYPE(iterator);
@@ -84,5 +84,23 @@
 // struct is_iterable;
 // template <typename T>
 // constexpr bool is_iterable_v = is_iterable<T>::value;
+
+#include "__meta/remove_cvref.h"
+// template <typename T>
+// struct remove_cvref;
+// template <typename T>
+// using remove_cvref_t = typename remove_cvref<T>::type;
+
+#include "__meta/array.h"
+// template <typename T>
+// struct is_c_array;
+// template <typename T>
+// inline constexpr bool is_c_array_v;
+// template <typename T>
+// struct is_std_array;
+// template <typename T>
+// inline constexpr bool is_std_array_v;
+// template <typename T>
+// struct array_traits;
 
 #endif

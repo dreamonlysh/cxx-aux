@@ -13,14 +13,14 @@
 
 #ifndef ESTD_MEMORY_MEMORY_POOL_UNIFORM_H
 #define ESTD_MEMORY_MEMORY_POOL_UNIFORM_H
-#include "estd/__utility/disabled_copy_move.h"
 #include "layout_bit_mapping.h"
 #include "layout_stack.h"
 #include <cstdlib>
+#include <estd/__utility/disabled_copy_move.h>
 #include <forward_list>
 
 namespace es { namespace memory {
-namespace __impl {
+namespace __impl_memory_pool_uniform {
 
 template <size_t Size, size_t BlockSize>
 class __MemoryPoolUniformSmall {
@@ -106,20 +106,25 @@ private:
 // in-place ptr used as the next. To align each memory with a page size, the
 // actual block size will be `BlockSize - sizeof(void*)`
 template <size_t Size, size_t BlockSize>
-using MemoryPoolUniformSelector = std::conditional_t<
-    std::less()(Size, layout_stack::memory_required_by_stack),
-    __impl::__MemoryPoolUniformSmall<Size, BlockSize - sizeof(void*)>,
-    __impl::__MemoryPoolUniformLarge<Size, BlockSize - sizeof(void*)>>;
+using MemoryPoolUniformSelector =
+    std::conditional_t<std::less()(Size,
+                                   layout_stack::memory_required_by_stack),
+                       __impl_memory_pool_uniform::__MemoryPoolUniformSmall<
+                           Size, BlockSize - sizeof(void*)>,
+                       __impl_memory_pool_uniform::__MemoryPoolUniformLarge<
+                           Size, BlockSize - sizeof(void*)>>;
 
-} // namespace __impl
+} // namespace __impl_memory_pool_uniform
 
 /// @brief A memory pool keeps data of the same bytes
 /// @tparam Size size in byte for members
 /// @tparam BlockSize buffer size designed for a block
 template <size_t Size, size_t BlockSize = 4 * 1024>
-class MemoryPoolUniform : __impl::MemoryPoolUniformSelector<Size, BlockSize>,
-                          disabled_copy_move {
-  using impl_type = __impl::MemoryPoolUniformSelector<Size, BlockSize>;
+class MemoryPoolUniform
+    : __impl_memory_pool_uniform::MemoryPoolUniformSelector<Size, BlockSize>,
+      disabled_copy_move {
+  using impl_type =
+      __impl_memory_pool_uniform::MemoryPoolUniformSelector<Size, BlockSize>;
 
 public:
   static_assert((BlockSize % 1024) == 0,

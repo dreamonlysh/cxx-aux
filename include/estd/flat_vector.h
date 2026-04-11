@@ -11,8 +11,8 @@
 //
 // See the Mulan PSL v2 for more details.
 
-#ifndef ESTD_INTEGER_H
-#define ESTD_INTEGER_H
+#ifndef ESTD_FLAT_VECTOR_H
+#define ESTD_FLAT_VECTOR_H
 
 #include "__container/flat_vector.h"
 // template <std::size_t N, typename T>

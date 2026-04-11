@@ -63,6 +63,23 @@
 // template <typename StringLike, typename... Args>
 // constexpr void append_n(StringLike& s, Args&&... args);
 
+#include "__algorithm/lazy_views.h"
+// Lazy view adapters for string transformations
+// namespace es::string::views {
+// // Base template for string view adapter closures to simplify the
+// implementation of c string or char array overloads template <typename
+// Derived, typename Func> struct string_adapter_closure;
+
+// // to_upper view adapter - converts characters to uppercase
+// constexpr inline to_upper_closure to_upper;
+//
+// // to_lower view adapter - converts characters to lowercase
+// constexpr inline to_lower_closure to_lower;
+//
+// // dot_to_underline view adapter - replaces dots with underscores
+// constexpr inline dot_to_underline_closure dot_to_underline;
+// }
+
 #include "__algorithm/replace.h"
 // template <typename StringLike,
 //           typename = std::enable_if_t<
