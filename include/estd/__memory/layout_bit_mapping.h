@@ -228,22 +228,50 @@ using layout_bit_mapping_selector_t =
 
 } // namespace __impl_layout_bit_mapping
 
-/// @brief Configure the memory with the leading N bits mapping the following
-/// fixed size member
-///
-/// For the hierarchy is one, the memory will be designed as
-///     header                 data             tail
-/// m1: | bits_of<MappingType> | {n}MemberBytes | ? |
-/// tips: the tail unmapping is small than on MemberBytes that can not alloc
-///
-/// For the hierarchy is two, the memory will be designed as
-///     1st header             2st headers               data             tail
-/// m1: | bits_of<MappingType> | {m}bits_of<MappingType> | {n}MemberBytes | ? |
-/// tips: the 1st header is a mapping to 2st headers
-///
-/// @tparam MemoryBytes total memory bytes can be used to design
-/// @tparam MemberBytes bytes of each member
-/// @tparam MappingType type to hold the mapping info in header
+/**
+ * @brief Memory layout with bit mapping for fixed-size member allocation.
+ *
+ * This class configures memory with leading bits used as a bitmap to track
+ * allocation status of fixed-size members. It supports two hierarchy levels
+ * for efficient memory usage:
+ *
+ * **Hierarchy 1** (for smaller memory blocks):
+ * ```
+ *     header                 data             tail
+ * m1: | bits_of<MappingType> | {n}MemberBytes | ? |
+ * ```
+ * The tail contains unused bytes smaller than one MemberBytes.
+ *
+ * **Hierarchy 2** (for larger memory blocks):
+ * ```
+ *     1st header             2nd headers              data             tail
+ * m1: | bits_of<MappingType> | {m}bits_of<MappingType> | {n}MemberBytes | ? |
+ * ```
+ * The 1st header maps to 2nd headers, enabling two-level bitmap tracking.
+ *
+ * @tparam MemoryBytes Total memory bytes available for layout
+ * @tparam MemberBytes Size in bytes of each member
+ * @tparam MappingType Type to hold bitmap info in header (default: unsigned
+ * long long)
+ *
+ * @note The hierarchy level is automatically selected based on MemoryBytes
+ *
+ * Example usage:
+ * @code
+ * // Allocate 4KB memory with 64-byte members
+ * char memory[4096];
+ * layout_bit_mapping<4096, 64> allocator(memory);
+ * allocator.reset();
+ *
+ * // Acquire members
+ * void* member1 = allocator.acquire();
+ * void* member2 = allocator.acquire();
+ *
+ * // Release members
+ * allocator.release(member1);
+ * allocator.release(member2);
+ * @endcode
+ */
 template <size_t MemoryBytes, size_t MemberBytes,
           typename MappingType = unsigned long long>
 class layout_bit_mapping
@@ -259,30 +287,58 @@ public:
 
   using mapping_type = MappingType;
 
-  /// @brief Debug usage, the bytes offset is byte distance form the begin of
-  /// member data to the memory begin
+  /**
+   * @brief Byte offset from memory start to member data area.
+   *
+   * This is the distance from the beginning of memory to where
+   * member data actually starts (after the header/bitmap area).
+   */
   static constexpr size_t member_bytes_offset = impl_type::member_bytes_offset;
 
-  /// @brief Debug usage, the capacity that memory can provide
+  /**
+   * @brief Maximum number of members that can be allocated.
+   *
+   * The capacity is determined by the available memory after
+   * accounting for header/bitmap overhead.
+   */
   static constexpr size_t member_capacity = impl_type::member_capacity;
 
-  /// @brief There may be some memory less that a member bytes can not be used,
-  /// it is reported here for later use
+  /**
+   * @brief Unused trailing bytes smaller than one member.
+   *
+   * Reports bytes at the end of memory that are too small
+   * to hold a complete member.
+   */
   static constexpr size_t memory_tail_bytes_unmapping =
       impl_type::memory_tail_bytes_unmapping;
 
+  /**
+   * @brief Constructs a layout_bit_mapping with the given memory.
+   * @param mem Pointer to the memory block to manage
+   */
   layout_bit_mapping(char* mem) : impl_type(mem) {}
 
-  /// @brief Initial the memory a new bit mapping with all headers pre-setted
+  /**
+   * @brief Initializes the memory layout with all members available.
+   *
+   * Resets the bitmap to indicate all members are available for allocation.
+   * Must be called before the first acquire() on new memory.
+   */
   void reset() { impl_type::reset(); }
 
-  /// @brief Acquire a member from the memory
-  /// @return a memory address with MemberBytes, or nullptr that no valid memory
+  /**
+   * @brief Acquires a member from the memory pool.
+   * @return Pointer to an available member with MemberBytes size,
+   *         or nullptr if no members are available
+   */
   void* acquire() { return impl_type::acquire(); }
 
-  /// @brief Release a member to the memory which can be acquired later
-  /// @param p pointer to a member that may in the memory
-  /// @return true: succeed to release, flase: not belong to the memory
+  /**
+   * @brief Releases a member back to the memory pool.
+   * @param p Pointer to the member to release
+   * @return true if successfully released, false if pointer is invalid
+   *         or not from this memory pool
+   */
   bool release(void* p) { return impl_type::release(p); }
 };
 

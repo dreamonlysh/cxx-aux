@@ -19,6 +19,25 @@
 namespace es { namespace string {
 
 namespace __impl_replace {
+/**
+ * @brief Internal helper to adjust string size for replace operations.
+ *
+ * This function handles the complex logic of resizing a string when
+ * the replacement range has a different size than the original range.
+ *
+ * Three cases:
+ * 1. count < n: Need to expand - shift trailing characters right
+ * 2. count > n: Need to shrink - shift trailing characters left
+ * 3. count == n: No resize needed - just overwrite
+ *
+ * @tparam StringLike String type
+ * @param s String to modify
+ * @param pos Starting position of range to replace
+ * @param count Number of characters to replace
+ * @param n Number of characters in replacement
+ *
+ * @throws std::out_of_range if pos >= s.size()
+ */
 template <typename StringLike,
           typename = std::enable_if_t<
               __impl_type_traits::is_string_like_v<StringLike>>>
@@ -34,8 +53,10 @@ constexpr void adjust_range_to_be_replaced(StringLike& s,
   auto size_before_replace = s.size();
   auto size_after_replace = size_before_replace - count + n;
   if (count < n) {
+    // Expand: shift trailing characters right
     if constexpr (__impl_type_traits::has_member_resize_and_overwrite_v<
                       StringLike>) {
+      // Use resize_and_overwrite for efficiency if available (C++23)
       s.resize_and_overwrite(size_after_replace, [&](auto* data, std::size_t) {
         std::copy_backward(data + pos + count, data + size_before_replace,
                            data + size_after_replace);
@@ -47,22 +68,37 @@ constexpr void adjust_range_to_be_replaced(StringLike& s,
                          s.data() + size_after_replace);
     }
   } else if (count > n) {
+    // Shrink: shift trailing characters left
     std::copy(s.data() + pos + count, s.data() + size_before_replace,
               s.data() + pos + n);
     s.resize(size_after_replace);
   }
+  // If count == n, no resize needed
 }
 } // namespace __impl_replace
 
-/// @brief Replace the range [pos, pos + count) in string with the range [p, p +
-/// n)
-/// @tparam StringLike std::string like type
-/// @param s string has range to be replaced
-/// @param pos start position to be replaced, throw std::out_of_range if pos is
-/// out of range
-/// @param count number of characters to be replaced
-/// @param p begin of the string used to replace
-/// @param n number of characters in p to be used to replace
+/**
+ * @brief Replaces a range in a string with another range.
+ *
+ * Replaces [pos, pos + count) in string s with the range [p, p + n).
+ * Automatically handles resizing if the replacement has different size.
+ *
+ * @tparam StringLike String-like type (must have data(), size(), resize())
+ * @param s String to modify
+ * @param pos Starting position of range to replace
+ * @param count Number of characters to replace
+ * @param p Pointer to replacement characters
+ * @param n Number of characters in replacement
+ *
+ * @throws std::out_of_range if pos >= s.size()
+ *
+ * Example usage:
+ * @code
+ * std::string str = "Hello World";
+ * replace(str, 6, 5, "C++", 3);
+ * // str is now "Hello C++"
+ * @endcode
+ */
 template <typename StringLike,
           typename = std::enable_if_t<
               __impl_type_traits::is_string_like_v<StringLike>>>

@@ -17,17 +17,39 @@
 
 namespace es {
 
-/// @brief add const to T if U is const
-/// @tparam T type to add const
-/// @tparam U type to traits const
+/**
+ * @brief Adds const qualifier to T if U is const.
+ *
+ * This type trait conditionally adds the const qualifier to type T based on
+ * the const-ness of type U. This is useful for propagating const-correctness
+ * in template code.
+ *
+ * @tparam T Type to potentially add const to
+ * @tparam U Type to check for const-ness
+ *
+ * Example usage:
+ * @code
+ * using T1 = add_const_as_t<int, const double>;  // T1 is const int
+ * using T2 = add_const_as_t<int, double>;        // T2 is int
+ * using T3 = add_const_as_t<int, const int&>;    // T3 is const int
+ *
+ * // Useful in template code
+ * template<typename U>
+ * void process(add_const_as_t<int, U>& value) {
+ *     // value is const int if U is const, otherwise int
+ * }
+ * @endcode
+ */
 template <typename T, typename U>
 struct add_const_as {
   using type = std::conditional_t<std::is_const_v<U>, std::add_const_t<T>, T>;
 };
 
-/// @brief add const to T if U is const
-/// @tparam T type to add const
-/// @tparam U type to traits const
+/**
+ * @brief Helper type for add_const_as.
+ * @tparam T Type to potentially add const to
+ * @tparam U Type to check for const-ness
+ */
 template <typename T, typename U>
 using add_const_as_t = typename add_const_as<T, U>::type;
 

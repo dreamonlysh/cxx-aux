@@ -25,19 +25,45 @@ size_t __type_id() noexcept {
 }
 } // namespace __impl_type_id
 
-/// @brief Get uique id for type T
-/// @tparam T type
-/// @return type code
+/**
+ * @brief Gets a unique identifier for a type at runtime.
+ *
+ * This function returns a unique identifier for each distinct type T.
+ * The identifier is generated using the address of a static variable,
+ * ensuring uniqueness across different types.
+ *
+ * @tparam T The type to get the identifier for (must be a class type)
+ * @return A unique size_t identifier for the type
+ *
+ * @note The identifier is stable within a single program execution
+ * @note Only works for class types (enforced by static_assert)
+ *
+ * Example usage:
+ * @code
+ * struct A {};
+ * struct B {};
+ *
+ * size_t id_a = type_id<A>();
+ * size_t id_b = type_id<B>();
+ * assert(id_a != id_b);
+ * @endcode
+ */
 template <typename T>
 size_t type_id() noexcept {
   static_assert(std::is_class_v<T>);
   return __impl_type_id::__type_id<std::remove_cv_t<T>>();
 }
 
-/// @brief Get unique id for type T
-/// @tparam T type
-/// @param  help to infer T
-/// @return type code
+/**
+ * @brief Gets a unique identifier for a type from a value.
+ *
+ * This overload deduces the type T from the argument and calls
+ * type_id<T>().
+ *
+ * @tparam T The type to deduce and get the identifier for
+ * @param Unused parameter for type deduction
+ * @return A unique size_t identifier for the type
+ */
 template <typename T>
 size_t type_id(T&&) noexcept {
   return type_id<std::remove_reference_t<T>>();

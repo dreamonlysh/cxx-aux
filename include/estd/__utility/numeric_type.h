@@ -327,7 +327,14 @@ constexpr uint32_t __encodingNumericTypeCode() {
                                    __nt_type_config<T>::flags);
 }
 
-/// @brief numeric code defined for type
+/// @brief Numeric type code enumeration for compile-time type identification.
+///
+/// Each numeric type is encoded as a 16-bit value with the following structure:
+/// - Bits 0-7: Size in bits (e.g., 8, 16, 32, 64)
+/// - Bits 8-15: Type category and flags (unsigned, floating, character)
+///
+/// This encoding allows runtime type queries while maintaining compile-time
+/// type safety through the type_code system.
 enum NumericTypeCode : uint16_t {
   NTC_BOOL = __encodingNumericTypeCode<bool>(),
   NTC_SIGNED_CHAR = __encodingNumericTypeCode<signed char>(),
@@ -462,90 +469,150 @@ struct __nt_type_code_config<NTC_LONGDOUBLE> {
   using type = long double;
 };
 
-/// @brief class manage the api of Numeric type
+/// @brief Class providing utilities for numeric type introspection and
+/// manipulation.
+///
+/// This class offers a comprehensive interface for working with numeric types
+/// at both compile-time and runtime. It provides:
+/// - Type-to-code and code-to-type mappings
+/// - Type property queries (signed/unsigned, floating/integral, bit size)
+/// - Type name retrieval (full name, fixed-width name, short name)
+///
+/// Example usage:
+/// @code
+/// // Get type code from a type
+/// constexpr auto code = NumericType::type_code<int>();
+/// static_assert(code == NTC_INT);
+///
+/// // Get type from a code
+/// using IntType = NumericType::type<NTC_INT>;
+/// static_assert(std::is_same_v<IntType, int>);
+///
+/// // Query type properties
+/// static_assert(NumericType::is_signed(NTC_INT));
+/// static_assert(NumericType::is_unsigned(NTC_UINT32));
+/// static_assert(NumericType::is_floating_point(NTC_FLOAT));
+/// static_assert(NumericType::bit_size(NTC_INT32) == 32);
+///
+/// // Get type names
+/// std::cout << NumericType::name(NTC_UNSIGNED_SHORT);      // "unsigned short"
+/// std::cout << NumericType::fixed_width_name(NTC_UINT16);  // "uint16_t"
+/// std::cout << NumericType::short_name(NTC_INT32);         // "i32"
+/// @endcode
 class NumericType {
 public:
-  /// @brief get the related numeric type by the code
-  /// @tparam kCode
+  /**
+   * @brief Gets the numeric type associated with a type code.
+   *
+   * @tparam kCode The numeric type code
+   * @return The corresponding type
+   */
   template <NumericTypeCode kCode>
   using type = typename __nt_type_code_config<kCode>::type;
 
-  /// @brief get the related numeric type code by type
-  /// @tparam T numberic type
-  /// @return numeric type code
+  /**
+   * @brief Gets the numeric type code for a given type.
+   *
+   * @tparam T The numeric type
+   * @return The corresponding numeric type code
+   */
   template <typename T>
   static constexpr NumericTypeCode type_code() {
     return static_cast<NumericTypeCode>(__encodingNumericTypeCode<T>());
   }
 
-  /// @brief get the related numeric type code by type
-  /// @tparam T numeric type
-  /// @param an arg help to infer T
-  /// @return numeric type code
+  /**
+   * @brief Gets the numeric type code from a value (type deduction).
+   *
+   * @tparam T The numeric type (deduced from the argument)
+   * @param Unused parameter for type deduction
+   * @return The corresponding numeric type code
+   */
   template <typename T>
   static constexpr NumericTypeCode type_code(T&&) {
     return type_code<T>();
   }
 
-  /// @brief same as is_unsigned_v<T>
-  /// @param code numeric type code
-  /// @return is unsigned
+  /**
+   * @brief Checks if a type is unsigned.
+   * @param code Numeric type code
+   * @return true if the type is unsigned
+   */
   static constexpr bool is_unsigned(NumericTypeCode code) {
     return ((code >> 8) & __NT_FLAGS_UNSIGNED) != 0;
   }
 
-  /// @brief same as is_signed_v<T>
-  /// @param code numeric type code
-  /// @return is signed
+  /**
+   * @brief Checks if a type is signed.
+   * @param code Numeric type code
+   * @return true if the type is signed
+   */
   static constexpr bool is_signed(NumericTypeCode code) {
     return !is_unsigned(code);
   }
 
-  /// @brief same as is_floating_point_v<T>
-  /// @param code numeric type code
-  /// @return is floating point
+  /**
+   * @brief Checks if a type is floating-point.
+   * @param code Numeric type code
+   * @return true if the type is floating-point
+   */
   static constexpr bool is_floating_point(NumericTypeCode code) {
     return ((code >> 8) & __NT_FLAGS_FLOATING) != 0;
   }
 
-  /// @brief same as is_integral_v<T>
-  /// @param code numeric type code
-  /// @return is integral
+  /**
+   * @brief Checks if a type is integral.
+   * @param code Numeric type code
+   * @return true if the type is integral
+   */
   static constexpr bool is_integral(NumericTypeCode code) {
     return !is_floating_point(code);
   }
 
-  /// @brief check if is charactor type(char, char16_t, char32_t, wchar_t)
-  /// @param code numeric type code
-  /// @return is charactor type
+  /**
+   * @brief Checks if a type is a character type.
+   *
+   * Character types include: char, char16_t, char32_t, wchar_t
+   *
+   * @param code Numeric type code
+   * @return true if the type is a character type
+   */
   static constexpr bool is_character(NumericTypeCode code) {
     return ((code >> 8) & __NT_FLAGS_CHARACTER) != 0;
   }
 
-  /// @brief get bit size of the type
-  /// @param code numeric type code
-  /// @return bit size
+  /**
+   * @brief Gets the bit size of a type.
+   * @param code Numeric type code
+   * @return Size in bits (e.g., 8, 16, 32, 64)
+   */
   static constexpr uint16_t bit_size(NumericTypeCode code) {
     return code & 0xff;
   }
 
-  /// @brief get the full name of the type
-  /// @param code numeric type code
-  /// @return type string, e.g. unsigned short
+  /**
+   * @brief Gets the full name of a type.
+   * @param code Numeric type code
+   * @return Full type name (e.g., "unsigned short", "long long")
+   */
   static constexpr std::string_view name(NumericTypeCode code) {
     return traits_by_code<std::string_view, name_traits>(code);
   }
 
-  /// @brief get the fixed width name of the type
-  /// @param code numeric type code
-  /// @return type string, e.g. uint16_t
+  /**
+   * @brief Gets the fixed-width name of a type.
+   * @param code Numeric type code
+   * @return Fixed-width type name (e.g., "uint16_t", "int32_t")
+   */
   static constexpr std::string_view fixed_width_name(NumericTypeCode code) {
     return traits_by_code<std::string_view, fixed_width_name_traits>(code);
   }
 
-  /// @brief get the short name of the type with size and minial chars
-  /// @param code numeric type code
-  /// @return type string, e.g. u8, i16, f32
+  /**
+   * @brief Gets the short name of a type.
+   * @param code Numeric type code
+   * @return Short type name with size (e.g., "u8", "i16", "f32")
+   */
   static constexpr std::string_view short_name(NumericTypeCode code) {
     return traits_by_code<std::string_view, short_name_traits>(code);
   }

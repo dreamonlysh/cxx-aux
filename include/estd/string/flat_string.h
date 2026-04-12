@@ -23,6 +23,41 @@ struct __flat_string_default_out_of_range_assert {
   constexpr void operator()(bool cond, const char* const msg) const {}
 };
 
+/**
+ * @brief A fixed-capacity string with stack-allocated storage.
+ *
+ * This class provides a string-like interface with a fixed maximum capacity
+ * determined at compile time. All storage is allocated on the stack, making it
+ * suitable for embedded systems, real-time applications, or scenarios where
+ * dynamic memory allocation must be avoided.
+ *
+ * Key features:
+ * - Fixed capacity N, allocated on the stack
+ * - Standard string-like interface
+ * - No dynamic memory allocation
+ * - Bounds checking with customizable assertion behavior
+ * - Supports all standard string operations
+ *
+ * @tparam N Maximum number of characters the string can hold (excluding null
+ * terminator)
+ * @tparam OutOfRangeAssert Custom assertion handler for out-of-range conditions
+ *
+ * @note The string is null-terminated for compatibility with C APIs
+ * @note OutOfRangeAssert can be customized to change behavior (e.g., assert,
+ * log, ignore)
+ *
+ * Example usage:
+ * @code
+ * flat_string<100> str;
+ * str = "Hello";
+ * str += " World";
+ * // str.size() == 11, str.capacity() == 100
+ *
+ * // Compatible with C APIs
+ * const char* c_str = str.c_str();
+ * printf("%s\n", c_str);
+ * @endcode
+ */
 template <size_t N,
           typename OutOfRangeAssert = __flat_string_default_out_of_range_assert>
 class flat_string {

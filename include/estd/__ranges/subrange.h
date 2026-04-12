@@ -13,27 +13,23 @@
 
 #ifndef ESTD___RANGES_SUBRANGE_H
 #define ESTD___RANGES_SUBRANGE_H
-#if __cplusplus >= 202002L
-#include <ranges>
-#else
 #include "view_interface.h"
 #include <iterator>
 #include <type_traits>
 #include <utility>
-#endif
 
 namespace es { namespace ranges {
 
-#if __cplusplus >= 202002L
-template <std::input_or_output_iterator I, std::sentinel_for<I> S = I,
-          ranges::subrange_kind K = std::sized_sentinel_for<S, I>
-                                        ? ranges::subrange_kind::sized
-                                        : ranges::subrange_kind::unsized>
-using subrange = std::ranges::subrange<I, S, K>;
-#else
+/**
+ * @brief Enumeration indicating whether a subrange stores its size.
+ *
+ * - unsized: The subrange does not store size, must compute on demand
+ * - sized: The subrange stores size or can compute it in O(1)
+ */
 enum class subrange_kind { unsized, sized };
 
 namespace __impl_subrange {
+// Internal implementation details
 template <typename T>
 struct __make_unsigned_like {
   using type = std::make_unsigned_t<T>;
@@ -42,7 +38,7 @@ struct __make_unsigned_like {
 template <typename T>
 using make_unsigned_like_t = typename __make_unsigned_like<T>::type;
 
-// Helper to check if sentinel is sized
+// Helper to check if sentinel is sized (can compute distance in O(1))
 template <typename S, typename I>
 struct is_sized_sentinel {
   static constexpr bool value = false;
@@ -62,16 +58,67 @@ using iter_difference_t =
     typename std::iterator_traits<Iterator>::difference_type;
 } // namespace __impl_subrange
 
+/**
+ * @brief A view over a subrange (iterator-sentinel pair).
+ *
+ * This class template represents a view over a subrange defined by an
+ * iterator-sentinel pair. It can be sized or unsized depending on the
+ * subrange_kind parameter.
+ *
+ * A sized subrange either:
+ * - Stores the size explicitly (when StoreSize is true)
+ * - Can compute size in O(1) (when iterator and sentinel are the same type)
+ *
+ * An unsized subrange does not support size() operations.
+ *
+ * @tparam I Iterator type
+ * @tparam S Sentinel type
+ * @tparam K Whether the subrange is sized or unsized
+ *
+ * @note Supports structured bindings: auto [begin, end] = subrange;
+ * @note Can be used with range-based for loops
+ *
+ * Example usage:
+ * @code
+ * std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+ *
+ * // Create a subrange from iterators
+ * auto sub = subrange(vec.begin() + 2, vec.begin() + 7);
+ * // sub contains: 3, 4, 5, 6, 7
+ *
+ * // Use with structured bindings
+ * auto [begin, end] = sub;
+ *
+ * // Iterate over subrange
+ * for (int x : sub) {
+ *     std::cout << x << " ";
+ * }
+ * @endcode
+ */
 template <typename I, typename S, subrange_kind K>
 class subrange : public view_interface<subrange<I, S, K>> {
 public:
-  // Data members (exposition only)
+  /**
+   * @brief Whether the subrange stores size explicitly.
+   *
+   * True when K == sized and the sentinel is not the same type as iterator.
+   */
   static constexpr bool StoreSize =
       K == subrange_kind::sized && !__impl_subrange::is_sized_sentinel_v<S, I>;
 
-  // Constructors
+  /**
+   * @brief Default constructor. Creates an empty subrange.
+   */
   constexpr subrange() = default;
 
+  /**
+   * @brief Constructs a subrange from iterator and sentinel.
+   *
+   * If StoreSize is true, computes and stores the size.
+   *
+   * @param begin Iterator to the start
+   * @param end Sentinel to the end
+   */
   constexpr subrange(I begin, S end)
       : begin_(std::move(begin)), end_(std::move(end)) {
     if constexpr (StoreSize) {
@@ -81,6 +128,13 @@ public:
     }
   }
 
+  /**
+   * @brief Constructs a sized subrange from iterator, sentinel, and size.
+   *
+   * @param begin Iterator to the start
+   * @param end Sentinel to the end
+   * @param size Size of the subrange
+   */
   constexpr subrange(I begin, S end,
                      typename std::iterator_traits<I>::difference_type size)
       : begin_(std::move(begin)), end_(std::move(end)) {
@@ -90,12 +144,32 @@ public:
     }
   }
 
-  // Observers
+  /**
+   * @brief Gets the begin iterator.
+   * @return Iterator to the start
+   */
   constexpr I begin() const { return begin_; }
+
+  /**
+   * @brief Gets the end sentinel.
+   * @return Sentinel to the end
+   */
   constexpr S end() const { return end_; }
 
+  /**
+   * @brief Checks if the subrange is empty.
+   * @return true if begin == end
+   */
   constexpr bool empty() const { return begin_ == end_; }
 
+  /**
+   * @brief Gets the size of the subrange.
+   *
+   * Only available for sized subranges.
+   *
+   * @return Number of elements in the subrange
+   * @throws Static assertion if K != sized
+   */
   constexpr typename std::iterator_traits<I>::difference_type size() const {
     static_assert(K == subrange_kind::sized, "size() requires sized subrange");
     if constexpr (__impl_subrange::is_sized_sentinel_v<S, I>) {
@@ -106,7 +180,13 @@ public:
     }
   }
 
-  // Iterator operations
+  /**
+   * @brief Advances the begin iterator by n positions.
+   *
+   * Updates the stored size if applicable.
+   *
+   * @param n Number of positions to advance
+   */
   constexpr void advance(typename std::iterator_traits<I>::difference_type n) {
     std::advance(begin_, n);
     if constexpr (StoreSize) {
@@ -118,6 +198,12 @@ public:
     }
   }
 
+  /**
+   * @brief Gets a subrange starting n positions before the current begin.
+   *
+   * @param n Number of positions to move back (default 1)
+   * @return A new subrange with adjusted begin
+   */
   constexpr subrange
   prev(typename std::iterator_traits<I>::difference_type n = 1) const {
     auto tmp = *this;
@@ -132,6 +218,12 @@ public:
     return tmp;
   }
 
+  /**
+   * @brief Gets a subrange starting n positions after the current begin.
+   *
+   * @param n Number of positions to move forward (default 1)
+   * @return A new subrange with adjusted begin
+   */
   constexpr subrange
   next(typename std::iterator_traits<I>::difference_type n = 1) const {
     auto tmp = *this;
@@ -139,13 +231,26 @@ public:
     return tmp;
   }
 
-  // Conversion to pair-like
+  /**
+   * @brief Converts to a pair-like type.
+   *
+   * Enables conversion to std::pair, std::tuple, etc.
+   *
+   * @tparam PairLike The target pair-like type
+   * @return A PairLike constructed from (begin, end)
+   */
   template <typename PairLike>
   constexpr operator PairLike() const {
     return PairLike(begin_, end_);
   }
 
-  // For structured binding
+  /**
+   * @brief Gets the begin or end for structured bindings.
+   *
+   * @tparam N Index (0 for begin, 1 for end)
+   * @return begin if N == 0, end if N == 1
+   * @throws Static assertion if N >= 2
+   */
   template <std::size_t N>
   constexpr auto get() const {
     static_assert(N < 2, "subrange has only 2 elements");
@@ -185,8 +290,6 @@ constexpr auto get(const subrange<I, S, K>& sr) {
     return sr.end();
   }
 }
-
-#endif
 
 }} // namespace es::ranges
 

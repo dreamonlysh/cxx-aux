@@ -17,19 +17,41 @@
 
 namespace es {
 
-/// @brief has_member_begin, has_member_begin_v
 META_HAS_MEMBER_FUNCTION(begin);
-/// @brief has_member_end, has_member_end_v
 META_HAS_MEMBER_FUNCTION(end);
 
-/// @brief whether a container can be visited by begin and end
-/// @tparam T a container
+/**
+ * @brief Type trait to check if a type is iterable.
+ *
+ * A type is considered iterable if it has both begin() and end() member
+ * functions. This trait is useful for SFINAE constraints and concept-like
+ * type checking.
+ *
+ * @tparam T Type to check
+ *
+ * Example usage:
+ * @code
+ * static_assert(is_iterable_v<std::vector<int>>);
+ * static_assert(is_iterable_v<std::string>);
+ * static_assert(!is_iterable_v<int>);
+ *
+ * // Use in SFINAE
+ * template<typename T>
+ * std::enable_if_t<is_iterable_v<T>> print_all(const T& container) {
+ *     for (const auto& item : container) {
+ *         std::cout << item << " ";
+ *     }
+ * }
+ * @endcode
+ */
 template <typename T>
 struct is_iterable
     : std::bool_constant<has_member_begin_v<T> && has_member_end_v<T>> {};
 
-/// @brief whether a container can be visited by begin and end
-/// @tparam T a container
+/**
+ * @brief Helper variable for is_iterable.
+ * @tparam T Type to check
+ */
 template <typename T>
 inline constexpr bool is_iterable_v = is_iterable<T>::value;
 

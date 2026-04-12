@@ -18,21 +18,55 @@
 
 namespace es { namespace memory {
 
-/// @brief Configure the memory as a backword list with the leading
-/// sizeof(void*) bytes used to keep predecessor address
-///
-/// e.g.
-///     header   data
-/// m1: |  null  |  {x}B  |
-/// m2: |  &m1   |  {y}B  |
-/// m3: |  &m2   |  {z}B  |
+/**
+ * @brief Memory layout that implements a backward-linked list stack.
+ *
+ * This class configures memory as a stack where each memory segment
+ * uses the leading sizeof(void*) bytes to store the predecessor address.
+ *
+ * Memory layout example:
+ * ```
+ *     header   data
+ * m1: |  null  |  {x}B  |
+ * m2: |  &m1   |  {y}B  |
+ * m3: |  &m2   |  {z}B  |
+ * ```
+ *
+ * Each segment stores a pointer to the previous segment, forming a chain.
+ * This enables efficient stack operations (push/pop) on memory segments.
+ *
+ * @note The size of each memory segment is unknown to the stack
+ * @note Minimum segment size is sizeof(void*) for the header
+ *
+ * Example usage:
+ * @code
+ * layout_stack stack;
+ * char memory1[1024];
+ * char memory2[1024];
+ *
+ * stack.push(memory1, sizeof(memory1));
+ * stack.push(memory2, sizeof(memory2));
+ *
+ * char* top = stack.top();
+ * char* segment = stack.pop();
+ * @endcode
+ */
 class layout_stack {
 public:
-  /// @brief The stack keeps a sequence of memory segment, however size of the
-  /// memory segment is unknown at least sizeof(void*)
+  /**
+   * @brief Type representing a memory segment pointer.
+   *
+   * The stack keeps a sequence of memory segments, where the size
+   * of each segment is at least sizeof(void*).
+   */
   using value_type = char*;
 
-  /// @brief The leading memory bytes used by stack, it is useless after pop
+  /**
+   * @brief Minimum bytes required by the stack for bookkeeping.
+   *
+   * Each memory segment must have at least this many bytes for
+   * storing the predecessor pointer.
+   */
   static constexpr size_t memory_required_by_stack = sizeof(void*);
 
   layout_stack() = default;
@@ -54,15 +88,29 @@ public:
     return *this;
   }
 
-  /// @brief Get the top memory segment
-  /// @return address start from the memory reserved
+  /**
+   * @brief Gets the top memory segment.
+   * @return Pointer to the top memory segment, or nullptr if empty
+   */
   value_type top() const { return top_; }
 
+  /**
+   * @brief Checks if the stack is empty.
+   * @return true if the stack has no segments, false otherwise
+   */
   bool empty() const { return top_ == nullptr; }
 
-  /// @brief Append a memory segment to chain with some leading bytes reserved
-  /// for stack
-  /// @param v a memory segment
+  /**
+   * @brief Pushes a memory segment onto the stack.
+   *
+   * The leading bytes of the segment are reserved for stack bookkeeping.
+   *
+   * @param v Pointer to the memory segment to push
+   * @param sz Size of the memory segment (must be >= memory_required_by_stack)
+   *
+   * @warning The memory segment must remain valid for the duration it's on the
+   * stack
+   */
   void push(value_type v, size_t sz = -1) {
     assert(sz >= memory_required_by_stack &&
            "memory to be pushed should not be too small to hold a address");
@@ -70,18 +118,33 @@ public:
     top_ = v;
   }
 
-  /// @brief Remove the last memory segment from chain, the reserved leading
-  /// bytes are release by stack
-  /// @return a memory segment
+  /**
+   * @brief Pops a memory segment from the stack.
+   *
+   * Removes and returns the top memory segment. The reserved leading
+   * bytes are released by the stack.
+   *
+   * @return Pointer to the popped memory segment
+   *
+   * @warning The caller is responsible for managing the popped memory
+   */
   value_type pop() {
     value_type ret = top_;
     top_ = *reinterpret_cast<value_type*>(top_);
     return ret;
   }
 
-  /// @brief Move elements from another layout_stack
-  /// @param other other layout_stack
-  /// @param bottom bottom of this layout_stack to enable fast move
+  /**
+   * @brief Moves all segments from another stack to this stack.
+   *
+   * Transfers all memory segments from `other` to this stack,
+   * appending them after the current bottom segment.
+   *
+   * @param other The source stack to move from (will be empty after operation)
+   * @param bottom Optional pointer to the bottom of this stack for fast append
+   *
+   * @note If bottom is nullptr, the stack will traverse to find the bottom
+   */
   void splice(layout_stack& other, value_type bottom = nullptr) {
     if (this == &other || other.empty())
       return;

@@ -16,21 +16,60 @@
 
 namespace es {
 
-/// @brief Inherit as a base to disable copy
+/**
+ * @brief Base class to disable copy operations.
+ *
+ * Inherit from this class to make derived classes non-copyable.
+ * Move operations remain enabled.
+ *
+ * Example usage:
+ * @code
+ * class MyClass : private disabled_copy {
+ *     // Copy constructor and copy assignment are deleted
+ *     // Move constructor and move assignment are still available
+ * };
+ * @endcode
+ */
 struct disabled_copy {
   disabled_copy() = default;
   disabled_copy(const disabled_copy&) = delete;
   disabled_copy& operator=(const disabled_copy&) = delete;
 };
 
-/// @brief Inherit as a base to disable move
+/**
+ * @brief Base class to disable move operations.
+ *
+ * Inherit from this class to make derived classes non-movable.
+ * Copy operations remain enabled.
+ *
+ * Example usage:
+ * @code
+ * class MyClass : private disabled_move {
+ *     // Move constructor and move assignment are deleted
+ *     // Copy constructor and copy assignment are still available
+ * };
+ * @endcode
+ */
 struct disabled_move {
   disabled_move() = default;
   disabled_move(disabled_copy&&) = delete;
   disabled_move& operator=(disabled_copy&&) = delete;
 };
 
-/// @brief Inherit as a base to disable copy and move
+/**
+ * @brief Base class to disable both copy and move operations.
+ *
+ * Inherit from this class to make derived classes neither copyable nor movable.
+ * This is useful for types that manage unique resources or have
+ * non-transferable state.
+ *
+ * Example usage:
+ * @code
+ * class UniqueResource : private disabled_copy_move {
+ *     // Neither copy nor move operations are available
+ * };
+ * @endcode
+ */
 struct disabled_copy_move : disabled_copy, disabled_move {
   disabled_copy_move() = default;
 };

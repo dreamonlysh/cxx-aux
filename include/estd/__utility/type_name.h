@@ -17,9 +17,25 @@
 
 namespace es {
 
-/// @brief get type name of T
-/// @tparam T a type
-/// @return string view of the T
+/**
+ * @brief Gets the human-readable name of a type at compile time.
+ *
+ * This function uses compiler-specific intrinsics to obtain a string
+ * representation of a type name. The result is constexpr and can be used
+ * at compile time.
+ *
+ * @tparam T The type to get the name for
+ * @return A string_view containing the type name
+ *
+ * @note The exact format of the returned string depends on the compiler
+ * @note Works with Clang, GCC, and MSVC
+ *
+ * Example usage:
+ * @code
+ * constexpr auto name = type_name<int>(); // "int" on most compilers
+ * auto name2 = type_name(42); // Deduces T as int
+ * @endcode
+ */
 template <typename T>
 constexpr std::string_view type_name() {
 #if defined(__clang__) || defined(__GNUC__)
@@ -37,10 +53,16 @@ constexpr std::string_view type_name() {
 #endif
 }
 
-/// @brief get type name of T
-/// @tparam T a type
-/// @param dummy arg used to infer T
-/// @return string view of the T
+/**
+ * @brief Gets the human-readable name of a type from a value.
+ *
+ * This overload deduces the type T from the argument and calls
+ * type_name<T>().
+ *
+ * @tparam T The type to deduce and get the name for
+ * @param Unused parameter for type deduction
+ * @return A string_view containing the type name
+ */
 template <typename T>
 constexpr std::string_view type_name(T&&) {
   return type_name<T>();

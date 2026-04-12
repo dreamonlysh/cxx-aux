@@ -17,9 +17,11 @@
 
 namespace es {
 
-/// @defgroup logic
-/// logic operators &&, || and !
-/// @{
+/**
+ * @defgroup logic Logical Meta Operators
+ * @brief Compile-time logical operators for type traits
+ * @{
+ */
 
 template <typename... T>
 struct __meta_and {};
@@ -33,18 +35,35 @@ struct __meta_and<T, U...>
     : std::conditional_t<std::is_base_of_v<std::true_type, T>, __meta_and<U...>,
                          std::false_type> {};
 
-/// @brief logic operator &&(and) for meta
-/// @tparam T bool_constant meta data, at least one
+/**
+ * @brief Compile-time logical AND for type traits.
+ *
+ * Evaluates to std::true_type if all template arguments inherit from
+ * std::true_type, otherwise std::false_type.
+ *
+ * @tparam T Type traits to check (must be at least one)
+ *
+ * Example usage:
+ * @code
+ * static_assert(meta_and_v<std::true_type, std::true_type>);
+ * static_assert(!meta_and_v<std::true_type, std::false_type>);
+ * static_assert(meta_and_v<std::is_integral<int>, std::is_signed<int>>);
+ * @endcode
+ */
 template <typename... T>
 struct meta_and : __meta_and<T...> {};
 
-/// @brief bool_constant type for meta_and
-/// @tparam T bool_constant meta data, at least one
+/**
+ * @brief Helper type for meta_and.
+ * @tparam T Type traits to check
+ */
 template <typename... T>
 using meta_and_t = typename meta_and<T...>::type;
 
-/// @brief bool_constant value for meta_and
-/// @tparam T bool_constant meta data, at least one
+/**
+ * @brief Helper value for meta_and.
+ * @tparam T Type traits to check
+ */
 template <typename... T>
 constexpr bool meta_and_v = meta_and_t<T...>::value;
 
@@ -60,37 +79,71 @@ struct __meta_or<T, U...>
     : std::conditional_t<std::is_base_of_v<std::true_type, T>, std::true_type,
                          __meta_or<U...>> {};
 
-/// @brief logic operator ||(or) for meta
-/// @tparam T bool_constant meta data, at least one
+/**
+ * @brief Compile-time logical OR for type traits.
+ *
+ * Evaluates to std::true_type if any template argument inherits from
+ * std::true_type, otherwise std::false_type.
+ *
+ * @tparam T Type traits to check (must be at least one)
+ *
+ * Example usage:
+ * @code
+ * static_assert(meta_or_v<std::false_type, std::true_type>);
+ * static_assert(!meta_or_v<std::false_type, std::false_type>);
+ * static_assert(meta_or_v<std::is_integral<int>, std::is_floating_point<int>>);
+ * @endcode
+ */
 template <typename... T>
 struct meta_or : __meta_or<T...> {};
 
-/// @brief bool_constant type for meta_or
-/// @tparam T bool_constant meta data, at least one
+/**
+ * @brief Helper type for meta_or.
+ * @tparam T Type traits to check
+ */
 template <typename... T>
 using meta_or_t = typename meta_or<T...>::type;
 
-/// @brief bool_constant value for meta_or
-/// @tparam T bool_constant meta data, at least one
+/**
+ * @brief Helper value for meta_or.
+ * @tparam T Type traits to check
+ */
 template <typename... T>
 constexpr bool meta_or_v = meta_or<T...>::value;
 
-/// @brief logic operator !(not) for meta
-/// @tparam T bool_constant meta data
+/**
+ * @brief Compile-time logical NOT for type traits.
+ *
+ * Evaluates to std::true_type if T inherits from std::false_type,
+ * otherwise std::false_type.
+ *
+ * @tparam T Type trait to negate
+ *
+ * Example usage:
+ * @code
+ * static_assert(meta_not_v<std::false_type>);
+ * static_assert(!meta_not_v<std::true_type>);
+ * static_assert(meta_not_v<std::is_const<int>>);
+ * @endcode
+ */
 template <typename T>
 struct meta_not : std::bool_constant<!static_cast<bool>(T::value)> {};
 
-/// @brief bool_constant type for meta_not
-/// @tparam T bool_constant meta data
+/**
+ * @brief Helper type for meta_not.
+ * @tparam T Type trait to negate
+ */
 template <typename T>
 using meta_not_t = typename meta_not<T>::type;
 
-/// @brief bool_constant value for meta_not
-/// @tparam T bool_constant meta data
+/**
+ * @brief Helper value for meta_not.
+ * @tparam T Type trait to negate
+ */
 template <typename T>
 constexpr bool meta_not_v = meta_not_t<T>::value;
 
-/// @} logic operator end
+/** @} */
 
 } // namespace es
 #endif // ESTD___META_OPERATORS_H

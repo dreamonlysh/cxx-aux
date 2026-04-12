@@ -28,8 +28,21 @@ struct bytes_of_impl<T[N]> {
 };
 } // namespace __impl_bytes_of
 
-/// @brief A constant of type bytes count
-/// @tparam T type to deduce bytes
+/**
+ * @brief Compile-time constant representing the size of a type in bytes.
+ *
+ * This variable template provides the size of type T in bytes at compile time.
+ * For array types, it returns the total size of all elements.
+ *
+ * @tparam T The type to get the size for
+ *
+ * Example usage:
+ * @code
+ * static_assert(bytes_of<int> == 4);
+ * static_assert(bytes_of<int[10]> == 40);
+ * static_assert(bytes_of<char> == 1);
+ * @endcode
+ */
 template <typename T>
 constexpr auto bytes_of = __impl_bytes_of::bytes_of_impl<T>::value;
 

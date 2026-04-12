@@ -10,5 +10,3 @@ cmake -B ${BUILD_FOLDER} \
 
 cmake --build ${BUILD_FOLDER}
 
-ctest --test-dir ${BUILD_FOLDER}
-

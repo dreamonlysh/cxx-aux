@@ -23,6 +23,39 @@ struct __flat_vector_default_out_of_range_assert {
   constexpr void operator()(bool cond, const char* const msg) const {}
 };
 
+/**
+ * @brief A fixed-capacity vector with stack-allocated storage.
+ *
+ * This container provides a vector-like interface with a fixed maximum capacity
+ * determined at compile time. All storage is allocated on the stack, making it
+ * suitable for embedded systems, real-time applications, or scenarios where
+ * dynamic memory allocation must be avoided.
+ *
+ * Key features:
+ * - Fixed capacity N, allocated on the stack
+ * - Standard vector-like interface
+ * - No dynamic memory allocation
+ * - Bounds checking with customizable assertion behavior
+ * - Supports all standard container operations
+ *
+ * @tparam N Maximum number of elements the container can hold
+ * @tparam T Type of elements
+ * @tparam OutOfRangeAssert Custom assertion handler for out-of-range conditions
+ *
+ * @note The container throws std::out_of_range for operations that would exceed
+ * capacity
+ * @note OutOfRangeAssert can be customized to change behavior (e.g., assert,
+ * log, ignore)
+ *
+ * Example usage:
+ * @code
+ * flat_vector<10, int> vec;
+ * vec.push_back(1);
+ * vec.push_back(2);
+ * vec.push_back(3);
+ * // vec.size() == 3, vec.capacity() == 10
+ * @endcode
+ */
 template <std::size_t N, typename T,
           typename OutOfRangeAssert = __flat_vector_default_out_of_range_assert>
 class flat_vector {
@@ -41,19 +74,40 @@ public:
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
+  /**
+   * @brief Default constructor. Creates an empty vector.
+   */
   constexpr flat_vector() noexcept : cursor_(data_) {}
 
+  /**
+   * @brief Constructs a vector with n default-initialized elements.
+   * @param n Number of elements to create
+   * @throws std::out_of_range if n > N
+   */
   constexpr explicit flat_vector(size_type n) {
     out_of_range_assert(n <= N, "flat_vector size is out of range");
     cursor_ = data_ + n;
   }
 
+  /**
+   * @brief Constructs a vector with n copies of value.
+   * @param n Number of elements to create
+   * @param value Value to fill the vector with
+   * @throws std::out_of_range if n > N
+   */
   constexpr flat_vector(size_type n, const T& value) {
     out_of_range_assert(n <= N, "flat_vector size is out of range");
     cursor_ = data_ + n;
     std::fill(data_, cursor_, value);
   }
 
+  /**
+   * @brief Constructs a vector from an iterator range.
+   * @tparam InputIterator Iterator type
+   * @param first Start of range
+   * @param last End of range
+   * @throws std::out_of_range if distance(first, last) > N
+   */
   template <typename InputIterator,
             typename = std::void_t<
                 typename std::iterator_traits<InputIterator>::value_type>>
@@ -63,6 +117,11 @@ public:
     cursor_ = std::copy(first, last, data_);
   }
 
+  /**
+   * @brief Constructs a vector from an initializer list.
+   * @param il Initializer list
+   * @throws std::out_of_range if il.size() > N
+   */
   constexpr flat_vector(std::initializer_list<T> il) {
     out_of_range_assert(il.size() <= N, "flat_vector size is out of range");
     cursor_ = std::copy(il.begin(), il.end(), data_);
@@ -90,12 +149,25 @@ public:
 
   ~flat_vector() noexcept = default;
 
+  /**
+   * @brief Assigns new contents to the vector, replacing its current contents.
+   * @param n New size
+   * @param value Value to fill with
+   * @throws std::out_of_range if n > N
+   */
   constexpr void assign(size_type n, const T& value) {
     out_of_range_assert(n <= N, "flat_vector size is out of range");
     cursor_ = data_ + n;
     std::fill(data_, cursor_, value);
   }
 
+  /**
+   * @brief Assigns new contents from an iterator range.
+   * @tparam InputIterator Iterator type
+   * @param first Start of range
+   * @param last End of range
+   * @throws std::out_of_range if distance(first, last) > N
+   */
   template <typename InputIterator,
             typename = std::void_t<
                 typename std::iterator_traits<InputIterator>::value_type>>
@@ -105,11 +177,22 @@ public:
     cursor_ = std::copy(first, last, data_);
   }
 
+  /**
+   * @brief Assigns new contents from an initializer list.
+   * @param il Initializer list
+   * @throws std::out_of_range if il.size() > N
+   */
   constexpr void assign(std::initializer_list<T> il) {
     out_of_range_assert(il.size() <= N, "flat_vector size is out of range");
     cursor_ = std::copy(il.begin(), il.end(), data_);
   }
 
+  /**
+   * @brief Assigns new contents from a range.
+   * @tparam RangeT Range type
+   * @param range Range to assign from
+   * @throws std::out_of_range if range size > N
+   */
   template <typename RangeT>
   constexpr void assign_range(const RangeT& range) {
     auto first = std::begin(range);
@@ -119,6 +202,12 @@ public:
     cursor_ = std::copy(first, last, data_);
   }
 
+  /**
+   * @brief Access element with bounds checking.
+   * @param pos Position of element
+   * @return Reference to element
+   * @throws std::out_of_range if pos >= size()
+   */
   constexpr reference at(size_type pos) {
     if (pos >= size()) {
       throw std::out_of_range("flat_vector::at() out of range");
@@ -126,6 +215,12 @@ public:
     return data_[pos];
   }
 
+  /**
+   * @brief Access element with bounds checking (const version).
+   * @param pos Position of element
+   * @return Const reference to element
+   * @throws std::out_of_range if pos >= size()
+   */
   constexpr const_reference at(size_type pos) const {
     if (pos >= size()) {
       throw std::out_of_range("flat_vector::at() out of range");
@@ -315,6 +410,13 @@ public:
     ++cursor_;
   }
 
+  /**
+   * @brief Constructs an element in-place at the end.
+   * @tparam Args Constructor argument types
+   * @param args Arguments to forward to the constructor
+   * @return Reference to the constructed element
+   * @throws std::out_of_range if vector is full
+   */
   template <typename... Args>
   constexpr reference emplace_back(Args&&... args) {
     if (cursor_ == std::end(data_)) {
@@ -325,6 +427,12 @@ public:
     return *(cursor_ - 1);
   }
 
+  /**
+   * @brief Appends elements from a range.
+   * @tparam RangeT Range type
+   * @param range Range to append
+   * @throws std::out_of_range if not enough capacity
+   */
   template <typename RangeT>
   constexpr void append_range(const RangeT& range) {
     auto first = std::begin(range);
@@ -335,6 +443,10 @@ public:
     cursor_ = std::copy(first, last, cursor_);
   }
 
+  /**
+   * @brief Removes the last element.
+   * @throws std::out_of_range if vector is empty
+   */
   constexpr void pop_back() {
     if (cursor_ == std::begin(data_)) {
       throw std::out_of_range("flat_vector pop_back out of range");
@@ -342,8 +454,19 @@ public:
     --cursor_;
   }
 
+  /**
+   * @brief Resizes the vector.
+   * @param count New size
+   * @throws std::out_of_range if count > N
+   */
   constexpr void resize(size_type count) { resize(count, T{}); }
 
+  /**
+   * @brief Resizes the vector with a fill value.
+   * @param count New size
+   * @param value Value to fill new elements with
+   * @throws std::out_of_range if count > N
+   */
   constexpr void resize(size_type count, const T& value) {
     out_of_range_assert(count <= N, "flat_vector resize out of range");
     if (count > size()) {
@@ -352,6 +475,13 @@ public:
     cursor_ = data_ + count;
   }
 
+  /**
+   * @brief Resizes and allows overwriting the content.
+   * @tparam Operation Operation type
+   * @param count Maximum new size
+   * @param op Operation to perform on the buffer
+   * @throws std::out_of_range if operation returns size > N
+   */
   template <typename Operation>
   constexpr void resize_and_overwrite(size_type count, Operation op) {
     auto size = op(data_, capacity());
@@ -359,6 +489,10 @@ public:
     cursor_ = data_ + size;
   }
 
+  /**
+   * @brief Swaps contents with another flat_vector.
+   * @param other Vector to swap with
+   */
   constexpr void swap(flat_vector& other) noexcept {
     auto max = std::max(size(), other.size());
     std::swap_ranges(data_, data_ + max, other.data_);

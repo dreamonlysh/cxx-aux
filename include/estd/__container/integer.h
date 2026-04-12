@@ -17,20 +17,51 @@
 
 namespace es {
 
-/// @brief Type unique integer
-///
-/// used to define units like index/byte/bit/metre/kilometre and so on
-///
-/// @tparam T integer type used to keep data
-/// @tparam   unique type to make each Integer unique
+/**
+ * @brief A type-safe integer wrapper with unique type identity.
+ *
+ * This class template provides strong type safety for integers, preventing
+ * accidental mixing of different integer types (e.g., indices, bytes, bits).
+ * Each instantiation with a different Tag creates a unique type that cannot
+ * be implicitly converted to other Integer types.
+ *
+ * Key features:
+ * - Strong type safety with unique type identity
+ * - Full arithmetic operator support
+ * - Comparison operators
+ * - Implicit conversion to underlying type
+ * - Zero runtime overhead (wrapper is optimized away)
+ *
+ * @tparam T Underlying integer type
+ * @tparam Tag Type tag for creating unique types (default void allows
+ *             direct use)
+ *
+ * Example usage:
+ * @code
+ * using Index = Integer<size_t>;
+ * using Byte = Integer<size_t, struct ByteTag>;
+ *
+ * Index i = 10;
+ * Byte b = 20;
+ * // i = b; // Compile error - different types
+ * // auto sum = i + b; // Compile error - cannot mix types
+ * @endcode
+ */
 template <typename T, typename = void,
           typename = std::enable_if_t<std::is_integral_v<T>>>
 class Integer {
 public:
   using value_type = T;
 
+  /**
+   * @brief Default constructor. Initializes value to 0.
+   */
   constexpr Integer() = default;
 
+  /**
+   * @brief Constructor from a value.
+   * @param v Initial value
+   */
   constexpr explicit Integer(value_type v) : data(v) {}
 
   ~Integer() noexcept = default;
@@ -40,18 +71,39 @@ public:
   constexpr Integer& operator=(const Integer& other) = default;
   constexpr Integer& operator=(Integer&& other) noexcept = default;
 
+  /**
+   * @brief Resets the value.
+   * @param v New value (default 0)
+   */
   constexpr void reset(value_type v = 0) { data = v; }
 
+  /**
+   * @brief Swaps values with another Integer.
+   * @param other Integer to swap with
+   */
   constexpr void swap(Integer& other) noexcept { std::swap(data, other.data); }
 
+  /**
+   * @brief Gets the underlying value.
+   * @return The underlying integer value
+   */
   constexpr value_type value() const noexcept { return data; }
 
+  /**
+   * @brief Implicit conversion to the underlying type.
+   * @return The underlying integer value
+   */
   constexpr explicit operator T() const noexcept { return data; }
 
   /// @defgroup operator_assignment
   /// Assignment operators
   /// @{
 
+  /**
+   * @brief Assignment from underlying type value.
+   * @param v Value to assign
+   * @return Reference to this
+   */
   Integer& operator=(value_type v) {
     data = v;
     return *this;

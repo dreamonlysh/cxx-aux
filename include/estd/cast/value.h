@@ -17,11 +17,43 @@
 
 namespace es {
 
-/// @brief Base class with uid to enable the dyn_cast
-///
-/// the final concrete class should has an static constexpr unsigned member
-/// CLASSID
-/// @tparam DummyT Unique type
+/**
+ * @brief Base class that enables dynamic casting via runtime type
+ * identification.
+ *
+ * This class provides a foundation for implementing dynamic casting in
+ * class hierarchies. Each derived class should:
+ * 1. Inherit from Value<UniqueTag>
+ * 2. Define a static constexpr unsigned CLASSID member
+ * 3. Pass CLASSID to the Value constructor
+ *
+ * The UniqueTag template parameter ensures type safety across different
+ * inheritance hierarchies.
+ *
+ * @tparam DummyT Unique type tag to distinguish different hierarchies
+ *
+ * Example usage:
+ * @code
+ * struct MyHierarchyTag {};
+ *
+ * class Base : public Value<MyHierarchyTag> {
+ * protected:
+ *     Base(unsigned uid) : Value<MyHierarchyTag>(uid) {}
+ * };
+ *
+ * class Derived : public Base {
+ * public:
+ *     static constexpr unsigned CLASSID = 1;
+ *     Derived() : Base(CLASSID) {}
+ * };
+ *
+ * // Now you can use dyn_cast
+ * Base* obj = new Derived();
+ * if (Derived* d = dyn_cast<Derived>(obj)) {
+ *     // Successfully cast
+ * }
+ * @endcode
+ */
 template <typename DummyT>
 class Value {
 public:

@@ -28,8 +28,21 @@ struct bits_of_impl<T[N]> {
 };
 } // namespace __impl_bits_of
 
-/// @brief A constant of type bits count
-/// @tparam T type to deduce bits
+/**
+ * @brief Compile-time constant representing the size of a type in bits.
+ *
+ * This variable template provides the size of type T in bits at compile time.
+ * For array types, it returns the total number of bits across all elements.
+ *
+ * @tparam T The type to get the bit size for
+ *
+ * Example usage:
+ * @code
+ * static_assert(bits_of<int> == 32);
+ * static_assert(bits_of<int[10]> == 320);
+ * static_assert(bits_of<char> == 8);
+ * @endcode
+ */
 template <typename T>
 constexpr auto bits_of = __impl_bits_of::bits_of_impl<T>::value;
 

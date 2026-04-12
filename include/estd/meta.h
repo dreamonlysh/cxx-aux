@@ -102,5 +102,9 @@
 // inline constexpr bool is_std_array_v;
 // template <typename T>
 // struct array_traits;
+// template <typename T>
+// struct to_std_array;
+// template <typename T>
+// using to_std_array_t = typename to_std_array<T>::type;
 
 #endif

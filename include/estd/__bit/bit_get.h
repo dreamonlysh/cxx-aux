@@ -18,28 +18,53 @@
 
 namespace es {
 
-/// @brief get one bit in the position
-///
-/// pos out of bits_of(T) is undefined
-///
-/// @tparam T unsigned integer type
-/// @param v value to get bit
-/// @param pos in range [0, bits_of(T))
-/// @return positional value of T type
+/**
+ * @brief Extracts a single bit from an unsigned integer.
+ *
+ * Returns the value of the bit at the specified position, shifted to
+ * the least significant bit position (either 0 or 1).
+ *
+ * @tparam T Unsigned integer type
+ * @param v Value to extract bit from
+ * @param pos Bit position in range [0, bits_of(T))
+ * @return The bit value (0 or 1) at position pos
+ *
+ * @warning Behavior is undefined if pos >= bits_of(T)
+ *
+ * Example usage:
+ * @code
+ * unsigned value = 0b10101010;
+ * assert(get_bit(value, 0) == 0);  // LSB
+ * assert(get_bit(value, 1) == 1);
+ * assert(get_bit(value, 7) == 1);  // MSB
+ * @endcode
+ */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 constexpr T get_bit(T v, unsigned pos) noexcept {
   return (v >> pos) & static_cast<T>(1u);
 }
 
-/// @brief get n bits in the position
-///
-/// (pos + size) out of bits_of(T) is undefined
-///
-/// @tparam T unsigned integer type
-/// @param v value to get bit
-/// @param pos in range [0, bits_of(T))
-/// @param n in range (0, bits_of(T)]
-/// @return positional value of T type
+/**
+ * @brief Extracts multiple bits from an unsigned integer.
+ *
+ * Extracts n bits starting from position pos, returning them as a
+ * right-aligned value with leading zeros.
+ *
+ * @tparam T Unsigned integer type
+ * @param v Value to extract bits from
+ * @param pos Starting bit position in range [0, bits_of(T))
+ * @param n Number of bits to extract in range (0, bits_of(T)]
+ * @return The extracted bits, right-aligned
+ *
+ * @warning Behavior is undefined if (pos + n) > bits_of(T)
+ *
+ * Example usage:
+ * @code
+ * unsigned value = 0b11010110;
+ * assert(get_bits(value, 2, 3) == 0b101);  // Extract bits 2-4
+ * assert(get_bits(value, 0, 4) == 0b0110); // Extract bits 0-3
+ * @endcode
+ */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 constexpr T get_bits(T v, unsigned pos, unsigned n) noexcept {
   return (v >> pos) & (std::numeric_limits<T>::max() >>

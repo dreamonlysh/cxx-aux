@@ -116,9 +116,44 @@ using MemoryPoolUniformSelector =
 
 } // namespace __impl_memory_pool_uniform
 
-/// @brief A memory pool keeps data of the same bytes
-/// @tparam Size size in byte for members
-/// @tparam BlockSize buffer size designed for a block
+/**
+ * @brief A memory pool for fixed-size allocations.
+ *
+ * This class template provides a memory pool optimized for allocating
+ * memory blocks of a uniform size. It automatically selects the optimal
+ * implementation based on the allocation size:
+ * - Small allocations (< pointer size): Uses bitmap-based allocation
+ * - Large allocations (>= pointer size): Uses stack-based allocation
+ *
+ * Key features:
+ * - Fixed-size allocations only
+ * - Automatic block management
+ * - Memory reuse through pooling
+ * - Support for pool merging
+ *
+ * @tparam Size Size in bytes for each allocation
+ * @tparam BlockSize Buffer size for each memory block (default: 4KB)
+ *
+ * @note BlockSize must be a multiple of 1024 bytes
+ * @note Thread-unsafe; use external synchronization if needed
+ *
+ * Example usage:
+ * @code
+ * // Pool for 64-byte allocations
+ * MemoryPoolUniform<64> pool;
+ *
+ * // Allocate memory
+ * void* mem1 = pool.allocate();
+ * void* mem2 = pool.allocate();
+ *
+ * // Use memory...
+ * memset(mem1, 0, 64);
+ *
+ * // Deallocate memory
+ * pool.deallocate(mem1);
+ * pool.deallocate(mem2);
+ * @endcode
+ */
 template <size_t Size, size_t BlockSize = 4 * 1024>
 class MemoryPoolUniform
     : __impl_memory_pool_uniform::MemoryPoolUniformSelector<Size, BlockSize>,
@@ -133,16 +168,40 @@ public:
   MemoryPoolUniform() = default;
   ~MemoryPoolUniform() noexcept = default;
 
-  /// @brief Acquire a memory of Size bytes
-  /// @return start pointer of a memory
+  /**
+   * @brief Allocates a memory block of Size bytes.
+   *
+   * If there's available memory in existing blocks, reuses it.
+   * Otherwise, allocates a new block and returns memory from it.
+   *
+   * @return Pointer to a memory block of Size bytes
+   * @note Never returns nullptr; throws on allocation failure
+   */
   void* allocate() { return impl_type::allocate(); }
 
-  /// @brief Release a memory to the pool
-  /// @param p pointer of a memory in pool
+  /**
+   * @brief Deallocates a memory block.
+   *
+   * Returns the memory to the pool for reuse. The pointer must have
+   * been allocated from this pool.
+   *
+   * @param p Pointer to the memory block to deallocate
+   *
+   * @warning p must have been allocated from this pool
+   * @warning p must not be null
+   */
   void deallocate(void* p) { impl_type::deallocate(p); }
 
-  /// @brief Merge the members from other to this
-  /// @param other the pool to be moved and clean
+  /**
+   * @brief Merges another pool's memory into this pool.
+   *
+   * Transfers all memory blocks from another pool to this pool.
+   * The other pool is left empty after the merge.
+   *
+   * @param other The pool to merge from
+   *
+   * @warning other must not be used after merge
+   */
   void merge(MemoryPoolUniform& other) { impl_type::merge(other); }
 };
 

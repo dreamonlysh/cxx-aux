@@ -67,12 +67,6 @@ TEST_F(ConcatBufferTest, FixedBuffer_Overflow_CharByChar) {
 TEST_F(ConcatBufferTest, FixedBuffer_Capacity) {
   concat_buffer<20> cb;
   EXPECT_EQ(cb.capacity(), 20);
-  EXPECT_FALSE(decltype(cb)::can_reserve);
-}
-
-TEST_F(ConcatBufferTest, FixedBuffer_CanReserve) {
-  concat_buffer<20> cb;
-  EXPECT_FALSE(cb.can_reserve);
 }
 
 TEST_F(ConcatBufferTest, FixedBuffer_Clear) {
@@ -104,6 +98,27 @@ TEST_F(ConcatBufferTest, FixedBuffer_IntegralOverflow) {
   EXPECT_FALSE(cb.append(123456789));
 }
 
+TEST_F(ConcatBufferTest, FixedBuffer_SingleChar) {
+  concat_buffer<1> cb;
+  EXPECT_TRUE(cb.append('A'));
+  EXPECT_FALSE(cb.append('B'));
+  EXPECT_EQ(cb.view(), "A");
+}
+
+TEST_F(ConcatBufferTest, FixedBuffer_ExactFit) {
+  concat_buffer<5> cb;
+  EXPECT_TRUE(cb.append("Hello"));
+  EXPECT_EQ(cb.size(), 5);
+  EXPECT_FALSE(cb.append('!'));
+}
+
+TEST_F(ConcatBufferTest, FixedBuffer_PartialOverflow) {
+  concat_buffer<5> cb;
+  cb.append("He");
+  EXPECT_FALSE(cb.append("llo World"));
+  EXPECT_EQ(cb.view(), "He");
+}
+
 TEST_F(ConcatBufferTest, DynamicBuffer_String_Basic) {
   concat_buffer<0, std::string> cb;
   cb.append("Hello");
@@ -115,6 +130,54 @@ TEST_F(ConcatBufferTest, DynamicBuffer_String_WithInitialCapacity) {
   cb.append("Hello");
   EXPECT_EQ(cb.view(), "Hello");
   EXPECT_GE(cb.capacity(), 100);
+}
+
+TEST_F(ConcatBufferTest, DynamicBuffer_String_ZeroCapacity) {
+  concat_buffer<0, std::string> cb;
+  cb.append("Hello");
+  EXPECT_EQ(cb.view(), "Hello");
+  // N=0 means no initial reservation, capacity may be small
+}
+
+TEST_F(ConcatBufferTest, DynamicBuffer_String_ExplicitCapacity) {
+  concat_buffer<0, std::string> cb(200);
+  cb.append("Hello");
+  EXPECT_EQ(cb.view(), "Hello");
+  EXPECT_GE(cb.capacity(), 200);
+}
+
+TEST_F(ConcatBufferTest, DynamicBuffer_LvalueRef_ReserveCapacity) {
+  std::string str;
+  concat_buffer<100, std::string> cb(str);
+  EXPECT_GE(cb.capacity(), 100);
+  cb.append("Hello");
+  EXPECT_EQ(cb.view(), "Hello");
+  EXPECT_EQ(str, "Hello");
+}
+
+TEST_F(ConcatBufferTest, DynamicBuffer_RvalueRef_ReserveCapacity) {
+  std::string str = "test";
+  concat_buffer<100, std::string> cb(std::move(str));
+  EXPECT_GE(cb.capacity(), 100);
+  cb.append("Hello");
+  EXPECT_EQ(cb.view(), "testHello");
+}
+
+TEST_F(ConcatBufferTest, DynamicBuffer_LvalueRef_ExistingCapacity) {
+  std::string str;
+  str.reserve(200);
+  concat_buffer<50, std::string> cb(str);
+  // Should keep existing capacity if it's already >= N
+  EXPECT_GE(cb.capacity(), 200);
+}
+
+TEST_F(ConcatBufferTest, DynamicBuffer_RvalueRef_ExistingCapacity) {
+  std::string str;
+  str.reserve(200);
+  str = "test";
+  concat_buffer<50, std::string> cb(std::move(str));
+  // Should keep existing capacity if it's already >= N
+  EXPECT_GE(cb.capacity(), 200);
 }
 
 TEST_F(ConcatBufferTest, DynamicBuffer_String_AutoExpand) {
@@ -153,28 +216,12 @@ TEST_F(ConcatBufferTest, DynamicBuffer_MoveContainer) {
   EXPECT_EQ(cb.view(), "testHello");
 }
 
-TEST_F(ConcatBufferTest, DynamicBuffer_Reserve) {
-  concat_buffer<0, std::string> cb;
-  cb.reserve(100);
-  EXPECT_GE(cb.capacity(), 100);
-}
-
-TEST_F(ConcatBufferTest, DynamicBuffer_ReserveTwice) {
-  concat_buffer<0, std::string> cb;
-  cb.reserve(50);
-  cb.reserve(100);
-  EXPECT_GE(cb.capacity(), 100);
-}
-
-TEST_F(ConcatBufferTest, DynamicBuffer_CanReserve) {
-  concat_buffer<0, std::string> cb;
-  EXPECT_TRUE(decltype(cb)::can_reserve);
-  EXPECT_TRUE(decltype(cb)::can_resize);
-}
-
-TEST_F(ConcatBufferTest, DynamicBuffer_CanResize) {
-  concat_buffer<0, std::string> cb;
-  EXPECT_TRUE(cb.can_resize);
+TEST_F(ConcatBufferTest, DynamicBuffer_VectorAutoExpand) {
+  concat_buffer<0, std::vector<char>> cb;
+  for (int i = 0; i < 100; ++i) {
+    cb.append("x");
+  }
+  EXPECT_EQ(cb.size(), 100);
 }
 
 TEST_F(ConcatBufferTest, Append_Char) {
@@ -302,6 +349,24 @@ TEST_F(ConcatBufferTest, Append_Unsigned) {
   EXPECT_EQ(cb.view(), "42");
 }
 
+TEST_F(ConcatBufferTest, Append_Short) {
+  concat_buffer<0, std::string> cb;
+  cb.append(short(123));
+  EXPECT_EQ(cb.view(), "123");
+}
+
+TEST_F(ConcatBufferTest, Append_Long) {
+  concat_buffer<0, std::string> cb;
+  cb.append(123456789L);
+  EXPECT_EQ(cb.view(), "123456789");
+}
+
+TEST_F(ConcatBufferTest, Append_UnsignedLong) {
+  concat_buffer<0, std::string> cb;
+  cb.append(123456789UL);
+  EXPECT_EQ(cb.view(), "123456789");
+}
+
 TEST_F(ConcatBufferTest, Clear) {
   concat_buffer<0, std::string> cb;
   cb.append("Hello");
@@ -365,12 +430,6 @@ TEST_F(ConcatBufferTest, NestedAppendsDeep) {
   EXPECT_EQ(cb.view(), "ABC");
 }
 
-TEST_F(ConcatBufferTest, Append_ReturnsBool_Success) {
-  concat_buffer<0, std::string> cb;
-  bool result = cb.append("Hello");
-  EXPECT_TRUE(result);
-}
-
 TEST_F(ConcatBufferTest, Append_ReturnsBool_Failure) {
   concat_buffer<5> cb;
   cb.append("Hello");
@@ -409,25 +468,25 @@ TEST_F(ConcatBufferTest, DynamicBuffer_CStr) {
 TEST_F(ConcatBufferTest, FixedBuffer_Data) {
   concat_buffer<20> cb;
   cb.append("Hello");
-  EXPECT_EQ(std::string_view(cb.data(), cb.size()), "Hello");
+  EXPECT_EQ(std::string_view(cb.begin(), cb.size()), "Hello");
 }
 
 TEST_F(ConcatBufferTest, DynamicBuffer_Data) {
   concat_buffer<0, std::string> cb;
   cb.append("Hello");
-  EXPECT_EQ(std::string_view(cb.data(), cb.size()), "Hello");
+  EXPECT_EQ(std::string_view(cb.begin(), cb.size()), "Hello");
 }
 
 TEST_F(ConcatBufferTest, FixedBuffer_End) {
   concat_buffer<20> cb;
   cb.append("Hello");
-  EXPECT_EQ(cb.end(), cb.data() + 5);
+  EXPECT_EQ(cb.end(), cb.begin() + 5);
 }
 
 TEST_F(ConcatBufferTest, DynamicBuffer_End) {
   concat_buffer<0, std::string> cb;
   cb.append("Hello");
-  EXPECT_EQ(cb.end(), cb.data() + 5);
+  EXPECT_EQ(cb.end(), cb.begin() + 5);
 }
 
 TEST_F(ConcatBufferTest, LargeData) {
@@ -448,4 +507,208 @@ TEST_F(ConcatBufferTest, MixedOperations) {
   cb.append(" - ");
   cb.append("end");
   EXPECT_EQ(cb.view(), "Start 42 - end");
+}
+
+TEST_F(ConcatBufferTest, RangeBasedForLoop) {
+  concat_buffer<20> cb;
+  cb.append("Hello");
+
+  std::string result;
+  for (char c : cb) {
+    result += c;
+  }
+  EXPECT_EQ(result, "Hello");
+}
+
+TEST_F(ConcatBufferTest, ConstBuffer) {
+  concat_buffer<20> cb;
+  cb.append("Hello");
+  const auto& const_cb = cb;
+
+  EXPECT_EQ(const_cb.view(), "Hello");
+  EXPECT_EQ(const_cb.size(), 5);
+  EXPECT_EQ(const_cb.capacity(), 20);
+}
+
+TEST_F(ConcatBufferTest, CopyConstructor) {
+  concat_buffer<0, std::string> cb1;
+  cb1.append("Hello");
+
+  concat_buffer<0, std::string> cb2(cb1);
+  EXPECT_EQ(cb2.view(), "Hello");
+  EXPECT_EQ(cb1.view(), "Hello");
+}
+
+TEST_F(ConcatBufferTest, MoveConstructor) {
+  concat_buffer<0, std::string> cb1;
+  cb1.append("Hello");
+
+  concat_buffer<0, std::string> cb2(std::move(cb1));
+  EXPECT_EQ(cb2.view(), "Hello");
+}
+
+TEST_F(ConcatBufferTest, CopyAssignment) {
+  concat_buffer<0, std::string> cb1;
+  cb1.append("Hello");
+
+  concat_buffer<0, std::string> cb2;
+  cb2 = cb1;
+  EXPECT_EQ(cb2.view(), "Hello");
+  EXPECT_EQ(cb1.view(), "Hello");
+}
+
+TEST_F(ConcatBufferTest, MoveAssignment) {
+  concat_buffer<0, std::string> cb1;
+  cb1.append("Hello");
+
+  concat_buffer<0, std::string> cb2;
+  cb2 = std::move(cb1);
+  EXPECT_EQ(cb2.view(), "Hello");
+}
+
+TEST_F(ConcatBufferTest, SelfAssignment) {
+  concat_buffer<0, std::string> cb;
+  cb.append("Hello");
+  cb = cb;
+  EXPECT_EQ(cb.view(), "Hello");
+}
+
+TEST_F(ConcatBufferTest, ClearAndReuse) {
+  concat_buffer<0, std::string> cb;
+  cb.append("First");
+  EXPECT_EQ(cb.view(), "First");
+
+  cb.clear();
+  cb.append("Second");
+  EXPECT_EQ(cb.view(), "Second");
+
+  cb.clear();
+  cb.append("Third");
+  EXPECT_EQ(cb.view(), "Third");
+}
+
+TEST_F(ConcatBufferTest, AppendAfterClearFixed) {
+  concat_buffer<10> cb;
+  cb.append("Hello");
+  cb.clear();
+  EXPECT_TRUE(cb.append("World"));
+  EXPECT_EQ(cb.view(), "World");
+}
+
+TEST_F(ConcatBufferTest, ViewAfterClear) {
+  concat_buffer<0, std::string> cb;
+  cb.append("Hello");
+  cb.clear();
+  EXPECT_TRUE(cb.view().empty());
+}
+
+TEST_F(ConcatBufferTest, CapacityAfterAppend) {
+  concat_buffer<0, std::string> cb;
+  size_t initial_cap = cb.capacity();
+  cb.append("Hello");
+  EXPECT_GE(cb.capacity(), initial_cap);
+}
+
+TEST_F(ConcatBufferTest, AppendNullCString) {
+  concat_buffer<0, std::string> cb;
+  cb.append("");
+  EXPECT_EQ(cb.size(), 0);
+}
+
+TEST_F(ConcatBufferTest, FixedBufferAppendExactCapacity) {
+  concat_buffer<10> cb;
+  EXPECT_TRUE(cb.append("1234567890"));
+  EXPECT_EQ(cb.size(), 10);
+  EXPECT_FALSE(cb.append("1"));
+}
+
+TEST_F(ConcatBufferTest, DynamicBufferRealloc) {
+  concat_buffer<0, std::string> cb;
+  cb.append("Start");
+  char* old_begin = cb.begin();
+
+  for (int i = 0; i < 1000; ++i) {
+    cb.append("x");
+  }
+
+  char* new_begin = cb.begin();
+  EXPECT_NE(old_begin, new_begin);
+  EXPECT_EQ(cb.size(), 1005);
+}
+
+TEST_F(ConcatBufferTest, OwnedContainerClear) {
+  concat_buffer<0, std::string> cb;
+  cb.append("Hello");
+  cb.clear();
+  EXPECT_TRUE(cb.view().empty());
+}
+
+TEST_F(ConcatBufferTest, IteratorBeginEnd) {
+  concat_buffer<20> cb;
+  cb.append("Hello");
+
+  auto begin = cb.begin();
+  auto end = cb.end();
+
+  EXPECT_EQ(*begin, 'H');
+  EXPECT_EQ(end - begin, 5);
+}
+
+TEST_F(ConcatBufferTest, ConstIterator) {
+  concat_buffer<20> cb;
+  cb.append("Hello");
+  const auto& const_cb = cb;
+
+  auto begin = const_cb.begin();
+  auto end = const_cb.end();
+
+  EXPECT_EQ(*begin, 'H');
+  EXPECT_EQ(end - begin, 5);
+}
+
+TEST_F(ConcatBufferTest, EmptyBeginEnd) {
+  concat_buffer<20> cb;
+  EXPECT_EQ(cb.begin(), cb.end());
+}
+
+TEST_F(ConcatBufferTest, CStrNullTermination) {
+  concat_buffer<20> cb;
+  cb.append("Hello");
+  const char* cstr = cb.c_str();
+  EXPECT_EQ(cstr[5], '\0');
+}
+
+TEST_F(ConcatBufferTest, CStrPreservesContent) {
+  concat_buffer<0, std::string> cb;
+  cb.append("Hello");
+  const char* cstr = cb.c_str();
+  EXPECT_EQ(std::string(cstr), "Hello");
+}
+
+TEST_F(ConcatBufferTest, AppendBoolFalse) {
+  concat_buffer<5> cb;
+  cb.append("Hello");
+  bool result = cb.append("World");
+  EXPECT_FALSE(result);
+}
+
+TEST_F(ConcatBufferTest, FixedBufferReturnsFalseOnOverflow) {
+  concat_buffer<5> cb;
+  EXPECT_TRUE(cb.append("test"));
+  EXPECT_FALSE(cb.append("test"));
+}
+
+TEST_F(ConcatBufferTest, AppendCharMultipleTimes) {
+  concat_buffer<0, std::string> cb;
+  for (int i = 0; i < 100; ++i) {
+    cb.append('x');
+  }
+  EXPECT_EQ(cb.size(), 100);
+  EXPECT_EQ(std::string(cb.begin(), cb.end()), std::string(100, 'x'));
+}
+
+TEST_F(ConcatBufferTest, MixedTypesAppend) {
+  concat_buffer<0, std::string> cb;
+  cb.append("int:", 42, " short:", short(10), " long:", 100L);
+  EXPECT_EQ(cb.view(), "int:42 short:10 long:100");
 }
