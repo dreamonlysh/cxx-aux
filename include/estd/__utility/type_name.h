@@ -38,11 +38,27 @@ namespace es {
  */
 template <typename T>
 constexpr std::string_view type_name() {
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__clang__)
   std::string_view funcName = __PRETTY_FUNCTION__;
   auto start = funcName.find_last_of('=') + 2;
   auto end = funcName.find_last_of(']');
   return funcName.substr(start, end - start);
+#elif defined(__GNUC__)
+  std::string_view funcName = __PRETTY_FUNCTION__;
+  // GCC format: "constexpr std::string_view type_name() [with T = int]"
+  // Look for "T = " pattern specifically
+  auto tEq = funcName.find("T = ");
+  if (tEq != std::string_view::npos) {
+    auto start = tEq + 4;
+    auto end = funcName.find(';', start);
+    if (end == std::string_view::npos) {
+      end = funcName.find(']', start);
+    }
+    if (end != std::string_view::npos) {
+      return funcName.substr(start, end - start);
+    }
+  }
+  return "";
 #elif defined(_MSC_VER)
   std::string_view funcName = __FUNCSIG__;
   auto start = funcName.find_last_of('<') + 1;
