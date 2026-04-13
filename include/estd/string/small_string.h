@@ -15,6 +15,7 @@
 #define ESTD_STRING_SMALL_STRING_H
 
 #include "flat_string.h"
+#include <limits>
 #include <string>
 #include <variant>
 
