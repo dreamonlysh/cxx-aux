@@ -1,0 +1,34 @@
+name: coverage
+
+on:
+  pull_request:
+
+jobs:
+
+  coverage:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - run: sudo apt install lcov clang
+
+      - run: |
+
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCXXAUX_ENABLE_TESTS=ON \
+            -DCMAKE_CXX_FLAGS="--coverage"
+
+
+      - run: cmake --build build
+
+      - run: ctest --test-dir build
+
+      - run: |
+
+          lcov --capture \
+            --directory build \
+            --output-file coverage.info
