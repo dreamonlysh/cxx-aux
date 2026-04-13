@@ -15,6 +15,7 @@
 #define ESTD_STRING___ALGORITHM_REPLACE_H
 #include "type_traits_string.h"
 #include <algorithm>
+#include <stdexcept>
 
 namespace es { namespace string {
 

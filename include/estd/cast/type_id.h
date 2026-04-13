@@ -13,6 +13,7 @@
 
 #ifndef ESTD_CAST_TYPE_ID_H
 #define ESTD_CAST_TYPE_ID_H
+#include <cstddef>
 #include <type_traits>
 
 namespace es {

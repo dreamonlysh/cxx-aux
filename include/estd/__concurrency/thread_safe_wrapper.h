@@ -14,6 +14,8 @@
 #ifndef ESTD__CONCURRENCY_THREAD_SAFE_WRAPPER_H
 #define ESTD__CONCURRENCY_THREAD_SAFE_WRAPPER_H
 #include "is_mutex_like.h"
+#include <functional>
+#include <utility>
 
 namespace es {
 namespace __impl_thread_safe_wrapper {

@@ -31,6 +31,22 @@
 
 namespace es { namespace string {
 
+namespace __impl_concat_buffer {
+// Return type for append operations: void for expandable, bool for fixed
+template <typename T = void>
+struct conditional_result {
+  constexpr conditional_result(bool v) : value(v) {}
+  constexpr operator bool() const { return value; }
+  bool value;
+};
+
+template <>
+struct conditional_result<void> {
+  constexpr conditional_result(bool) {}
+  constexpr operator bool() const { return true; }
+};
+} // namespace __impl_concat_buffer
+
 /**
  * @brief A flexible string concatenation buffer with fixed or dynamic storage.
  *
@@ -93,22 +109,8 @@ class concat_buffer {
   static constexpr bool can_expand =
       can_reserve && (can_resize || can_resize_and_overwrite);
 
-  // Return type for append operations: void for expandable, bool for fixed
-  template <typename T = void>
-  struct conditional_flag {
-    constexpr conditional_flag(bool v) : value(v) {}
-    constexpr operator bool() const { return value; }
-    bool value;
-  };
-
-  template <>
-  struct conditional_flag<void> {
-    constexpr conditional_flag(bool) {}
-    constexpr operator bool() const { return true; }
-  };
-
-  using append_result_t =
-      conditional_flag<std::conditional_t<can_expand, void, bool>>;
+  using append_result_t = __impl_concat_buffer::conditional_result<
+      std::conditional_t<can_expand, void, bool>>;
 
 public:
   /**

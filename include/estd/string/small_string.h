@@ -44,7 +44,8 @@ namespace es { namespace string {
  * str += " very long...";  // Switches to std::string (heap)
  * @endcode
  */
-template <size_t N> class small_string {
+template <size_t N>
+class small_string {
   static_assert(N > 0, "small_string N must be greater than 0");
 
   using small_storage_type = flat_string<N>;
@@ -174,8 +175,8 @@ public:
   }
 
   const_pointer data() const noexcept {
-    return std::visit(
-        [](const auto& s) -> const_pointer { return s.data(); }, storage_);
+    return std::visit([](const auto& s) -> const_pointer { return s.data(); },
+                      storage_);
   }
 
   const_pointer c_str() const noexcept {
@@ -211,8 +212,8 @@ public:
   }
 
   size_type capacity() const noexcept {
-    return std::visit(
-        [](const auto& s) -> size_type { return s.capacity(); }, storage_);
+    return std::visit([](const auto& s) -> size_type { return s.capacity(); },
+                      storage_);
   }
 
   void clear() noexcept { storage_ = small_storage_type{}; }
@@ -251,7 +252,9 @@ public:
     return *this;
   }
 
-  small_string& append(const char* s) { return append(s, traits_type::length(s)); }
+  small_string& append(const char* s) {
+    return append(s, traits_type::length(s));
+  }
 
   small_string& append(size_type count, char c) {
     size_type new_size = size() + count;
@@ -264,7 +267,9 @@ public:
     return *this;
   }
 
-  small_string& append(std::string_view sv) { return append(sv.data(), sv.size()); }
+  small_string& append(std::string_view sv) {
+    return append(sv.data(), sv.size());
+  }
 
   small_string& operator+=(const small_string& str) {
     return append(str.data(), str.size());
@@ -620,7 +625,8 @@ std::basic_istream<char>& getline(std::basic_istream<char>& is,
   return is;
 }
 
-template <size_t N> struct hash<es::string::small_string<N>> {
+template <size_t N>
+struct hash<es::string::small_string<N>> {
   size_t operator()(const es::string::small_string<N>& str) const {
     return std::hash<std::string_view>()(str);
   }

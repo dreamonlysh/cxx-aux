@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <charconv>
 #include <cstdint>
+#include <cstring>
 #include <iterator>
 #include <type_traits>
 

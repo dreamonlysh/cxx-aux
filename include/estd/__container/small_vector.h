@@ -15,8 +15,9 @@
 #define ESTD___CONTAINER_SMALL_VECTOR_H
 
 #include "flat_vector.h"
-#include <vector>
+#include <limits>
 #include <variant>
+#include <vector>
 
 namespace es {
 
@@ -43,10 +44,12 @@ namespace es {
  * vec.push_back(1);        // Uses flat_vector<16, int> (stack)
  * vec.push_back(2);        // Still uses flat_vector<16, int>
  * // Add more elements...
- * for (int i = 0; i < 20; ++i) vec.push_back(i);  // Switches to std::vector<int> (heap)
+ * for (int i = 0; i < 20; ++i) vec.push_back(i);  // Switches to
+ * std::vector<int> (heap)
  * @endcode
  */
-template <std::size_t N, typename T> class small_vector {
+template <std::size_t N, typename T>
+class small_vector {
   static_assert(N > 0, "small_vector N must be greater than 0");
 
   using small_storage_type = flat_vector<N, T>;
@@ -178,8 +181,8 @@ public:
   }
 
   const_pointer data() const noexcept {
-    return std::visit(
-        [](const auto& v) -> const_pointer { return v.data(); }, storage_);
+    return std::visit([](const auto& v) -> const_pointer { return v.data(); },
+                      storage_);
   }
 
   iterator begin() noexcept { return data(); }
@@ -218,8 +221,8 @@ public:
   }
 
   size_type capacity() const noexcept {
-    return std::visit(
-        [](const auto& v) -> size_type { return v.capacity(); }, storage_);
+    return std::visit([](const auto& v) -> size_type { return v.capacity(); },
+                      storage_);
   }
 
   void clear() noexcept { storage_ = small_storage_type{}; }
@@ -282,11 +285,13 @@ public:
     size_type new_size = size() + count;
     if (new_size <= small_capacity && is_small()) {
       std::get<small_storage_type>(storage_).insert(
-          std::get<small_storage_type>(storage_).begin() + offset, count, value);
+          std::get<small_storage_type>(storage_).begin() + offset, count,
+          value);
     } else {
       ensure_large();
       std::get<large_storage_type>(storage_).insert(
-          std::get<large_storage_type>(storage_).begin() + offset, count, value);
+          std::get<large_storage_type>(storage_).begin() + offset, count,
+          value);
     }
     return begin() + offset;
   }
@@ -313,7 +318,8 @@ public:
     return insert(pos, il.begin(), il.end());
   }
 
-  template <typename... Args> iterator emplace(const_iterator pos, Args&&... args) {
+  template <typename... Args>
+  iterator emplace(const_iterator pos, Args&&... args) {
     auto offset = pos - begin();
     size_type new_size = size() + 1;
     if (new_size <= small_capacity && is_small()) {
@@ -383,7 +389,8 @@ public:
     }
   }
 
-  template <typename... Args> reference emplace_back(Args&&... args) {
+  template <typename... Args>
+  reference emplace_back(Args&&... args) {
     size_type new_size = size() + 1;
     if (new_size <= small_capacity && is_small()) {
       return std::get<small_storage_type>(storage_).emplace_back(
@@ -483,7 +490,7 @@ void swap(es::small_vector<N, T>& lhs, es::small_vector<N, T>& rhs) noexcept {
 
 template <std::size_t N, typename T, typename U>
 typename es::small_vector<N, T>::size_type erase(es::small_vector<N, T>& c,
-                                                  const U& value) {
+                                                 const U& value) {
   auto first = std::remove(c.begin(), c.end(), value);
   auto count = std::distance(first, c.end());
   c.resize(std::distance(c.begin(), first));
@@ -492,7 +499,7 @@ typename es::small_vector<N, T>::size_type erase(es::small_vector<N, T>& c,
 
 template <std::size_t N, typename T, typename Pred>
 typename es::small_vector<N, T>::size_type erase_if(es::small_vector<N, T>& c,
-                                                     Pred pred) {
+                                                    Pred pred) {
   auto first = std::remove_if(c.begin(), c.end(), pred);
   auto count = std::distance(first, c.end());
   c.resize(std::distance(c.begin(), first));

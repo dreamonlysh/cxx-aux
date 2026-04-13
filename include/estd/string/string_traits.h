@@ -14,6 +14,8 @@
 #ifndef ESTD_STRING_TRAITS_H
 #define ESTD_STRING_TRAITS_H
 #include <estd/meta.h>
+#include <string>
+#include <string_view>
 #include <type_traits>
 
 namespace es { namespace string {
