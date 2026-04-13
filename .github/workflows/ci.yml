@@ -1,4 +1,4 @@
-name: cxx-aux CI
+name: CI
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
       matrix:
 
         os:
-          - ubuntu-24.04
+          - ubuntu-latest
           - macos-latest
 
         compiler:
@@ -96,7 +96,7 @@ jobs:
 
   sanitizer:
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -124,7 +124,7 @@ jobs:
 
   header-check:
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -144,7 +144,7 @@ jobs:
 
   clang-tidy:
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
 
