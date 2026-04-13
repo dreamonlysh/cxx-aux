@@ -595,7 +595,7 @@ void swap(es::string::small_string<N>& lhs,
 template <size_t N>
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
                                      const es::string::small_string<N>& str) {
-  return os << str.data();
+  return os << std::string_view(str.data(), str.size());
 }
 
 template <size_t N>

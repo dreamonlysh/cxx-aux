@@ -16,6 +16,7 @@
 #include "algorithm.h"
 #include <estd/flat_vector.h>
 #include <string>
+#include <string_view>
 
 namespace es { namespace string {
 
@@ -1451,7 +1452,7 @@ template <size_t N, typename OutOfRangeAssert>
 std::basic_ostream<char>&
 operator<<(std::basic_ostream<char>& os,
            const es::string::flat_string<N, OutOfRangeAssert>& str) {
-  return os << str.data();
+  return os << std::string_view(str.data(), str.size());
 }
 
 template <size_t N, typename OutOfRangeAssert>
