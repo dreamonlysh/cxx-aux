@@ -16,7 +16,6 @@
 #include "algorithm.h"
 #include <estd/flat_vector.h>
 #include <string>
-#include <string_view>
 
 namespace es { namespace string {
 
@@ -294,25 +293,25 @@ public:
   constexpr const_reference back() const { return storage_.back(); }
 
   /// @brief Returns a pointer to the underlying data of the string.
-  /// The data is not guaranteed to be null-terminated.
+  /// The data is guaranteed to be null-terminated.
   /// @return A pointer to the underlying data of the string.
-  constexpr value_type* data() noexcept { return storage_.data(); }
+  constexpr value_type* data() noexcept {
+    storage_.data()[size()] = '\0';
+    return storage_.data();
+  }
 
   /// @brief Returns a pointer to the underlying data of the string.
-  /// The data is not guaranteed to be null-terminated.
+  /// The data is guaranteed to be null-terminated.
   /// @return A pointer to the underlying data of the string.
-  constexpr const value_type* data() const noexcept { return storage_.data(); }
+  constexpr const value_type* data() const noexcept {
+    const_cast<pointer>(storage_.data())[size()] = '\0';
+    return storage_.data();
+  }
 
   /// @brief Returns a pointer to the underlying data of the string ending with
   /// a null character.
   /// @return A pointer to the underlying data of the string.
-  /// @note the data is guaranteed to be null-terminated in std::string, however
-  /// c_str is not thought to be used frequently, so the null-terminated is
-  /// assigned when c_str called.
-  constexpr const value_type* c_str() const noexcept {
-    const_cast<pointer>(storage_.data())[size()] = '\0';
-    return storage_.data();
-  }
+  constexpr const value_type* c_str() const noexcept { return data(); }
 
   constexpr
   operator std::basic_string_view<value_type, traits_type>() const noexcept {
@@ -1452,7 +1451,7 @@ template <size_t N, typename OutOfRangeAssert>
 std::basic_ostream<char>&
 operator<<(std::basic_ostream<char>& os,
            const es::string::flat_string<N, OutOfRangeAssert>& str) {
-  return os << std::string_view(str.data(), str.size());
+  return os << str.data();
 }
 
 template <size_t N, typename OutOfRangeAssert>

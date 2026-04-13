@@ -180,12 +180,7 @@ public:
                       storage_);
   }
 
-  const_pointer c_str() const noexcept {
-    if (is_small()) {
-      return std::get<small_storage_type>(storage_).c_str();
-    }
-    return std::get<large_storage_type>(storage_).c_str();
-  }
+  const_pointer c_str() const noexcept { return data(); }
 
   operator std::string_view() const noexcept {
     return std::string_view(data(), size());
@@ -595,7 +590,7 @@ void swap(es::string::small_string<N>& lhs,
 template <size_t N>
 std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os,
                                      const es::string::small_string<N>& str) {
-  return os << std::string_view(str.data(), str.size());
+  return os << str.data();
 }
 
 template <size_t N>
