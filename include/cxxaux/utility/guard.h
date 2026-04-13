@@ -24,7 +24,7 @@ public:
   ~__Guard() noexcept { __destruct(); }
 
 private:
-  T&& __destruct;
+  T __destruct;
 };
 
 template <typename T>

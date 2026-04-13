@@ -342,9 +342,9 @@ TEST(NumericType, ShortName) {
   ASSERT_EQ(es::NumericType::short_name(es::NTC_UNSIGNED_LONGLONG), "u64");
   ASSERT_EQ(es::NumericType::short_name(es::NTC_FLOAT), "f32");
   ASSERT_EQ(es::NumericType::short_name(es::NTC_DOUBLE), "f64");
-  if constexpr (sizeof(long double) == 64)
+  if constexpr (sizeof(long double) == 8)
     ASSERT_EQ(es::NumericType::short_name(es::NTC_LONGDOUBLE), "f64");
-  else if constexpr (sizeof(long double) == 80)
+  else if constexpr (sizeof(long double) == 10)
     ASSERT_EQ(es::NumericType::short_name(es::NTC_LONGDOUBLE), "f80");
   else
     ASSERT_EQ(es::NumericType::short_name(es::NTC_LONGDOUBLE), "f128");
