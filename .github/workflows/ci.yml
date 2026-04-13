@@ -11,15 +11,10 @@ jobs:
 ########################################
 
   build:
-
     name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-cxx${{ matrix.std }}
-
     runs-on: ${{ matrix.os }}
-
     strategy:
-
       fail-fast: false
-
       matrix:
 
         os:
