@@ -1,0 +1,158 @@
+name: cxx-aux CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+
+########################################
+# matrix build + gtest + ctest
+########################################
+
+  build:
+
+    name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.build_type }}-cxx${{ matrix.std }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+
+      fail-fast: false
+
+      matrix:
+
+        os:
+          - ubuntu-24.04
+          - macos-latest
+
+        compiler:
+          - gcc
+          - clang
+
+        build_type:
+          - Debug
+          - Release
+
+        std:
+          - 20
+          - 23
+
+        exclude:
+
+          - os: macos-latest
+            compiler: gcc
+
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+
+      - name: install compiler (linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            sudo apt install -y g++
+          else
+            sudo apt install -y clang
+          fi
+
+
+      - name: setup compiler
+        run: |
+
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            echo "CC=gcc" >> $GITHUB_ENV
+            echo "CXX=g++" >> $GITHUB_ENV
+          else
+            echo "CC=clang" >> $GITHUB_ENV
+            echo "CXX=clang++" >> $GITHUB_ENV
+          fi
+
+
+      - name: configure
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_CXX_STANDARD=${{ matrix.std }} \
+            -DCXXAUX_ENABLE_TESTS=ON
+
+
+      - name: build
+        run: cmake --build build -j
+
+
+      - name: run tests
+        run: ctest --test-dir build --output-on-failure
+
+
+
+########################################
+# sanitizer gate
+########################################
+
+  sanitizer:
+
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - run: sudo apt install clang
+
+      - run: |
+
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined" \
+            -DCXXAUX_ENABLE_TESTS=ON
+
+
+      - run: cmake --build build
+
+      - run: ctest --test-dir build --output-on-failure
+
+
+
+########################################
+# header-only compile test
+########################################
+
+  header-check:
+
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - run: |
+
+          echo '#include <estd/__container/maybe_owned.h>' > test.cpp
+
+          clang++ -std=c++23 test.cpp -Iinclude
+
+
+
+########################################
+# clang-tidy static analysis
+########################################
+
+  clang-tidy:
+
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - run: sudo apt install clang-tidy
+
+      - run: |
+
+          clang-tidy tests/*.cpp \
+            -- -Iinclude
