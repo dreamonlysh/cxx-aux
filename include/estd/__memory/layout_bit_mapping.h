@@ -231,18 +231,39 @@ using layout_bit_mapping_selector_t =
 /**
  * @brief Memory layout with bit mapping for fixed-size member allocation.
  *
- * This class configures memory with leading bits used as a bitmap to track
- * allocation status of fixed-size members. It supports two hierarchy levels
- * for efficient memory usage:
+ * This class manages a large memory block with a bitmap header for tracking
+ * allocation status of fixed-size members. It is specifically designed for
+ * small objects that are too small to hold a pointer (e.g., objects smaller
+ * than sizeof(void*)).
  *
- * **Hierarchy 1** (for smaller memory blocks):
+ * **Why bitmap for small objects?**
+ * - For objects >= sizeof(void*), we can use the object's memory to store
+ *   a pointer to the next free slot (like layout_stack).
+ * - For objects < sizeof(void*), we cannot store a pointer in the object.
+ * - Bitmap header provides external tracking: 1 bit per slot.
+ *
+ * **Memory Layout:**
+ * ```
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │  Header (bitmap)  │         Data Area (members)      │   Tail   │
+ * │  N bytes          │  member_capacity * MemberBytes   │ unused   │
+ * └─────────────────────────────────────────────────────────────────┘
+ * ```
+ *
+ * The header is a bitmap where each bit represents slot status:
+ * - bit 0: slot is available (not acquired)
+ * - bit 1: slot is in use (acquired)
+ *
+ * **Hierarchy Levels:**
+ *
+ * Hierarchy 1 (for smaller memory blocks):
  * ```
  *     header                 data             tail
  * m1: | bits_of<MappingType> | {n}MemberBytes | ? |
  * ```
  * The tail contains unused bytes smaller than one MemberBytes.
  *
- * **Hierarchy 2** (for larger memory blocks):
+ * Hierarchy 2 (for larger memory blocks):
  * ```
  *     1st header             2nd headers              data             tail
  * m1: | bits_of<MappingType> | {m}bits_of<MappingType> | {n}MemberBytes | ? |
@@ -255,6 +276,7 @@ using layout_bit_mapping_selector_t =
  * long long)
  *
  * @note The hierarchy level is automatically selected based on MemoryBytes
+ * @note Best for small objects (< sizeof(void*)) that cannot hold a pointer
  *
  * Example usage:
  * @code

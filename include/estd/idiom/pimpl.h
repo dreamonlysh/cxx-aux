@@ -19,13 +19,13 @@
 namespace es { namespace idiom {
 
 /**
- * @brief Traits for configuring Pimpl implementation.
+ * @brief Traits for configuring pimpl implementation.
  *
- * Specialize this template for each class using Pimpl to define:
+ * Specialize this template for each class using pimpl to define:
  * - impl_type: The actual implementation type
- * - pimpl_type: The Pimpl base type (optional, for multiple inheritance)
+ * - pimpl_type: The pimpl base type (optional, for multiple inheritance)
  *
- * @tparam T The class that uses Pimpl
+ * @tparam T The class that uses pimpl
  *
  * Example specialization:
  * @code
@@ -34,20 +34,20 @@ namespace es { namespace idiom {
  * template <>
  * struct pimpl_traits<Widget> {
  *     using impl_type = WidgetImpl;
- *     using pimpl_type = Pimpl<Widget, 64>;  // Optional
+ *     using pimpl_type = pimpl<Widget, 64>;  // Optional
  * };
  * @endcode
  */
 template <typename T>
 struct pimpl_traits {
   // using impl_type = TImpl;
-  // using pimpl_type = Pimpl<T, N>;
+  // using pimpl_type = pimpl<T, N>;
 };
 
 /**
- * @brief Performance-optimized Pimpl (Pointer to Implementation) idiom helper.
+ * @brief Performance-optimized pimpl (Pointer to Implementation) idiom helper.
  *
- * This class template implements the Pimpl idiom with optional inline storage
+ * This class template implements the pimpl idiom with optional inline storage
  * optimization. When storage_size > 0, the implementation is stored inline
  * within the object, avoiding heap allocation.
  *
@@ -57,7 +57,7 @@ struct pimpl_traits {
  * - Binary compatibility across library boundaries
  * - Reduced compilation dependencies
  *
- * @tparam T The class that inherits from Pimpl
+ * @tparam T The class that inherits from pimpl
  * @tparam storage_size Bytes to reserve for inline storage (0 = heap
  * allocation)
  *
@@ -67,7 +67,7 @@ struct pimpl_traits {
  * Example usage (inline storage):
  * @code
  * // widget.h
- * class Widget : public Pimpl<Widget, 64> {
+ * class Widget : public pimpl<Widget, 64> {
  * public:
  *     void doSomething();
  * };
@@ -93,7 +93,7 @@ struct pimpl_traits {
  * @endcode
  */
 template <typename T, unsigned storage_size = 0>
-class Pimpl {
+class pimpl {
 public:
   /**
    * @brief Memory bytes allocated for inline storage.
@@ -115,7 +115,7 @@ public:
    * @throws Static assertion if storage_size is insufficient
    */
   template <typename... Args>
-  Pimpl(Args&&... args) {
+  pimpl(Args&&... args) {
     using impl_type = typename pimpl_traits<T>::impl_type;
     static_assert(sizeof(impl_type) <= pimpl_storage_size,
                   "the storage size is not enough to hold the impl");
@@ -127,34 +127,34 @@ public:
    *
    * Calls the implementation's destructor in-place.
    */
-  ~Pimpl() noexcept {
+  ~pimpl() noexcept {
     using impl_type = typename pimpl_traits<T>::impl_type;
     reinterpret_cast<impl_type*>(__pimpl_storage)->~impl_type();
   }
 
-  Pimpl(const Pimpl&) = delete;
+  pimpl(const pimpl&) = delete;
 
   /**
    * @brief Move constructor.
    *
-   * Swaps storage with the other Pimpl object.
+   * Swaps storage with the other pimpl object.
    * This is a shallow move suitable for inline storage.
    *
-   * @param other Pimpl to move from
+   * @param other pimpl to move from
    */
-  Pimpl(Pimpl&& other) noexcept {
+  pimpl(pimpl&& other) noexcept {
     std::swap(__pimpl_storage, other.__pimpl_storage);
   }
 
-  Pimpl& operator=(const Pimpl&) = delete;
+  pimpl& operator=(const pimpl&) = delete;
 
   /**
    * @brief Move assignment operator.
    *
-   * @param other Pimpl to move from
+   * @param other pimpl to move from
    * @return Reference to this
    */
-  Pimpl& operator=(Pimpl&& other) noexcept {
+  pimpl& operator=(pimpl&& other) noexcept {
     std::swap(__pimpl_storage, other.__pimpl_storage);
     return *this;
   }
@@ -164,12 +164,12 @@ private:
 };
 
 /**
- * @brief Traditional Pimpl with heap allocation.
+ * @brief Traditional pimpl with heap allocation.
  *
  * This specialization uses heap allocation for the implementation,
  * suitable when the implementation size is unknown or very large.
  *
- * @tparam T The class that inherits from Pimpl
+ * @tparam T The class that inherits from pimpl
  *
  * @note Implementation is heap-allocated
  * @note Move operations swap pointers (fast)
@@ -177,7 +177,7 @@ private:
  * Example usage (heap allocation):
  * @code
  * // widget.h
- * class Widget : public Pimpl<Widget> {  // storage_size = 0
+ * class Widget : public pimpl<Widget> {  // storage_size = 0
  * public:
  *     void doSomething();
  * };
@@ -199,7 +199,7 @@ private:
  * @endcode
  */
 template <typename T>
-class Pimpl<T, 0> {
+class pimpl<T, 0> {
 public:
   /**
    * @brief Memory bytes allocated (0 = heap allocation).
@@ -218,7 +218,7 @@ public:
    * @param args Arguments to forward to implementation constructor
    */
   template <typename... Args>
-  Pimpl(Args&&... args) {
+  pimpl(Args&&... args) {
     using impl_type = typename pimpl_traits<T>::impl_type;
     __pimpl_storage = new impl_type(std::forward<Args>(args)...);
   }
@@ -226,33 +226,33 @@ public:
   /**
    * @brief Destructs and deallocates the implementation.
    */
-  ~Pimpl() noexcept {
+  ~pimpl() noexcept {
     using impl_type = typename pimpl_traits<T>::impl_type;
     delete static_cast<impl_type*>(__pimpl_storage);
   }
 
-  Pimpl(const Pimpl&) = delete;
+  pimpl(const pimpl&) = delete;
 
   /**
    * @brief Move constructor.
    *
-   * Swaps pointers with the other Pimpl object.
+   * Swaps pointers with the other pimpl object.
    *
-   * @param other Pimpl to move from
+   * @param other pimpl to move from
    */
-  Pimpl(Pimpl&& other) noexcept {
+  pimpl(pimpl&& other) noexcept {
     std::swap(__pimpl_storage, other.__pimpl_storage);
   }
 
-  Pimpl& operator=(const Pimpl&) = delete;
+  pimpl& operator=(const pimpl&) = delete;
 
   /**
    * @brief Move assignment operator.
    *
-   * @param other Pimpl to move from
+   * @param other pimpl to move from
    * @return Reference to this
    */
-  Pimpl& operator=(Pimpl&& other) noexcept {
+  pimpl& operator=(pimpl&& other) noexcept {
     std::swap(__pimpl_storage, other.__pimpl_storage);
     return *this;
   }
@@ -275,7 +275,7 @@ META_HAS_MEMBER_TYPE(pimpl_type);
  * @return Pointer to the implementation object
  *
  * @note Preserves const-ness: if ptr is const, returns const ImplType*
- * @note Handles multiple Pimpl inheritance via pimpl_type trait
+ * @note Handles multiple pimpl inheritance via pimpl_type trait
  *
  * Example usage:
  * @code
@@ -293,10 +293,10 @@ auto pimpl_cast(T* ptr) {
   using PureT = std::remove_cv_t<T>;
   using ImplType = typename pimpl_traits<PureT>::impl_type;
   using RetT = std::add_pointer_t<es::add_const_as_t<ImplType, T>>;
-  // Handle multiple Pimpl inheritance by routing through pimpl_type
+  // Handle multiple pimpl inheritance by routing through pimpl_type
   if constexpr (has_member_pimpl_type_v<pimpl_traits<PureT>>) {
-    using PimplType = typename pimpl_traits<PureT>::pimpl_type;
-    using SrcT = std::add_pointer_t<es::add_const_as_t<PimplType, T>>;
+    using pimpl_type = typename pimpl_traits<PureT>::pimpl_type;
+    using SrcT = std::add_pointer_t<es::add_const_as_t<pimpl_type, T>>;
     return reinterpret_cast<RetT>(static_cast<SrcT>(ptr)->__pimpl_storage);
   } else {
     return reinterpret_cast<RetT>(ptr->__pimpl_storage);

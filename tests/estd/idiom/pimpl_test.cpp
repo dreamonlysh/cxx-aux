@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-class A : public es::idiom::Pimpl<A, 64> {
+class A : public es::idiom::pimpl<A, 64> {
 public:
   A(std::ostringstream& oss, int delta);
 
@@ -27,11 +27,11 @@ private:
 template <>
 struct es::idiom::pimpl_traits<A> {
   using impl_type = AImpl;
-  using pimpl_type = es::idiom::Pimpl<A, 64>; // optional
+  using pimpl_type = es::idiom::pimpl<A, 64>; // optional
 };
 
 A::A(std::ostringstream& oss, int delta)
-    : es::idiom::Pimpl<A, 64>(oss, delta) {}
+    : es::idiom::pimpl<A, 64>(oss, delta) {}
 
 int A::add(int lhs, int rhs) { return pimpl_cast(this)->add(lhs, rhs); }
 
@@ -47,7 +47,7 @@ TEST(PimplTest, WithStorageEmbed) {
   ASSERT_EQ(oss.str(), "~AImpl");
 }
 
-class B : public es::idiom::Pimpl<B> {
+class B : public es::idiom::pimpl<B> {
 public:
   B(std::ostringstream& oss, int delta);
 
@@ -72,10 +72,10 @@ private:
 template <>
 struct es::idiom::pimpl_traits<B> {
   using impl_type = BImpl;
-  using pimpl_type = es::idiom::Pimpl<B>; // optional
+  using pimpl_type = es::idiom::pimpl<B>; // optional
 };
 
-B::B(std::ostringstream& oss, int delta) : es::idiom::Pimpl<B>(oss, delta) {}
+B::B(std::ostringstream& oss, int delta) : es::idiom::pimpl<B>(oss, delta) {}
 
 int B::add(int lhs, int rhs) { return pimpl_cast(this)->add(lhs, rhs); }
 
@@ -91,7 +91,7 @@ TEST(PimplTest, Default) {
   ASSERT_EQ(oss.str(), "~BImpl");
 }
 
-class C : public es::idiom::Pimpl<C, 4> {
+class C : public es::idiom::pimpl<C, 4> {
 public:
   C(int data);
   int get() const;
@@ -111,7 +111,7 @@ struct es::idiom::pimpl_traits<C> {
   using impl_type = CImpl;
 };
 
-C::C(int data) : es::idiom::Pimpl<C, 4>(data) {}
+C::C(int data) : es::idiom::pimpl<C, 4>(data) {}
 
 int C::get() const { return pimpl_cast(this)->get(); }
 
@@ -123,7 +123,7 @@ TEST(PimplTest, MoveWithStorageEmbed) {
   ASSERT_EQ(c3.get(), 10);
 }
 
-class D : public es::idiom::Pimpl<D> {
+class D : public es::idiom::pimpl<D> {
 public:
   D(int data);
   int get() const;
@@ -143,7 +143,7 @@ struct es::idiom::pimpl_traits<D> {
   using impl_type = DImpl;
 };
 
-D::D(int data) : es::idiom::Pimpl<D>(data) {}
+D::D(int data) : es::idiom::pimpl<D>(data) {}
 
 int D::get() const { return pimpl_cast(this)->get(); }
 

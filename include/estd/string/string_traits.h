@@ -89,10 +89,6 @@ template <typename CharT, typename Traits>
 struct is_string_like<std::basic_string_view<CharT, Traits>>
     : std::bool_constant<true> {};
 
-template <size_t N, typename OutOfRangeAssert>
-struct is_string_like<flat_string<N, OutOfRangeAssert>>
-    : std::bool_constant<true> {};
-
 /**
  * @brief Helper variable template for is_string_like.
  * @tparam T Type to check

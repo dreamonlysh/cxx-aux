@@ -21,22 +21,40 @@ namespace es { namespace memory {
 /**
  * @brief Memory layout that implements a backward-linked list stack.
  *
- * This class configures memory as a stack where each memory segment
- * uses the leading sizeof(void*) bytes to store the predecessor address.
+ * This class manages memory segments by using the unused object memory itself
+ * to store a pointer to the previous unused memory segment. This forms a linked
+ * list (stack) of free memory segments.
  *
- * Memory layout example:
+ * **Why this design works:**
+ * - When memory is NOT in use (free), we can reuse its first sizeof(void*)
+ * bytes to store a pointer to the previous free segment.
+ * - When memory IS in use, the user owns the entire segment including header.
+ * - This requires objects to be at least sizeof(void*) bytes.
+ *
+ * **Memory Layout (each segment uses its header to store predecessor
+ * pointer):**
  * ```
- *     header   data
- * m1: |  null  |  {x}B  |
- * m2: |  &m1   |  {y}B  |
- * m3: |  &m2   |  {z}B  |
+ * ┌─────────────────────────────────────────────────────────────────┐
+ * │  Segment 1    │  Segment 2    │  Segment 3    │  ...            │
+ * │  ┌─────┬────┐ │  ┌─────┬────┐ │  ┌─────┬────┐ │                 │
+ * │  │prev │data│ │  │prev │data│ │  │prev │data│ │                 │
+ * │  │null │    │ │  │ &S1 │    │ │  │ &S2 │    │ │                 │
+ * │  └─────┴────┘ │  └─────┴────┘ │  └─────┴────┘ │                 │
+ * └─────────────────────────────────────────────────────────────────┘
  * ```
  *
- * Each segment stores a pointer to the previous segment, forming a chain.
- * This enables efficient stack operations (push/pop) on memory segments.
+ * **Memory segment states:**
+ * - IN USE:  [  user data  |  user data  |  ...  ]
+ * - FREE:    [ prev ptr    |  (unused)   |  ...  ]
+ *
+ * When a segment is pushed onto the stack:
+ * - The first sizeof(void*) bytes store the address of the previous top
+ * - The stack's top pointer is updated to this segment
  *
  * @note The size of each memory segment is unknown to the stack
  * @note Minimum segment size is sizeof(void*) for the header
+ * @note Best for large objects (>= sizeof(void*)) that can hold a pointer
+ * @note For smaller objects, use layout_bit_mapping instead
  *
  * Example usage:
  * @code
