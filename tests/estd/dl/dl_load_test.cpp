@@ -42,6 +42,13 @@ TEST(dl, loadNoOverride) {
 
 #ifdef LM_ID_NEWLM
 TEST(dl, loadNewLM) {
+#if defined(__SANITIZE_ADDRESS__)
+  GTEST_SKIP() << "dlmopen (LM_ID_NEWLM) is incompatible with AddressSanitizer";
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+  GTEST_SKIP() << "dlmopen (LM_ID_NEWLM) is incompatible with AddressSanitizer";
+#endif
+#endif
   const char* file;
   if constexpr (is_win_v)
     file = "./dl/libdll1.dll";

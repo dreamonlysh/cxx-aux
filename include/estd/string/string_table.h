@@ -125,7 +125,7 @@ public:
   std::string_view store(std::string_view s) {
     if (cursor_ == string_pointer_capacity) {
       storage_.emplace_front();
-      cursor_ = 1;
+      cursor_ = 0;
     }
     auto current = cursor_++;
 
