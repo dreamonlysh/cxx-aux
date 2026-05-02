@@ -52,8 +52,8 @@ struct disabled_copy {
  */
 struct disabled_move {
   disabled_move() = default;
-  disabled_move(disabled_copy&&) = delete;
-  disabled_move& operator=(disabled_copy&&) = delete;
+  disabled_move(disabled_move&&) = delete;
+  disabled_move& operator=(disabled_move&&) = delete;
 };
 
 /**

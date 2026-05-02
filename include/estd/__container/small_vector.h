@@ -343,10 +343,6 @@ public:
     } else {
       auto& large = std::get<large_storage_type>(storage_);
       large.erase(large.begin() + offset);
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.begin(), large.end());
-        storage_ = std::move(small);
-      }
     }
     return begin() + offset;
   }
@@ -361,10 +357,6 @@ public:
     } else {
       auto& large = std::get<large_storage_type>(storage_);
       large.erase(large.begin() + offset, large.begin() + offset + count);
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.begin(), large.end());
-        storage_ = std::move(small);
-      }
     }
     return begin() + offset;
   }
@@ -408,10 +400,6 @@ public:
     } else {
       auto& large = std::get<large_storage_type>(storage_);
       large.pop_back();
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.begin(), large.end());
-        storage_ = std::move(small);
-      }
     }
   }
 

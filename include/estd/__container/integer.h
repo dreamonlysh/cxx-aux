@@ -109,28 +109,28 @@ public:
     return *this;
   }
 
-#define __INTEGER_ASSIGNMENT_OPERTOR(op)                                       \
+#define __INTEGER_ASSIGNMENT_OPERATOR(op)                                      \
   template <typename U, typename = std::enable_if_t<std::is_integral_v<U>>>    \
-  constexpr Integer& operator op(const U & v) {                                \
+  constexpr Integer& operator op(const U& v) {                                 \
     data op v;                                                                 \
     return *this;                                                              \
   }                                                                            \
                                                                                \
-  constexpr Integer& operator op(const Integer & v) {                          \
+  constexpr Integer& operator op(const Integer& v) {                           \
     data op v.data;                                                            \
     return *this;                                                              \
   }
 
-  __INTEGER_ASSIGNMENT_OPERTOR(+=)
-  __INTEGER_ASSIGNMENT_OPERTOR(-=)
-  __INTEGER_ASSIGNMENT_OPERTOR(*=)
-  __INTEGER_ASSIGNMENT_OPERTOR(/=)
-  __INTEGER_ASSIGNMENT_OPERTOR(%=)
-  __INTEGER_ASSIGNMENT_OPERTOR(&=)
-  __INTEGER_ASSIGNMENT_OPERTOR(|=)
-  __INTEGER_ASSIGNMENT_OPERTOR(^=)
-  __INTEGER_ASSIGNMENT_OPERTOR(<<=)
-  __INTEGER_ASSIGNMENT_OPERTOR(>>=)
+  __INTEGER_ASSIGNMENT_OPERATOR(+=)
+  __INTEGER_ASSIGNMENT_OPERATOR(-=)
+  __INTEGER_ASSIGNMENT_OPERATOR(*=)
+  __INTEGER_ASSIGNMENT_OPERATOR(/=)
+  __INTEGER_ASSIGNMENT_OPERATOR(%=)
+  __INTEGER_ASSIGNMENT_OPERATOR(&=)
+  __INTEGER_ASSIGNMENT_OPERATOR(|=)
+  __INTEGER_ASSIGNMENT_OPERATOR(^=)
+  __INTEGER_ASSIGNMENT_OPERATOR(<<=)
+  __INTEGER_ASSIGNMENT_OPERATOR(>>=)
 
   /// @}
 
@@ -170,7 +170,7 @@ private:
 /// Comparison operators
 /// @{
 
-#define __INTEGER_COMPARISION_OPERTOR(op)                                      \
+#define __INTEGER_COMPARISON_OPERATOR(op)                                      \
   template <typename T, typename Tag>                                          \
   constexpr bool operator op(const Integer<T, Tag>& lhs,                       \
                              const Integer<T, Tag>& rhs) {                     \
@@ -189,12 +189,12 @@ private:
     return lhs op rhs.value();                                                 \
   }
 
-__INTEGER_COMPARISION_OPERTOR(==)
-__INTEGER_COMPARISION_OPERTOR(!=)
-__INTEGER_COMPARISION_OPERTOR(<)
-__INTEGER_COMPARISION_OPERTOR(>)
-__INTEGER_COMPARISION_OPERTOR(<=)
-__INTEGER_COMPARISION_OPERTOR(>=)
+__INTEGER_COMPARISON_OPERATOR(==)
+__INTEGER_COMPARISON_OPERATOR(!=)
+__INTEGER_COMPARISON_OPERATOR(<)
+__INTEGER_COMPARISON_OPERATOR(>)
+__INTEGER_COMPARISON_OPERATOR(<=)
+__INTEGER_COMPARISON_OPERATOR(>=)
 
 /// @}
 
@@ -202,24 +202,24 @@ __INTEGER_COMPARISION_OPERTOR(>=)
 /// Arithmetic operators
 /// @{
 
-#define __INTEGER_ARITHMETIC_UNARY_OPERTOR(op)                                 \
+#define __INTEGER_ARITHMETIC_UNARY_OPERATOR(op)                                \
   template <typename T, typename Tag>                                          \
   constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& v) {            \
     return Integer<T, Tag>{op(v.value())};                                     \
   }
 
-#define __INTEGER_ARITHMETIC_BINARY_OPERTOR_II(op)                             \
+#define __INTEGER_ARITHMETIC_BINARY_OPERATOR_II(op)                            \
   template <typename T, typename Tag>                                          \
   constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& lhs,            \
                                         const Integer<T, Tag>& rhs) {          \
     return Integer<T, Tag>{lhs.value() op rhs.value()};                        \
   }
 
-#define __INTEGER_ARITHMETIC_BINARY_OPERTOR_IV(op)                             \
+#define __INTEGER_ARITHMETIC_BINARY_OPERATOR_IV(op)                            \
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
   constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& lhs,            \
-                                        const U & rhs) {                       \
+                                        const U& rhs) {                        \
     auto tmp = lhs.value() op rhs;                                             \
     static_assert(                                                             \
         std::is_same_v<decltype(tmp), T>,                                      \
@@ -227,10 +227,10 @@ __INTEGER_COMPARISION_OPERTOR(>=)
     return Integer<T, Tag>{tmp};                                               \
   }
 
-#define __INTEGER_ARITHMETIC_BINARY_OPERTOR_VI2I(op)                           \
+#define __INTEGER_ARITHMETIC_BINARY_OPERATOR_VI2I(op)                          \
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
-  constexpr Integer<T, Tag> operator op(const U & lhs,                         \
+  constexpr Integer<T, Tag> operator op(const U& lhs,                          \
                                         const Integer<T, Tag>& rhs) {          \
     auto tmp = lhs op rhs.value();                                             \
     static_assert(                                                             \
@@ -239,40 +239,40 @@ __INTEGER_COMPARISION_OPERTOR(>=)
     return Integer<T, Tag>{tmp};                                               \
   }
 
-#define __INTEGER_ARITHMETIC_BINARY_OPERTOR_VI2V(op)                           \
+#define __INTEGER_ARITHMETIC_BINARY_OPERATOR_VI2V(op)                          \
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
   constexpr U operator op(const U& lhs, const Integer<T, Tag>& rhs) {          \
     return lhs op rhs.value();                                                 \
   }
 
-#define __INTEGER_ARITHMETIC_BINARY_OPERTOR(op)                                \
-  __INTEGER_ARITHMETIC_BINARY_OPERTOR_II(op)                                   \
-  __INTEGER_ARITHMETIC_BINARY_OPERTOR_IV(op)                                   \
-  __INTEGER_ARITHMETIC_BINARY_OPERTOR_VI2I(op)
+#define __INTEGER_ARITHMETIC_BINARY_OPERATOR(op)                               \
+  __INTEGER_ARITHMETIC_BINARY_OPERATOR_II(op)                                  \
+  __INTEGER_ARITHMETIC_BINARY_OPERATOR_IV(op)                                  \
+  __INTEGER_ARITHMETIC_BINARY_OPERATOR_VI2I(op)
 
-__INTEGER_ARITHMETIC_UNARY_OPERTOR(+)
-__INTEGER_ARITHMETIC_UNARY_OPERTOR(-)
+__INTEGER_ARITHMETIC_UNARY_OPERATOR(+)
+__INTEGER_ARITHMETIC_UNARY_OPERATOR(-)
 
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(+)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(-)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(*)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(/)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(%)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(+)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(-)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(*)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(/)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(%)
 
-__INTEGER_ARITHMETIC_UNARY_OPERTOR(~)
+__INTEGER_ARITHMETIC_UNARY_OPERATOR(~)
 
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(&)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(|)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR(^)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(&)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(|)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR(^)
 
-#define __INTEGER_ARITHMETIC_BINARY_OPERTOR_RETV(op)                           \
-  __INTEGER_ARITHMETIC_BINARY_OPERTOR_II(op)                                   \
-  __INTEGER_ARITHMETIC_BINARY_OPERTOR_IV(op)                                   \
-  __INTEGER_ARITHMETIC_BINARY_OPERTOR_VI2V(op)
+#define __INTEGER_ARITHMETIC_BINARY_OPERATOR_RETV(op)                          \
+  __INTEGER_ARITHMETIC_BINARY_OPERATOR_II(op)                                  \
+  __INTEGER_ARITHMETIC_BINARY_OPERATOR_IV(op)                                  \
+  __INTEGER_ARITHMETIC_BINARY_OPERATOR_VI2V(op)
 
-__INTEGER_ARITHMETIC_BINARY_OPERTOR_RETV(<<)
-__INTEGER_ARITHMETIC_BINARY_OPERTOR_RETV(>>)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR_RETV(<<)
+__INTEGER_ARITHMETIC_BINARY_OPERATOR_RETV(>>)
 
 /// @}
 
@@ -284,9 +284,6 @@ template <typename T, typename Tag>
 constexpr bool operator!(const Integer<T, Tag>& v) {
   return !(v.value());
 }
-
-__INTEGER_COMPARISION_OPERTOR(&&)
-__INTEGER_COMPARISION_OPERTOR(||)
 
 /// @}
 

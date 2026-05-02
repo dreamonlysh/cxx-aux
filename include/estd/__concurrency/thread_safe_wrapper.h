@@ -216,7 +216,6 @@ private:
  */
 template <typename LockerT, typename FnT>
 class ThreadSafeFunctionWrapper<LockerT, void, FnT> {
-public:
   static_assert(is_mutex_like_v<LockerT>);
 
 public:

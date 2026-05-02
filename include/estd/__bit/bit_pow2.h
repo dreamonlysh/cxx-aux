@@ -44,7 +44,7 @@ namespace es {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr bool is_pow2(T v) noexcept {
+[[nodiscard]] constexpr bool is_pow2(T v) noexcept {
   return reset_first(v) == 0;
 }
 
@@ -73,7 +73,7 @@ constexpr bool is_pow2(T v) noexcept {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr bool is_pow2_sub1(T v) noexcept {
+[[nodiscard]] constexpr bool is_pow2_sub1(T v) noexcept {
   return resetr(v) == 0;
 }
 
@@ -101,7 +101,7 @@ constexpr bool is_pow2_sub1(T v) noexcept {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr bool is_pow2_sub_pow2(T v) noexcept {
+[[nodiscard]] constexpr bool is_pow2_sub_pow2(T v) noexcept {
   return reset_first_adjacent(v) == 0;
 }
 

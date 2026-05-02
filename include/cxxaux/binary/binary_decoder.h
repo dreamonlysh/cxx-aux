@@ -31,9 +31,9 @@ public:
   BinaryDecoder(const char* data, uint32_t size) : data_(data), size_(size) {}
 
   BinaryDecoder(const BinaryDecoder&) = default;
-  BinaryDecoder(BinaryDecoder&&) = default;
+  BinaryDecoder(BinaryDecoder&&) noexcept = default;
   BinaryDecoder& operator=(const BinaryDecoder&) = default;
-  BinaryDecoder& operator=(BinaryDecoder&&) = default;
+  BinaryDecoder& operator=(BinaryDecoder&&) noexcept = default;
 
   ~BinaryDecoder() = default;
 

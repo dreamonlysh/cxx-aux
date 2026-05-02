@@ -35,7 +35,7 @@ namespace es {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr unsigned count_bit1(T v) noexcept {
+[[nodiscard]] constexpr unsigned count_bit1(T v) noexcept {
   if constexpr (std::is_same_v<T, unsigned long>) {
     return static_cast<unsigned>(__builtin_popcountl(v));
   } else if constexpr (std::is_same_v<T, unsigned long long>) {
@@ -53,7 +53,7 @@ constexpr unsigned count_bit1(T v) noexcept {
  * @return Number of bits set to 0
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr unsigned count_bit0(T v) noexcept {
+[[nodiscard]] constexpr unsigned count_bit0(T v) noexcept {
   return count_bit1<T>(~v);
 }
 
@@ -76,7 +76,7 @@ constexpr unsigned count_bit0(T v) noexcept {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr unsigned countl_bit0(T v) noexcept {
+[[nodiscard]] constexpr unsigned countl_bit0(T v) noexcept {
   // __builtin_clz is undefined with 0
   if (v == 0)
     return std::numeric_limits<T>::digits;
@@ -103,7 +103,7 @@ constexpr unsigned countl_bit0(T v) noexcept {
  * @return Number of leading one bits
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr unsigned countl_bit1(T v) noexcept {
+[[nodiscard]] constexpr unsigned countl_bit1(T v) noexcept {
   return countl_bit0<T>(~v);
 }
 
@@ -126,7 +126,7 @@ constexpr unsigned countl_bit1(T v) noexcept {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr unsigned countr_bit0(T v) noexcept {
+[[nodiscard]] constexpr unsigned countr_bit0(T v) noexcept {
   // __builtin_ctz is undefined with 0
   if (v == 0)
     return std::numeric_limits<T>::digits;
@@ -150,7 +150,7 @@ constexpr unsigned countr_bit0(T v) noexcept {
  * @return Number of trailing one bits
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr unsigned countr_bit1(T v) noexcept {
+[[nodiscard]] constexpr unsigned countr_bit1(T v) noexcept {
   return countr_bit0<T>(~v);
 }
 

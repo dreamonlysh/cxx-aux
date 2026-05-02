@@ -40,7 +40,7 @@
 //
 //   constexpr void swap(Integer& other) noexcept;
 //
-//   constexpr value_type get() const noexcept;
+//   constexpr value_type value() const noexcept;
 //
 //   constexpr explicit operator T() const noexcept;
 //

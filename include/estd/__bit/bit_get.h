@@ -40,7 +40,7 @@ namespace es {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T get_bit(T v, unsigned pos) noexcept {
+[[nodiscard]] constexpr T get_bit(T v, unsigned pos) noexcept {
   return (v >> pos) & static_cast<T>(1u);
 }
 
@@ -66,7 +66,7 @@ constexpr T get_bit(T v, unsigned pos) noexcept {
  * @endcode
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-constexpr T get_bits(T v, unsigned pos, unsigned n) noexcept {
+[[nodiscard]] constexpr T get_bits(T v, unsigned pos, unsigned n) noexcept {
   return (v >> pos) & (std::numeric_limits<T>::max() >>
                        (std::numeric_limits<T>::digits - n));
 }

@@ -21,9 +21,9 @@ TEST(ArrayTest, IsCArray_WithCVQualifiers) {
   EXPECT_TRUE(es::is_c_array_v<volatile double[10]>);
   EXPECT_TRUE(es::is_c_array_v<const volatile char[1]>);
 
-  EXPECT_TRUE((es::is_c_array_v<int(&)[5]>));
-  EXPECT_TRUE((es::is_c_array_v<const int(&)[5]>));
-  EXPECT_TRUE((es::is_c_array_v<int(&&)[5]>));
+  EXPECT_TRUE((es::is_c_array_v<int (&)[5]>));
+  EXPECT_TRUE((es::is_c_array_v<const int (&)[5]>));
+  EXPECT_TRUE((es::is_c_array_v<int (&&)[5]>));
 }
 
 TEST(ArrayTest, IsStdArray_BasicTypes) {
@@ -86,7 +86,7 @@ TEST(ArrayTest, ArrayTraits_WithCVQualifiers) {
   EXPECT_TRUE((std::is_same_v<traits1::element_type, int>));
   EXPECT_EQ(traits1::size, 5u);
 
-  using traits2 = es::array_traits<int(&)[5]>;
+  using traits2 = es::array_traits<int (&)[5]>;
   EXPECT_TRUE((std::is_same_v<traits2::element_type, int>));
   EXPECT_EQ(traits2::size, 5u);
 
@@ -134,7 +134,7 @@ TEST(ArrayTest, ToStdArray_ElementTypes) {
 
   EXPECT_TRUE(
       (std::is_same_v<es::to_std_array_t<int* [3]>, std::array<int*, 3>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<int(*)[3]>, int(*)[3]>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<int (*)[3]>, int (*)[3]>));
 }
 
 TEST(ArrayTest, ToStdArray_WithCVQualifiers) {
@@ -148,12 +148,12 @@ TEST(ArrayTest, ToStdArray_WithCVQualifiers) {
 
 TEST(ArrayTest, ToStdArray_WithReferences) {
   EXPECT_TRUE(
-      (std::is_same_v<es::to_std_array_t<int(&)[5]>, std::array<int, 5>>));
-  EXPECT_TRUE((
-      std::is_same_v<es::to_std_array_t<const int(&)[5]>, std::array<int, 5>>));
+      (std::is_same_v<es::to_std_array_t<int (&)[5]>, std::array<int, 5>>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const int (&)[5]>,
+                              std::array<int, 5>>));
   EXPECT_TRUE(
-      (std::is_same_v<es::to_std_array_t<int(&&)[5]>, std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int(&)[5]>,
+      (std::is_same_v<es::to_std_array_t<int (&&)[5]>, std::array<int, 5>>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int (&)[5]>,
                               std::array<int, 5>>));
 }
 
@@ -248,19 +248,19 @@ TEST(ArrayTest, ToStdArray_AllCVRefCombinations) {
   EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int[5]>,
                               std::array<int, 5>>));
   EXPECT_TRUE(
-      (std::is_same_v<es::to_std_array_t<int(&)[5]>, std::array<int, 5>>));
-  EXPECT_TRUE((
-      std::is_same_v<es::to_std_array_t<const int(&)[5]>, std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<volatile int(&)[5]>,
+      (std::is_same_v<es::to_std_array_t<int (&)[5]>, std::array<int, 5>>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const int (&)[5]>,
                               std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int(&)[5]>,
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<volatile int (&)[5]>,
+                              std::array<int, 5>>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int (&)[5]>,
                               std::array<int, 5>>));
   EXPECT_TRUE(
-      (std::is_same_v<es::to_std_array_t<int(&&)[5]>, std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const int(&&)[5]>,
+      (std::is_same_v<es::to_std_array_t<int (&&)[5]>, std::array<int, 5>>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const int (&&)[5]>,
                               std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<volatile int(&&)[5]>,
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<volatile int (&&)[5]>,
                               std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int(&&)[5]>,
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int (&&)[5]>,
                               std::array<int, 5>>));
 }

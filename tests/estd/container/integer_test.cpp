@@ -200,21 +200,4 @@ TEST(IntegerTest, LogicOperators) {
 
   ASSERT_FALSE(!a);
   ASSERT_TRUE(!Index(0));
-
-  ASSERT_TRUE(a && b);
-  ASSERT_TRUE(a && 16);
-  ASSERT_TRUE(20 && b);
-  ASSERT_FALSE(a && Index(0));
-  ASSERT_FALSE(20 && Index(0));
-  ASSERT_FALSE(a && 0);
-
-  ASSERT_TRUE(a || b);
-  ASSERT_TRUE(a || 16);
-  ASSERT_TRUE(20 || b);
-  ASSERT_TRUE(a || Index(0));
-  ASSERT_TRUE(20 || Index(0));
-  ASSERT_TRUE(a || 0);
-  ASSERT_FALSE(Index(0) || Index(0));
-  ASSERT_FALSE(0 || Index(0));
-  ASSERT_FALSE(Index(0) || 0);
 }

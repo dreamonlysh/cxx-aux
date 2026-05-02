@@ -304,7 +304,7 @@ public:
   /// The data is guaranteed to be null-terminated.
   /// @return A pointer to the underlying data of the string.
   constexpr const value_type* data() const noexcept {
-    const_cast<pointer>(storage_.data())[size()] = '\0';
+    storage_.data()[size()] = '\0';
     return storage_.data();
   }
 
@@ -1046,7 +1046,7 @@ public:
     return find_last_not_of(s.data(), pos, s.size());
   }
 
-  constexpr int comare(const flat_string& str) const {
+  constexpr int compare(const flat_string& str) const {
     return compare(0, size(), str);
   }
 
@@ -1185,7 +1185,7 @@ public:
   }
 
 private:
-  __storage_type storage_;
+  mutable __storage_type storage_;
 };
 
 template <size_t N, typename OutOfRangeAssert>

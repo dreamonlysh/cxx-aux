@@ -156,13 +156,13 @@ TEST(SmallVectorTest, PopBack) {
   EXPECT_EQ(vec.back(), 2);
 }
 
-TEST(SmallVectorTest, PopBackTransitionToSmall) {
+TEST(SmallVectorTest, PopBackNotTransitionToSmall) {
   es::small_vector<4, int> vec{1, 2, 3, 4, 5};
   EXPECT_FALSE(vec.is_small());
   vec.pop_back();
   vec.pop_back();
   EXPECT_EQ(vec.size(), 3);
-  EXPECT_TRUE(vec.is_small());
+  EXPECT_FALSE(vec.is_small());
 }
 
 TEST(SmallVectorTest, Insert) {
@@ -194,12 +194,12 @@ TEST(SmallVectorTest, EraseRange) {
   EXPECT_EQ(vec[1], 4);
 }
 
-TEST(SmallVectorTest, EraseTransitionToSmall) {
+TEST(SmallVectorTest, EraseNotTransitionToSmall) {
   es::small_vector<4, int> vec{1, 2, 3, 4, 5, 6};
   EXPECT_FALSE(vec.is_small());
   vec.erase(vec.begin() + 4, vec.end());
   EXPECT_EQ(vec.size(), 4);
-  EXPECT_TRUE(vec.is_small());
+  EXPECT_FALSE(vec.is_small());
 }
 
 TEST(SmallVectorTest, Resize) {
@@ -312,13 +312,13 @@ TEST(SmallVectorTest, TransitionSmallToLarge) {
   EXPECT_EQ(vec.size(), 5);
 }
 
-TEST(SmallVectorTest, TransitionLargeToSmall) {
+TEST(SmallVectorTest, NotTransitionLargeToSmall) {
   es::small_vector<4, int> vec{1, 2, 3, 4, 5, 6};
   EXPECT_FALSE(vec.is_small());
 
   vec.pop_back();
   vec.pop_back();
-  EXPECT_TRUE(vec.is_small());
+  EXPECT_FALSE(vec.is_small());
   EXPECT_EQ(vec.size(), 4);
 }
 
