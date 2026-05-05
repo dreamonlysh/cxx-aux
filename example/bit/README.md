@@ -81,6 +81,7 @@ g++ -std=c++17 -I include example/bit/bit.cpp -o bit
 |----------|-------------|
 | `get_bit(v, pos)` | Get single bit at position |
 | `get_bits(v, pos, n)` | Get n bits starting at position |
+| `get_nth_bit(v, n)` | Get bitmask at nth set bit position |
 | `set_bit(v, pos)` | Set bit at position |
 | `set_bits(v, pos, n)` | Set n bits starting at position |
 | `reset_first(v)` | Clear rightmost 1 |

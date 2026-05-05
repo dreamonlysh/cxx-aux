@@ -68,7 +68,19 @@ int main() {
   std::cout << "get_bits(value, 4, 4): " << es::get_bits(value, 4, 4)
             << " (bits 4-7)\n\n";
 
-  std::cout << "6. Set and reset operations:\n";
+  std::cout << "6. Get nth set bit:\n";
+  value = 0b10101010;
+  print_binary(value, "value");
+  std::cout << "Set bits at positions: 1, 3, 5, 7\n";
+  std::cout << "get_nth_bit(value, 0): ";
+  print_binary(es::get_nth_bit(value, 0), "1st set bit");
+  std::cout << "get_nth_bit(value, 1): ";
+  print_binary(es::get_nth_bit(value, 1), "2nd set bit");
+  std::cout << "get_nth_bit(value, 4): ";
+  print_binary(es::get_nth_bit(value, 4), "no 5th set bit");
+  std::cout << "\n";
+
+  std::cout << "7. Set and reset operations:\n";
   value = 0u;
   print_binary(es::set_bit(value, 3), "set_bit(0, 3)");
   print_binary(es::set_bits(value, 2, 4), "set_bits(0, 2, 4)");
@@ -81,13 +93,13 @@ int main() {
   print_binary(es::setr(value), "setr (set trailing 0s)");
   std::cout << "\n";
 
-  std::cout << "7. Reset adjacent bits:\n";
+  std::cout << "8. Reset adjacent bits:\n";
   value = 0b01011100;
   print_binary(value, "value");
   print_binary(es::reset_first_adjacent(value), "reset_first_adjacent");
   std::cout << "\n";
 
-  std::cout << "8. Practical example: iterating through set bits:\n";
+  std::cout << "9. Practical example: iterating through set bits:\n";
   value = 0b10101010;
   print_binary(value, "value");
   std::cout << "Set bit positions: ";
@@ -98,7 +110,7 @@ int main() {
   }
   std::cout << "\n\n";
 
-  std::cout << "9. Practical example: finding contiguous bit ranges:\n";
+  std::cout << "10. Practical example: finding contiguous bit ranges:\n";
   value = 0b01110000;
   print_binary(value, "value");
   unsigned start = es::countr_bit0(value);

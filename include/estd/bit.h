@@ -82,6 +82,8 @@
 // constexpr T get_bit(T v, unsigned pos) noexcept
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T get_bits(T v, unsigned pos, unsigned n) noexcept
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// constexpr T get_nth_bit(T v, unsigned n) noexcept
 
 #include "__bit/bit_set_reset.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

@@ -44,6 +44,8 @@ cmake-build-debug/
 # ctest
 Testing/
 
+__pycache__
+
 build/
 build_debug/
 build_release/

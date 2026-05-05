@@ -184,12 +184,19 @@ ceil_to_pow2(100u);    // 128
 |----------|-------------|
 | `get_bit(v, pos)` | Get bit at position |
 | `get_bits(v, pos, n)` | Get n bits starting at position |
+| `get_nth_bit(v, n)` | Get bitmask at nth set bit position |
 
 ```cpp
 unsigned value = 0b11010110;
 get_bit(value, 0);     // 0
 get_bit(value, 1);     // 1
 get_bits(value, 2, 3); // 0b101 (bits 2-4)
+
+// get_nth_bit: extract position of nth set bit as bitmask
+unsigned v = 0b10101010;  // set bits at positions 1, 3, 5, 7
+get_nth_bit(v, 0);    // 0b00000010 (1st set bit at pos 1)
+get_nth_bit(v, 1);    // 0b00001000 (2nd set bit at pos 3)
+get_nth_bit(v, 4);    // 0 (no 5th set bit)
 ```
 
 ### Set/Reset Functions
@@ -765,3 +772,78 @@ auto guard = cxxaux::make_guard([&]() {
 // Release guard early
 guard.release();
 ```
+
+---
+
+## utility/version.h
+
+Version management with efficient bit-based identifiers.
+
+```cpp
+#include <cxxaux/utility/version.h>
+
+using VID = cxxaux::VersionID<uint32_t>;
+using VInfo = cxxaux::VersionInfo<VID>;
+using VMgr = cxxaux::VersionManager<VInfo>;
+
+// Create version identifiers from offsets
+VID v1(0);   // Version at offset 0
+VID v2(5);   // Version at offset 5
+
+// VersionIDSet for efficient set operations
+cxxaux::VersionIDSet<VID> set(v1, v2);
+set.has(v1);      // true
+set.size();       // 2
+set.foreach([](VID id) { /* iterate */ });
+
+// VersionManager for registration and lookup
+VMgr mgr;
+auto [ptr, inserted] = mgr.emplace(VID(0), VID(0), "v1.0");
+if (inserted) {
+    // Successfully added
+}
+
+if (auto* info = mgr.find(VID(0))) {
+    std::cout << info->name << "\n";  // "v1.0"
+}
+```
+
+### Key Classes
+
+| Class | Description |
+|-------|-------------|
+| `VersionID<BitSetT>` | Single version identifier (bit position) |
+| `VersionIDSet<VersionID>` | Set of version identifiers with set operations |
+| `VersionInfo<VersionID>` | Base struct for version information |
+| `VersionManager<VersionInfo>` | Manages registration and lookup |
+
+### VersionID Methods
+
+| Method | Description |
+|--------|-------------|
+| `VersionID(offset)` | Construct from bit offset |
+| `valid()` | Check if valid (non-zero) |
+| `offset()` | Get bit offset |
+| `value()` | Get underlying bit value |
+
+### VersionIDSet Methods
+
+| Method | Description |
+|--------|-------------|
+| `add(id)` / `remove(id)` | Modify the set |
+| `has(id)` / `has(set)` | Check membership |
+| `size()` / `empty()` | Query size |
+| `at(index)` / `first()` | Access elements |
+| `\|` / `&` | Set union/intersection |
+| `foreach(func)` | Iterate over elements |
+
+### VersionManager Methods
+
+| Method | Description |
+|--------|-------------|
+| `emplace(id, args...)` | Construct in-place, returns `{ptr, inserted}` |
+| `add(id, info)` | Add by copy/move, returns `{ptr, inserted}` |
+| `find(id)` | Find by VersionID |
+| `has(id)` | Check if registered |
+| `foreach(func)` | Iterate over all registered |
+| `size()` / `capacity()` | Query size |

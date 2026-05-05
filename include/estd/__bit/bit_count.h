@@ -13,7 +13,6 @@
 
 #ifndef ESTD___BIT_BIT_COUNT_H
 #define ESTD___BIT_BIT_COUNT_H
-#include "bit_hl_dim.h"
 #include <limits>
 
 namespace es {

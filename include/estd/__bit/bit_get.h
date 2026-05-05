@@ -13,6 +13,10 @@
 
 #ifndef ESTD___BIT_BIT_GET_H
 #define ESTD___BIT_BIT_GET_H
+#include "bit_count.h"
+#include "bit_hl_dim.h"
+#include "bit_set_reset.h"
+#include <immintrin.h>
 #include <limits>
 #include <type_traits>
 
@@ -69,6 +73,51 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 [[nodiscard]] constexpr T get_bits(T v, unsigned pos, unsigned n) noexcept {
   return (v >> pos) & (std::numeric_limits<T>::max() >>
                        (std::numeric_limits<T>::digits - n));
+}
+
+/**
+ * @brief Extracts the position of the nth set bit as a bitmask.
+ *
+ * Returns a value with a single bit set at the position of the nth set bit
+ * (1-bit) in the input value, counting from the right (LSB).
+ *
+ * @tparam T Unsigned integer type
+ * @param v Value to extract bit position from
+ * @param n Index of the set bit to find (0-based, counting set bits from right)
+ * @return Bitmask with a single bit set at the nth set bit position,
+ *         or 0 if n >= count_bit1(v)
+ *
+ * Example usage:
+ * @code
+ * // 0b10101010 has set bits at positions 1, 3, 5, 7
+ * assert(get_nth_bit(0b10101010u, 0) == 0b00000010);  // 1st set bit at pos 1
+ * assert(get_nth_bit(0b10101010u, 1) == 0b00001000);  // 2nd set bit at pos 3
+ * assert(get_nth_bit(0b10101010u, 2) == 0b00100000);  // 3rd set bit at pos 5
+ * assert(get_nth_bit(0b10101010u, 3) == 0b10000000);  // 4th set bit at pos 7
+ * assert(get_nth_bit(0b10101010u, 4) == 0);           // No 5th set bit
+ * @endcode
+ */
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+[[nodiscard]] inline T get_nth_bit(T v, unsigned n) noexcept {
+  if (n >= count_bit1(v)) {
+    return 0;
+  }
+
+#if defined(__BMI2__) && (defined(__x86_64__) || defined(_M_X64))
+  if constexpr (sizeof(T) <= 4) {
+    uint32_t x = static_cast<uint32_t>(v);
+    return static_cast<T>(_pdep_u32(1u << n, x));
+  } else {
+    uint64_t x = static_cast<uint64_t>(v);
+    return static_cast<T>(_pdep_u64(1ull << n, x));
+  }
+#else
+  T tmp = v;
+  for (unsigned i = 0; i < n; ++i) {
+    tmp = reset_first(tmp);
+  }
+  return hl_first_bit1(tmp);
+#endif
 }
 
 } // namespace es
