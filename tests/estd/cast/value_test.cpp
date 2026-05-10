@@ -1,5 +1,5 @@
-#include <estd/cast/value.h>
 #include <estd/cast/type_id.h>
+#include <estd/cast/value.h>
 #include <gtest/gtest.h>
 
 namespace {

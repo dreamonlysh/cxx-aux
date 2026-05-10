@@ -1093,11 +1093,13 @@ class SmallVectorSVOTransitionTest : public ::testing::Test {};
 
 TEST_F(SmallVectorSVOTransitionTest, PushBackNPlus1TriggersSmallToLarge) {
   es::small_vector<4, int> vec;
-  for (int i = 0; i < 4; ++i) vec.push_back(i);
+  for (int i = 0; i < 4; ++i)
+    vec.push_back(i);
   EXPECT_TRUE(vec.is_small());
   vec.push_back(4);
   EXPECT_FALSE(vec.is_small());
-  for (int i = 0; i < 5; ++i) EXPECT_EQ(vec[i], i);
+  for (int i = 0; i < 5; ++i)
+    EXPECT_EQ(vec[i], i);
 }
 
 TEST_F(SmallVectorSVOTransitionTest, ReserveTriggersSmallToLarge) {
@@ -1110,14 +1112,17 @@ TEST_F(SmallVectorSVOTransitionTest, ReserveTriggersSmallToLarge) {
   EXPECT_EQ(vec[2], 3);
 }
 
-TEST_F(SmallVectorSVOTransitionTest, ShrinkToFitAfterOverflowTriggersLargeToSmall) {
+TEST_F(SmallVectorSVOTransitionTest,
+       ShrinkToFitAfterOverflowTriggersLargeToSmall) {
   es::small_vector<4, int> vec;
-  for (int i = 0; i < 6; ++i) vec.push_back(i);
+  for (int i = 0; i < 6; ++i)
+    vec.push_back(i);
   EXPECT_FALSE(vec.is_small());
   vec.resize(3);
   vec.shrink_to_fit();
   EXPECT_TRUE(vec.is_small());
-  for (int i = 0; i < 3; ++i) EXPECT_EQ(vec[i], i);
+  for (int i = 0; i < 3; ++i)
+    EXPECT_EQ(vec[i], i);
 }
 
 TEST_F(SmallVectorSVOTransitionTest, InsertBeyondCapacityTriggersSmallToLarge) {
@@ -1139,7 +1144,8 @@ TEST_F(SmallVectorSVOTransitionTest, ResizeBeyondNTriggersSmallToLarge) {
   EXPECT_EQ(vec[1], 2);
 }
 
-TEST_F(SmallVectorSVOTransitionTest, ResizeBackAndShrinkToFitTriggersLargeToSmall) {
+TEST_F(SmallVectorSVOTransitionTest,
+       ResizeBackAndShrinkToFitTriggersLargeToSmall) {
   es::small_vector<4, int> vec{1, 2, 3, 4, 5};
   EXPECT_FALSE(vec.is_small());
   vec.resize(2);
@@ -1156,7 +1162,9 @@ struct TrackedString {
   static int copy_count;
   std::string value;
 
-  explicit TrackedString(const std::string& v = "") : value(v) { ++alive_count; }
+  explicit TrackedString(const std::string& v = "") : value(v) {
+    ++alive_count;
+  }
   TrackedString(const TrackedString& o) : value(o.value) {
     ++copy_count;
     ++alive_count;
@@ -1348,13 +1356,11 @@ struct MultiArg {
   double b;
   std::string c;
 
-  MultiArg(int a_, double b_, std::string c_)
-      : a(a_), b(b_), c(std::move(c_)) {
+  MultiArg(int a_, double b_, std::string c_) : a(a_), b(b_), c(std::move(c_)) {
     ++ctor_count;
   }
   MultiArg(const MultiArg& o) : a(o.a), b(o.b), c(o.c) { ++copy_count; }
-  MultiArg(MultiArg&& o) noexcept
-      : a(o.a), b(o.b), c(std::move(o.c)) {
+  MultiArg(MultiArg&& o) noexcept : a(o.a), b(o.b), c(std::move(o.c)) {
     ++move_count;
   }
   MultiArg& operator=(const MultiArg&) = delete;

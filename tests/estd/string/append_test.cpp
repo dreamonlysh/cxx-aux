@@ -68,7 +68,6 @@ TEST(AppendNTest, AppendMultipleArguments) {
   EXPECT_EQ(s, "Hello World!123");
 }
 
-
 TEST(AppendTest, AppendNegativeIntegral) {
   std::string s = "Temp: ";
   append(s, -42L);

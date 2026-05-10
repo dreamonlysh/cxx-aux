@@ -194,12 +194,10 @@ TEST(ElfIsElfFile, PartialMagic) {
 
 // ---- Minimal ELF binary construction helpers ----
 
-static const char kShstrtab64[] =
-    "\0.shstrtab\0.text\0.data\0.bss\0";
+static const char kShstrtab64[] = "\0.shstrtab\0.text\0.data\0.bss\0";
 static constexpr size_t kShstrtab64Size = sizeof(kShstrtab64) - 1;
 
-static const char kShstrtab32[] =
-    "\0.shstrtab\0.text\0";
+static const char kShstrtab32[] = "\0.shstrtab\0.text\0";
 static constexpr size_t kShstrtab32Size = sizeof(kShstrtab32) - 1;
 
 static std::vector<char> makeMinimalElf64() {
@@ -235,8 +233,8 @@ static std::vector<char> makeMinimalElf64() {
 
   Elf64_Phdr phdr = {};
   phdr.p_type = static_cast<uint32_t>(PType::PT_LOAD);
-  phdr.p_flags = static_cast<uint32_t>(PFlags::PF_R) |
-                 static_cast<uint32_t>(PFlags::PF_X);
+  phdr.p_flags =
+      static_cast<uint32_t>(PFlags::PF_R) | static_cast<uint32_t>(PFlags::PF_X);
   phdr.p_offset = 0;
   phdr.p_vaddr = 0x400000;
   phdr.p_paddr = 0x400000;
@@ -258,14 +256,14 @@ static std::vector<char> makeMinimalElf64() {
   shdrs[2].sh_name = 11;
   shdrs[2].sh_type = static_cast<uint32_t>(SHType::SHT_PROGBITS);
   shdrs[2].sh_flags = static_cast<uint64_t>(SHFlags::SHF_ALLOC) |
-                       static_cast<uint64_t>(SHFlags::SHF_EXECINSTR);
+                      static_cast<uint64_t>(SHFlags::SHF_EXECINSTR);
   shdrs[2].sh_offset = 0;
   shdrs[2].sh_size = sizeof(Elf64_Ehdr) + sizeof(Elf64_Phdr);
 
   shdrs[3].sh_name = 17;
   shdrs[3].sh_type = static_cast<uint32_t>(SHType::SHT_NOBITS);
   shdrs[3].sh_flags = static_cast<uint64_t>(SHFlags::SHF_ALLOC) |
-                       static_cast<uint64_t>(SHFlags::SHF_WRITE);
+                      static_cast<uint64_t>(SHFlags::SHF_WRITE);
   shdrs[3].sh_size = 0x100;
 
   memcpy(buf.data() + shdrOff, shdrs, sizeof(shdrs));
@@ -329,7 +327,7 @@ static std::vector<char> makeMinimalElf32() {
   shdrs[2].sh_name = 11;
   shdrs[2].sh_type = static_cast<uint32_t>(SHType::SHT_PROGBITS);
   shdrs[2].sh_flags = static_cast<uint32_t>(SHFlags::SHF_ALLOC) |
-                       static_cast<uint32_t>(SHFlags::SHF_EXECINSTR);
+                      static_cast<uint32_t>(SHFlags::SHF_EXECINSTR);
   shdrs[2].sh_offset = 0;
   shdrs[2].sh_size = sizeof(Elf32_Ehdr) + sizeof(Elf32_Phdr);
 
@@ -625,22 +623,22 @@ TEST(ElfProgram, MultiplePhdrs) {
 
   Elf64_Phdr phdrs[3] = {};
   phdrs[0].p_type = static_cast<uint32_t>(PType::PT_LOAD);
-  phdrs[0].p_flags = static_cast<uint32_t>(PFlags::PF_R) |
-                      static_cast<uint32_t>(PFlags::PF_X);
+  phdrs[0].p_flags =
+      static_cast<uint32_t>(PFlags::PF_R) | static_cast<uint32_t>(PFlags::PF_X);
   phdrs[0].p_vaddr = 0x400000;
   phdrs[0].p_memsz = 0x1000;
   phdrs[0].p_align = 0x1000;
 
   phdrs[1].p_type = static_cast<uint32_t>(PType::PT_LOAD);
-  phdrs[1].p_flags = static_cast<uint32_t>(PFlags::PF_R) |
-                      static_cast<uint32_t>(PFlags::PF_W);
+  phdrs[1].p_flags =
+      static_cast<uint32_t>(PFlags::PF_R) | static_cast<uint32_t>(PFlags::PF_W);
   phdrs[1].p_vaddr = 0x600000;
   phdrs[1].p_memsz = 0x100;
   phdrs[1].p_align = 0x1000;
 
   phdrs[2].p_type = static_cast<uint32_t>(PType::PT_GNU_STACK);
-  phdrs[2].p_flags = static_cast<uint32_t>(PFlags::PF_R) |
-                      static_cast<uint32_t>(PFlags::PF_W);
+  phdrs[2].p_flags =
+      static_cast<uint32_t>(PFlags::PF_R) | static_cast<uint32_t>(PFlags::PF_W);
   phdrs[2].p_align = 0x10;
   memcpy(buf.data() + phdrOff, phdrs, sizeof(phdrs));
 

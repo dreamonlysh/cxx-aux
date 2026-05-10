@@ -1,6 +1,7 @@
 #include "cxxaux/utility/memory_pool.h"
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 #include <deque>
 #include <list>
 

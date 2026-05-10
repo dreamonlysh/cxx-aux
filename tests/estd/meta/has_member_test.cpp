@@ -192,7 +192,9 @@ TEST(HasMemberTest, hasMemberFunction_CVQualified) {
 }
 
 TEST(HasMemberTest, hasMemberData_WithStruct) {
-  struct WithData { int x; };
+  struct WithData {
+    int x;
+  };
   struct WithoutData {};
   ASSERT_TRUE(es::has_member_x<WithData>::value);
   ASSERT_TRUE(es::has_member_x_v<WithData>);
@@ -201,7 +203,9 @@ TEST(HasMemberTest, hasMemberData_WithStruct) {
 }
 
 TEST(HasMemberTest, hasMemberFunction_WithStruct) {
-  struct WithFunc { void go() {} };
+  struct WithFunc {
+    void go() {}
+  };
   struct WithoutFunc {};
   ASSERT_TRUE(es::has_member_go<WithFunc>::value);
   ASSERT_TRUE(es::has_member_go_v<WithFunc>);

@@ -71,7 +71,6 @@ TEST(TakeView, StringTake) {
   EXPECT_EQ(result, "hello");
 }
 
-
 TEST(TakeView, TakeMoreThanSize) {
   std::vector<int> vec = {1, 2};
   auto tv = es::ranges::take(100)(vec);

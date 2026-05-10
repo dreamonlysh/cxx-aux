@@ -170,7 +170,6 @@ TEST(ReplaceTest, ReplaceWithInputIteratorOutOfRange) {
       std::out_of_range);
 }
 
-
 TEST(ReplaceTest, ReplaceWithShorterMiddle) {
   std::string s = "Hello, World!";
   es::string::replace(s, 7, 5, "C++");

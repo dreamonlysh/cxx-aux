@@ -280,5 +280,6 @@ TEST(ArrayTest, IsStdArray_FocusedEdgeCases) {
 
 TEST(ArrayTest, ToStdArray_ConvertsCArray) {
   EXPECT_TRUE((std::is_same_v<es::to_std_array_t<int[5]>, std::array<int, 5>>));
-  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<double[10]>, std::array<double, 10>>));
+  EXPECT_TRUE(
+      (std::is_same_v<es::to_std_array_t<double[10]>, std::array<double, 10>>));
 }

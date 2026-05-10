@@ -65,7 +65,6 @@ TEST(Subrange, DataAccess) {
   EXPECT_EQ(*sr.data(), 20);
 }
 
-
 TEST(Subrange, EmptySubrangeIteration) {
   std::vector<int> vec = {1, 2, 3};
   auto sr = es::ranges::subrange(vec.begin() + 1, vec.begin() + 1);

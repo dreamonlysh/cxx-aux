@@ -65,7 +65,6 @@ TEST(TransformView, EmptyRange) {
   EXPECT_EQ(count, 0);
 }
 
-
 TEST(TransformView, PipeOperator) {
   std::vector<int> vec = {1, 2, 3, 4, 5};
   auto tv = vec | es::ranges::transform([](int x) { return x * 2; });
@@ -80,8 +79,8 @@ TEST(TransformView, PipeOperator) {
 
 TEST(TransformView, ChainedFilterTransform) {
   std::vector<int> vec = {1, 2, 3, 4, 5, 6};
-  auto tv = vec | es::ranges::filter([](int x) { return x % 2 == 0; })
-                | es::ranges::transform([](int x) { return x * 10; });
+  auto tv = vec | es::ranges::filter([](int x) { return x % 2 == 0; }) |
+            es::ranges::transform([](int x) { return x * 10; });
   std::vector<int> result;
   for (int x : tv) {
     result.push_back(x);

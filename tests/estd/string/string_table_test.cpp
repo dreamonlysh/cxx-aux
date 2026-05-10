@@ -25,7 +25,6 @@ TEST(StringTable, AddLarge) {
   ASSERT_EQ(hello.data(), hello2.data());
 }
 
-
 TEST(StringTable, Deduplication) {
   std::string_view s1 = StringTable::add("dedup_key");
   std::string_view s2 = StringTable::add("dedup_key");

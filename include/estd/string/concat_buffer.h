@@ -184,8 +184,8 @@ public:
    *
    * @tparam Args Types of items to append
    * @param args Items to append (char, string, integral, etc.)
-   * @return For fixed buffers: true if all appends succeeded, false if overflow.
-   *         For dynamic buffers: void (always succeeds).
+   * @return For fixed buffers: true if all appends succeeded, false if
+   * overflow. For dynamic buffers: void (always succeeds).
    */
   template <typename... Args>
   constexpr auto append(Args&&... args) {
