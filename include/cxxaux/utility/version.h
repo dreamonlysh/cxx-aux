@@ -103,31 +103,31 @@ private:
  * set.foreach([](VID id) { std::cout << id.offset() << "\n"; });
  * @endcode
  */
-template <typename VersionID>
+template <typename VersionIDT>
 class VersionIDSet {
 public:
-  using bitset_type = typename VersionID::bitset_type;
+  using bitset_type = typename VersionIDT::bitset_type;
 
   /** @brief Default constructor, creates an empty set */
   constexpr VersionIDSet() noexcept = default;
 
   /** @brief Constructs a set from a single VersionID */
-  constexpr explicit VersionIDSet(VersionID id) noexcept
+  constexpr explicit VersionIDSet(VersionIDT id) noexcept
       : bitmap_(id.value()) {}
 
   /** @brief Constructs a set from multiple VersionIDs */
   template <typename... IDs>
-  constexpr VersionIDSet(VersionID id, IDs... rest) noexcept
+  constexpr VersionIDSet(VersionIDT id, IDs... rest) noexcept
       : bitmap_(id.value() | (rest.value() | ...)) {}
 
   /** @brief Adds a VersionID to the set */
-  constexpr void add(VersionID id) noexcept { bitmap_ |= id.value(); }
+  constexpr void add(VersionIDT id) noexcept { bitmap_ |= id.value(); }
 
   /** @brief Removes a VersionID from the set */
-  constexpr void remove(VersionID id) noexcept { bitmap_ &= ~id.value(); }
+  constexpr void remove(VersionIDT id) noexcept { bitmap_ &= ~id.value(); }
 
   /** @brief Returns true if the set contains the given VersionID */
-  constexpr bool has(VersionID id) const noexcept {
+  constexpr bool has(VersionIDT id) const noexcept {
     return (bitmap_ & id.value()) != 0;
   }
 
@@ -151,17 +151,17 @@ public:
    * @brief Returns the VersionID at the given index.
    * @param index 0-based index (0 = first set bit)
    */
-  constexpr VersionID at(unsigned index) const noexcept {
-    return VersionID(es::countr_bit0(es::get_nth_bit(bitmap_, index)));
+  constexpr VersionIDT at(unsigned index) const noexcept {
+    return VersionIDT(es::countr_bit0(es::get_nth_bit(bitmap_, index)));
   }
 
   /** @brief Returns the first (lowest offset) VersionID in the set */
-  constexpr VersionID first() const noexcept {
-    return VersionID(es::countr_bit0(es::hl_first_bit1(bitmap_)));
+  constexpr VersionIDT first() const noexcept {
+    return VersionIDT(es::countr_bit0(es::hl_first_bit1(bitmap_)));
   }
 
   /** @brief Same as at(index) */
-  constexpr VersionID operator[](unsigned index) const noexcept {
+  constexpr VersionIDT operator[](unsigned index) const noexcept {
     return at(index);
   }
 
@@ -171,7 +171,7 @@ public:
   }
 
   /** @brief Set union with a single VersionID */
-  constexpr VersionIDSet operator|(VersionID id) const noexcept {
+  constexpr VersionIDSet operator|(VersionIDT id) const noexcept {
     return VersionIDSet(bitmap_ | id.value());
   }
 
@@ -182,7 +182,7 @@ public:
   }
 
   /** @brief Set union assignment with a single VersionID */
-  constexpr VersionIDSet& operator|=(VersionID id) noexcept {
+  constexpr VersionIDSet& operator|=(VersionIDT id) noexcept {
     bitmap_ |= id.value();
     return *this;
   }
@@ -193,7 +193,7 @@ public:
   }
 
   /** @brief Set intersection with a single VersionID */
-  constexpr VersionIDSet operator&(VersionID id) const noexcept {
+  constexpr VersionIDSet operator&(VersionIDT id) const noexcept {
     return VersionIDSet(bitmap_ & id.value());
   }
 
@@ -204,7 +204,7 @@ public:
   }
 
   /** @brief Set intersection assignment with a single VersionID */
-  constexpr VersionIDSet& operator&=(VersionID id) noexcept {
+  constexpr VersionIDSet& operator&=(VersionIDT id) noexcept {
     bitmap_ &= id.value();
     return *this;
   }
@@ -218,7 +218,7 @@ public:
     bitset_type remaining = bitmap_;
     while (remaining) {
       unsigned off = es::countr_bit0(remaining);
-      func(VersionID(off));
+      func(VersionIDT(off));
       remaining = es::reset_first(remaining);
     }
   }
@@ -243,9 +243,9 @@ private:
  * };
  * @endcode
  */
-template <typename VersionID>
+template <typename VersionIDT>
 struct VersionInfo {
-  VersionID id;               /**< The version identifier */
+  VersionIDT id;              /**< The version identifier */
   const char* name = nullptr; /**< Optional version name */
 
   /** @brief Default constructor */
@@ -256,7 +256,8 @@ struct VersionInfo {
    * @param v The version identifier
    * @param n The version name (optional)
    */
-  constexpr VersionInfo(VersionID v, const char* n) noexcept : id(v), name(n) {}
+  constexpr VersionInfo(VersionIDT v, const char* n) noexcept
+      : id(v), name(n) {}
 
   /**
    * @brief Casts this to a derived type.
@@ -297,23 +298,23 @@ struct VersionInfo {
  * }
  * @endcode
  */
-template <typename VersionInfo>
+template <typename VersionInfoT>
 class VersionManager {
 public:
-  using VersionID = decltype(VersionInfo::id);
-  using VersionIDSet = VersionIDSet<VersionID>;
+  using VersionIDT = decltype(VersionInfoT::id);
+  using VersionIDSetT = VersionIDSet<VersionIDT>;
 
   /** @brief Default constructor */
   constexpr VersionManager() noexcept = default;
 
   /** @brief Destructor, destroys all managed VersionInfo objects */
   ~VersionManager() noexcept {
-    ids_.foreach ([this](VersionID id) { std::destroy_at(at(id.offset())); });
+    ids_.foreach ([this](VersionIDT id) { std::destroy_at(at(id.offset())); });
   }
 
   /** @brief Returns the maximum number of versions that can be stored */
   static constexpr unsigned capacity() noexcept {
-    return sizeof(typename VersionID::bitset_type) * 8;
+    return sizeof(typename VersionIDT::bitset_type) * 8;
   }
 
   /** @brief Returns the number of registered versions */
@@ -324,13 +325,14 @@ public:
    * @param index The bit offset (not validated)
    * @return Pointer to the VersionInfo (may be uninitialized if not registered)
    */
-  VersionInfo* at(unsigned index) noexcept {
-    return reinterpret_cast<VersionInfo*>(infos_ + index * sizeof(VersionInfo));
+  VersionInfoT* at(unsigned index) noexcept {
+    return reinterpret_cast<VersionInfoT*>(infos_ +
+                                           index * sizeof(VersionInfoT));
   }
 
-  const VersionInfo* at(unsigned index) const noexcept {
-    return reinterpret_cast<const VersionInfo*>(infos_ +
-                                                index * sizeof(VersionInfo));
+  const VersionInfoT* at(unsigned index) const noexcept {
+    return reinterpret_cast<const VersionInfoT*>(infos_ +
+                                                 index * sizeof(VersionInfoT));
   }
 
   /**
@@ -340,23 +342,23 @@ public:
    * @return Pair of (pointer, inserted) like std::map::insert
    */
   template <typename... Args>
-  std::pair<VersionInfo*, bool> emplace(VersionID id, Args&&... args) {
+  std::pair<VersionInfoT*, bool> emplace(VersionIDT id, Args&&... args) {
     if (ids_.has(id)) {
       return {at(id.offset()), false};
     }
     auto off = id.offset();
-    VersionInfo* ptr = at(off);
-    ::new (static_cast<void*>(ptr)) VersionInfo(std::forward<Args>(args)...);
+    VersionInfoT* ptr = at(off);
+    ::new (static_cast<void*>(ptr)) VersionInfoT(std::forward<Args>(args)...);
     ids_ |= id;
     return {ptr, true};
   }
 
-  std::pair<VersionInfo*, bool> add(VersionID id, VersionInfo info) {
+  std::pair<VersionInfoT*, bool> add(VersionIDT id, VersionInfoT info) {
     if (ids_.has(id)) {
       return {at(id.offset()), false};
     }
-    VersionInfo* ptr = at(id.offset());
-    ::new (static_cast<void*>(ptr)) VersionInfo(std::move(info));
+    VersionInfoT* ptr = at(id.offset());
+    ::new (static_cast<void*>(ptr)) VersionInfoT(std::move(info));
     ids_ |= id;
     return {ptr, true};
   }
@@ -366,14 +368,14 @@ public:
    * @param id The version identifier to find
    * @return Pointer to the VersionInfo, or nullptr if not found
    */
-  VersionInfo* find(VersionID id) noexcept {
+  VersionInfoT* find(VersionIDT id) noexcept {
     if (ids_.has(id)) {
       return at(id.offset());
     }
     return nullptr;
   }
 
-  const VersionInfo* find(VersionID id) const noexcept {
+  const VersionInfoT* find(VersionIDT id) const noexcept {
     if (ids_.has(id)) {
       return at(id.offset());
     }
@@ -386,26 +388,26 @@ public:
    */
   template <typename Func>
   void foreach (Func&& func) noexcept {
-    ids_.foreach ([this, &func](VersionID id) { func(*at(id.offset())); });
+    ids_.foreach ([this, &func](VersionIDT id) { func(*at(id.offset())); });
   }
 
   template <typename Func>
   void foreach (Func&& func) const noexcept {
-    ids_.foreach ([this, &func](VersionID id) { func(*at(id.offset())); });
+    ids_.foreach ([this, &func](VersionIDT id) { func(*at(id.offset())); });
   }
 
   /** @brief Returns true if the given VersionID is registered */
-  bool has(VersionID id) const noexcept { return ids_.has(id); }
+  bool has(VersionIDT id) const noexcept { return ids_.has(id); }
 
   /** @brief Returns true if all given VersionIDs are registered */
-  bool has(VersionIDSet ids) const noexcept { return ids_.has(ids); }
+  bool has(VersionIDSetT ids) const noexcept { return ids_.has(ids); }
 
   /** @brief Returns true if any of the given VersionIDs are registered */
-  bool has_any(VersionIDSet ids) const noexcept { return ids_.has_any(ids); }
+  bool has_any(VersionIDSetT ids) const noexcept { return ids_.has_any(ids); }
 
 private:
-  VersionIDSet ids_;
-  alignas(VersionInfo) std::byte infos_[sizeof(VersionInfo) * capacity()];
+  VersionIDSetT ids_;
+  alignas(VersionInfoT) std::byte infos_[sizeof(VersionInfoT) * capacity()];
 };
 
 } // namespace cxxaux

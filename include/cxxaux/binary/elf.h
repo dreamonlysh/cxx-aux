@@ -16,6 +16,7 @@
 
 #include "binary_decoder.h"
 #include "elf_format.h"
+#include <cstring>
 #include <iosfwd>
 #include <memory>
 #include <optional>

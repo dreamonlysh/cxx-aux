@@ -1,9 +1,9 @@
 #include "estd/string/concat_buffer.h"
+#include <climits>
 #include <gtest/gtest.h>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <climits>
 
 using namespace es::string;
 

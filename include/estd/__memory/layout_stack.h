@@ -15,6 +15,7 @@
 #define ESTD_MEMORY_LAYOUT_STACK_H
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <utility>
 
 namespace es { namespace memory {
