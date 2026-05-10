@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <estd/__memory/object_pool.h>
 #include <gtest/gtest.h>
 
