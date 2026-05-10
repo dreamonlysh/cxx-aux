@@ -51,3 +51,28 @@ TEST(BitTest, get_nth_bit) {
   ASSERT_EQ(es::get_nth_bit(0xAAAAAAAAAAAAAAAAull, 31), 1ull << 63);
   ASSERT_EQ(es::get_nth_bit(0xAAAAAAAAAAAAAAAAull, 32), 0ull);
 }
+
+TEST(BitTest, get_bit_Position0AndMax) {
+  ASSERT_EQ(es::get_bit(1u, 0), 1);
+  ASSERT_EQ(es::get_bit(0xFFFFFFFEu, 0), 0);
+  ASSERT_EQ(es::get_bit(0x80000000u, 31), 1);
+  ASSERT_EQ(es::get_bit(0x7FFFFFFFu, 31), 0);
+}
+
+TEST(BitTest, get_bits_VariousRanges) {
+  ASSERT_EQ(es::get_bits(0xA5A5A5A5u, 0, 8), 0xA5u);
+  ASSERT_EQ(es::get_bits(0xA5A5A5A5u, 8, 8), 0xA5u);
+  ASSERT_EQ(es::get_bits(0xA5A5A5A5u, 4, 4), 0xAu);
+  ASSERT_EQ(es::get_bits(0x12345678u, 0, 4), 0x8u);
+  ASSERT_EQ(es::get_bits(0x12345678u, 4, 4), 0x7u);
+  ASSERT_EQ(es::get_bits(0x12345678u, 28, 4), 0x1u);
+}
+
+TEST(BitTest, get_nth_bit_EdgeCases) {
+  ASSERT_EQ(es::get_nth_bit(1u, 0), 1u);
+  ASSERT_EQ(es::get_nth_bit(1u, 1), 0u);
+  ASSERT_EQ(es::get_nth_bit(0u, 0), 0u);
+  ASSERT_EQ(es::get_nth_bit(UINT32_MAX, 0), 1u);
+  ASSERT_EQ(es::get_nth_bit(UINT32_MAX, 31), 0x80000000u);
+  ASSERT_EQ(es::get_nth_bit(UINT32_MAX, 32), 0u);
+}

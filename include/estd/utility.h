@@ -14,6 +14,22 @@
 #ifndef ESTD_UTILITY_H
 #define ESTD_UTILITY_H
 
+/**
+ * @defgroup utility Utility and type introspection
+ *
+ * Compile-time and runtime utilities for type introspection, numeric type
+ * classification, and common patterns.
+ *
+ * Key components:
+ * - **type_name**: Human-readable type names via compiler intrinsics
+ * - **NumericType / NumericTypeCode**: Numeric type classification and encoding
+ * - **disabled_copy / disabled_move / disabled_copy_move**: Base classes to
+ * delete operations
+ * - **overloaded**: Multi-lambda visitor for std::variant
+ * - **bytes_of / bits_of**: Compile-time size constants in bytes/bits
+ * @{
+ */
+
 #include "__utility/type_name.h"
 // template <typename T>
 // constexpr std::string_view type_name();
@@ -105,5 +121,7 @@
 #include "__utility/bits_of.h"
 // template <typename T>
 // constexpr auto bits_of(T);
+
+/** @} */
 
 #endif

@@ -2,8 +2,9 @@
 //
 // cxxaux is licensed under Mulan PSL v2.
 // You can use this software according to the terms and conditions of the Mulan
-// PSL v2. You may obtain a copy of Mulan PSL v2 at:
-// http://license.coscl.org.cn/MulanPSL2
+// PSL v2.
+// You may obtain a copy of Mulan PSL v2 at:
+//             http://license.coscl.org.cn/MulanPSL2
 //
 // THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY
 // KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
@@ -16,8 +17,8 @@
 
 #include "flat_string.h"
 #include <limits>
+#include <memory>
 #include <string>
-#include <variant>
 
 namespace es { namespace string {
 
@@ -34,6 +35,7 @@ namespace es { namespace string {
  * - Switches to std::string when size exceeds N (heap allocation)
  * - Standard string-like interface
  * - Automatic transition between small and large storage
+ * - Union-based storage (no std::variant overhead)
  *
  * @tparam N Maximum number of characters for small string storage
  *
@@ -67,41 +69,110 @@ public:
   static constexpr size_type npos = size_type(-1);
   static constexpr size_type small_capacity = N - 1;
 
-  small_string() noexcept : storage_(small_storage_type{}) {}
+  small_string() noexcept : is_small_(true) {
+    ::new (static_cast<void*>(&small_)) small_storage_type();
+  }
 
+  /**
+   * @brief Constructs a string with count copies of character c.
+   * @param count Number of characters to fill.
+   * @param c Character value to fill with.
+   */
   small_string(size_type count, char c) {
     if (count <= small_capacity) {
-      storage_ = small_storage_type(count, c);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(count, c);
     } else {
-      storage_ = large_storage_type(count, c);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(count, c);
     }
   }
 
+  /**
+   * @brief Constructs a string from the first count characters of s.
+   * @param s Pointer to source character array.
+   * @param count Number of characters to copy.
+   */
   small_string(const char* s, size_type count) {
     if (count <= small_capacity) {
-      storage_ = small_storage_type(s, count);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(s, count);
     } else {
-      storage_ = large_storage_type(s, count);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(s, count);
     }
   }
 
+  /**
+   * @brief Constructs a string from a null-terminated C-string.
+   * @param s Pointer to null-terminated source string.
+   */
   small_string(const char* s) : small_string(s, traits_type::length(s)) {}
 
+  /**
+   * @brief Constructs from a string_view-like object.
+   * @tparam StringViewLike Type satisfying the string_view-like concept.
+   * @param s Source string_view-like object.
+   */
   template <typename StringViewLike,
             typename = std::enable_if_t<
                 __impl_type_traits::is_string_view_like_v<StringViewLike>>>
   small_string(const StringViewLike& s) : small_string(s.data(), s.size()) {}
 
-  small_string(const small_string& other) = default;
-  small_string(small_string&& other) noexcept = default;
+  small_string(const small_string& other) : is_small_(other.is_small_) {
+    if (other.is_small_) {
+      ::new (static_cast<void*>(&small_)) small_storage_type(other.small_);
+    } else {
+      ::new (static_cast<void*>(&large_)) large_storage_type(other.large_);
+    }
+  }
 
+  small_string(small_string&& other) noexcept : is_small_(other.is_small_) {
+    if (other.is_small_) {
+      ::new (static_cast<void*>(&small_))
+          small_storage_type(std::move(other.small_));
+    } else {
+      ::new (static_cast<void*>(&large_))
+          large_storage_type(std::move(other.large_));
+    }
+  }
+
+  /**
+   * @brief Constructs from an initializer list.
+   * @param il Initializer list of characters.
+   */
   small_string(std::initializer_list<char> il)
       : small_string(il.begin(), il.size()) {}
 
-  ~small_string() = default;
+  ~small_string() { destroy(); }
 
-  small_string& operator=(const small_string& other) = default;
-  small_string& operator=(small_string&& other) noexcept = default;
+  small_string& operator=(const small_string& other) {
+    if (this != &other) {
+      destroy();
+      is_small_ = other.is_small_;
+      if (other.is_small_) {
+        ::new (static_cast<void*>(&small_)) small_storage_type(other.small_);
+      } else {
+        ::new (static_cast<void*>(&large_)) large_storage_type(other.large_);
+      }
+    }
+    return *this;
+  }
+
+  small_string& operator=(small_string&& other) noexcept {
+    if (this != &other) {
+      destroy();
+      is_small_ = other.is_small_;
+      if (other.is_small_) {
+        ::new (static_cast<void*>(&small_))
+            small_storage_type(std::move(other.small_));
+      } else {
+        ::new (static_cast<void*>(&large_))
+            large_storage_type(std::move(other.large_));
+      }
+    }
+    return *this;
+  }
 
   small_string& operator=(const char* s) {
     assign(s, traits_type::length(s));
@@ -126,28 +197,55 @@ public:
     return *this;
   }
 
+  /**
+   * @brief Replaces the contents with the first count characters of s.
+   * @param s Pointer to source character array.
+   * @param count Number of characters to copy.
+   * @return Reference to this string.
+   */
   small_string& assign(const char* s, size_type count) {
+    destroy();
     if (count <= small_capacity) {
-      storage_ = small_storage_type(s, count);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(s, count);
     } else {
-      storage_ = large_storage_type(s, count);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(s, count);
     }
     return *this;
   }
 
+  /**
+   * @brief Replaces the contents with a C-string.
+   * @param s Pointer to null-terminated source string.
+   * @return Reference to this string.
+   */
   small_string& assign(const char* s) {
     return assign(s, traits_type::length(s));
   }
 
+  /**
+   * @brief Replaces the contents with count copies of c.
+   * @param count Number of characters to fill.
+   * @param c Character value to fill with.
+   * @return Reference to this string.
+   */
   small_string& assign(size_type count, char c) {
+    destroy();
     if (count <= small_capacity) {
-      storage_ = small_storage_type(count, c);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(count, c);
     } else {
-      storage_ = large_storage_type(count, c);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(count, c);
     }
     return *this;
   }
 
+  /**
+   * @brief Accesses character at pos with bounds checking.
+   * @throws std::out_of_range if pos >= size().
+   */
   reference at(size_type pos) {
     if (pos >= size()) {
       throw std::out_of_range("small_string::at() out of range");
@@ -155,6 +253,10 @@ public:
     return data()[pos];
   }
 
+  /**
+   * @brief Accesses character at pos with bounds checking.
+   * @throws std::out_of_range if pos >= size().
+   */
   const_reference at(size_type pos) const {
     if (pos >= size()) {
       throw std::out_of_range("small_string::at() out of range");
@@ -171,13 +273,10 @@ public:
   reference back() { return data()[size() - 1]; }
   const_reference back() const { return data()[size() - 1]; }
 
-  pointer data() noexcept {
-    return std::visit([](auto& s) -> pointer { return s.data(); }, storage_);
-  }
+  pointer data() noexcept { return is_small_ ? small_.data() : large_.data(); }
 
   const_pointer data() const noexcept {
-    return std::visit([](const auto& s) -> const_pointer { return s.data(); },
-                      storage_);
+    return is_small_ ? small_.data() : large_.data();
   }
 
   const_pointer c_str() const noexcept { return data(); }
@@ -197,8 +296,7 @@ public:
   bool empty() const noexcept { return size() == 0; }
 
   size_type size() const noexcept {
-    return std::visit([](const auto& s) -> size_type { return s.size(); },
-                      storage_);
+    return is_small_ ? small_.size() : large_.size();
   }
 
   size_type length() const noexcept { return size(); }
@@ -208,61 +306,94 @@ public:
   }
 
   size_type capacity() const noexcept {
-    return std::visit([](const auto& s) -> size_type { return s.capacity(); },
-                      storage_);
+    return is_small_ ? small_.capacity() : large_.capacity();
   }
 
-  void clear() noexcept { storage_ = small_storage_type{}; }
-
-  void reserve(size_type new_cap) {
-    if (new_cap > small_capacity && is_small()) {
-      large_storage_type large;
-      large.reserve(new_cap);
-      large.assign(data(), size());
-      storage_ = std::move(large);
-    } else if (!is_small()) {
-      std::get<large_storage_type>(storage_).reserve(new_cap);
+  void clear() noexcept {
+    if (is_small_) {
+      small_.clear();
+    } else {
+      std::destroy_at(&large_);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type();
     }
   }
 
+  /**
+   * @brief Reserves storage for at least new_cap characters.
+   * May transition from small to large storage.
+   */
+  void reserve(size_type new_cap) {
+    if (new_cap > small_capacity && is_small_) {
+      large_storage_type large;
+      large.reserve(new_cap);
+      large.assign(small_.data(), small_.size());
+      std::destroy_at(&small_);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(std::move(large));
+    } else if (!is_small_) {
+      large_.reserve(new_cap);
+    }
+  }
+
+  /**
+   * @brief Reduces capacity. May transition from large to small storage.
+   */
   void shrink_to_fit() {
-    if (!is_small()) {
-      auto& large = std::get<large_storage_type>(storage_);
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.data(), large.size());
-        storage_ = std::move(small);
+    if (!is_small_) {
+      if (large_.size() <= small_capacity) {
+        small_storage_type small(large_.data(), large_.size());
+        std::destroy_at(&large_);
+        is_small_ = true;
+        ::new (static_cast<void*>(&small_))
+            small_storage_type(std::move(small));
       } else {
-        large.shrink_to_fit();
+        large_.shrink_to_fit();
       }
     }
   }
 
+  /**
+   * @brief Appends the first n characters of s.
+   * May transition from small to large storage.
+   */
   small_string& append(const char* s, size_type n) {
     size_type new_size = size() + n;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).append(s, n);
+    if (new_size <= small_capacity && is_small_) {
+      small_.append(s, n);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).append(s, n);
+      large_.append(s, n);
     }
     return *this;
   }
 
+  /**
+   * @brief Appends a C-string.
+   */
   small_string& append(const char* s) {
     return append(s, traits_type::length(s));
   }
 
+  /**
+   * @brief Appends count copies of c.
+   * May transition from small to large storage.
+   */
   small_string& append(size_type count, char c) {
     size_type new_size = size() + count;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).append(count, c);
+    if (new_size <= small_capacity && is_small_) {
+      small_.append(count, c);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).append(count, c);
+      large_.append(count, c);
     }
     return *this;
   }
 
+  /**
+   * @brief Appends a string_view.
+   * May transition from small to large storage.
+   */
   small_string& append(std::string_view sv) {
     return append(sv.data(), sv.size());
   }
@@ -280,73 +411,108 @@ public:
 
   small_string& operator+=(std::string_view sv) { return append(sv); }
 
+  /**
+   * @brief Appends a character. May transition from small to large storage.
+   */
   void push_back(char c) {
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).push_back(c);
+    if (new_size <= small_capacity && is_small_) {
+      small_.push_back(c);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).push_back(c);
+      large_.push_back(c);
     }
   }
 
+  /**
+   * @brief Removes the last character. May transition from large to small.
+   */
   void pop_back() {
-    if (is_small()) {
-      std::get<small_storage_type>(storage_).pop_back();
+    if (is_small_) {
+      small_.pop_back();
     } else {
-      auto& large = std::get<large_storage_type>(storage_);
-      large.pop_back();
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.data(), large.size());
-        storage_ = std::move(small);
+      large_.pop_back();
+      if (large_.size() <= small_capacity) {
+        small_storage_type small(large_.data(), large_.size());
+        std::destroy_at(&large_);
+        is_small_ = true;
+        ::new (static_cast<void*>(&small_))
+            small_storage_type(std::move(small));
       }
     }
   }
 
+  /**
+   * @brief Inserts characters at position.
+   * May transition from small to large storage.
+   */
   small_string& insert(size_type pos, const char* s, size_type n) {
     size_type new_size = size() + n;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).insert(pos, s, n);
+    if (new_size <= small_capacity && is_small_) {
+      small_.insert(pos, s, n);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).insert(pos, s, n);
+      large_.insert(pos, s, n);
     }
     return *this;
   }
 
+  /**
+   * @brief Inserts characters at position.
+   */
   small_string& insert(size_type pos, const char* s) {
     return insert(pos, s, traits_type::length(s));
   }
 
+  /**
+   * @brief Erases characters from position.
+   * May transition from large to small storage.
+   */
   small_string& erase(size_type pos = 0, size_type count = npos) {
-    if (is_small()) {
-      std::get<small_storage_type>(storage_).erase(pos, count);
+    if (is_small_) {
+      small_.erase(pos, count);
     } else {
-      auto& large = std::get<large_storage_type>(storage_);
-      large.erase(pos, count);
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.data(), large.size());
-        storage_ = std::move(small);
+      large_.erase(pos, count);
+      if (large_.size() <= small_capacity) {
+        small_storage_type small(large_.data(), large_.size());
+        std::destroy_at(&large_);
+        is_small_ = true;
+        ::new (static_cast<void*>(&small_))
+            small_storage_type(std::move(small));
       }
     }
     return *this;
   }
 
+  /**
+   * @brief Resizes the string.
+   * May transition between small and large storage.
+   */
   void resize(size_type count) { resize(count, char{}); }
 
+  /**
+   * @brief Resizes the string.
+   * May transition from small to large storage, but never large to small.
+   */
   void resize(size_type count, char c) {
-    if (count <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).resize(count, c);
+    if (count <= small_capacity && is_small_) {
+      small_.resize(count, c);
     } else if (count > small_capacity) {
       ensure_large();
-      std::get<large_storage_type>(storage_).resize(count, c);
+      large_.resize(count, c);
     } else {
-      small_storage_type small(count, c);
-      storage_ = std::move(small);
+      large_.resize(count, c);
     }
   }
 
-  void swap(small_string& other) noexcept { storage_.swap(other.storage_); }
+  /**
+   * @brief Swaps contents with another small_string.
+   */
+  void swap(small_string& other) noexcept {
+    small_string tmp(std::move(*this));
+    *this = std::move(other);
+    other = std::move(tmp);
+  }
 
   size_type find(const small_string& str, size_type pos = 0) const noexcept {
     return find(str.data(), pos, str.size());
@@ -429,20 +595,31 @@ public:
     return small_string(data() + pos, len);
   }
 
-  bool is_small() const noexcept {
-    return std::holds_alternative<small_storage_type>(storage_);
-  }
+  bool is_small() const noexcept { return is_small_; }
 
 private:
-  void ensure_large() {
-    if (is_small()) {
-      auto& small = std::get<small_storage_type>(storage_);
-      large_storage_type large(small.data(), small.size());
-      storage_ = std::move(large);
+  void destroy() noexcept {
+    if (is_small_) {
+      std::destroy_at(&small_);
+    } else {
+      std::destroy_at(&large_);
     }
   }
 
-  std::variant<small_storage_type, large_storage_type> storage_;
+  void ensure_large() {
+    if (is_small_) {
+      large_storage_type large(small_.data(), small_.size());
+      std::destroy_at(&small_);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(std::move(large));
+    }
+  }
+
+  union {
+    small_storage_type small_;
+    large_storage_type large_;
+  };
+  bool is_small_;
 };
 
 template <size_t N>

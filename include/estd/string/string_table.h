@@ -259,14 +259,12 @@ public:
    * @endcode
    */
   std::string_view add(std::string_view s) {
-    auto it = strtbl_.find(s);
-    if (it != strtbl_.end())
+    auto [it, inserted] = strtbl_.insert(s);
+    if (!inserted) {
       return *it;
-
-    std::string_view ret = base_type::add(s);
-
-    strtbl_.insert(ret);
-    return ret;
+    }
+    *const_cast<std::string_view*>(&(*it)) = base_type::add(s);
+    return *it;
   }
 
 private:

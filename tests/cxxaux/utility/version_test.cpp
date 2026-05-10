@@ -149,7 +149,7 @@ TEST(VersionIDSetTest, Foreach) {
 
   unsigned count = 0;
   uint32_t mask = 0;
-  set.foreach([&](VID id) {
+  set.foreach ([&](VID id) {
     ++count;
     mask |= id.value();
   });
@@ -295,7 +295,7 @@ TEST(VersionManagerTest, Foreach) {
   mgr.emplace(id3, id3, "v3");
 
   unsigned count = 0;
-  mgr.foreach([&](VInfo& info) {
+  mgr.foreach ([&](VInfo& info) {
     ++count;
     EXPECT_TRUE(info.id.valid());
   });

@@ -296,6 +296,20 @@
 // template <typename T, typename Tag, typename OS>
 // constexpr OS& operator<<(OS& os, const Integer<T, Tag>& v);
 
+/**
+ * @defgroup units Strongly-typed unit aliases
+ *
+ * Pre-defined Integer specializations for common measurement units.
+ * Each unit type is distinct and cannot be mixed with other unit types.
+ *
+ * Example usage:
+ * @code
+ * using namespace es::units;
+ * auto size = 4_KB + 512_B;  // Compile error: different types
+ * auto bits = 32_b;           // Bit type
+ * @endcode
+ * @{
+ */
 namespace es { namespace units {
 
 class __BitTag;
@@ -339,6 +353,8 @@ using PetaByte = Integer<uint32_t, __PetaByteTag>;
 constexpr PetaByte operator""_PB(unsigned long long int v) {
   return PetaByte{static_cast<uint32_t>(v)};
 }
+
+/** @} */
 
 }} // namespace es::units
 #endif

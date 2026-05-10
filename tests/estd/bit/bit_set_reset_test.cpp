@@ -65,3 +65,30 @@ TEST(BitTest, reset_first_adjacent) {
   ASSERT_EQ(es::reset_first_adjacent(0b101001111u), 0b101000000);
   ASSERT_EQ(es::reset_first_adjacent(0xffff'ffffu), 0);
 }
+
+TEST(BitTest, set_bit_Position0AndMax) {
+  ASSERT_EQ(es::set_bit(0u, 0), 1u);
+  ASSERT_EQ(es::set_bit(0u, 31), 0x80000000u);
+  ASSERT_EQ(es::set_bit(0ull, 0), 1ull);
+  ASSERT_EQ(es::set_bit(0ull, 63), 0x8000000000000000ull);
+}
+
+TEST(BitTest, reset_first_OnZero) {
+  ASSERT_EQ(es::reset_first(0u), 0u);
+  ASSERT_EQ(es::reset_first(0ull), 0ull);
+}
+
+TEST(BitTest, set_first_OnAllOnes) {
+  ASSERT_EQ(es::set_first(UINT32_MAX), UINT32_MAX);
+  ASSERT_EQ(es::set_first(UINT64_MAX), UINT64_MAX);
+}
+
+TEST(BitTest, resetr_OnAllOnes) {
+  ASSERT_EQ(es::resetr(UINT32_MAX), 0u);
+  ASSERT_EQ(es::resetr(UINT64_MAX), 0ull);
+}
+
+TEST(BitTest, setr_OnZero) {
+  ASSERT_EQ(es::setr(0u), UINT32_MAX);
+  ASSERT_EQ(es::setr(0ull), UINT64_MAX);
+}

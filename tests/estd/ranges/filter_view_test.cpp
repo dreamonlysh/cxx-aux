@@ -62,3 +62,48 @@ TEST(FilterView, FilterWithString) {
   EXPECT_EQ(result[0], "hello");
   EXPECT_EQ(result[1], "world");
 }
+
+TEST(FilterView, EmptyRange) {
+  std::vector<int> vec;
+  auto fv = es::ranges::filter([](int x) { return x % 2 == 0; })(vec);
+  std::vector<int> result;
+  for (int x : fv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 0u);
+}
+
+TEST(FilterView, AllFilteredOut) {
+  std::vector<int> vec = {1, 3, 5, 7, 9};
+  auto fv = es::ranges::filter([](int x) { return x > 100; })(vec);
+  std::vector<int> result;
+  for (int x : fv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 0u);
+}
+
+TEST(FilterView, AllPass) {
+  std::vector<int> vec = {2, 4, 6, 8};
+  auto fv = es::ranges::filter([](int x) { return x > 0; })(vec);
+  std::vector<int> result;
+  for (int x : fv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 4u);
+  EXPECT_EQ(result[0], 2);
+  EXPECT_EQ(result[3], 8);
+}
+
+TEST(FilterView, PipeOperator) {
+  std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+  auto fv = vec | es::ranges::filter([](int x) { return x % 2 == 0; });
+  std::vector<int> result;
+  for (int x : fv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 3u);
+  EXPECT_EQ(result[0], 2);
+  EXPECT_EQ(result[1], 4);
+  EXPECT_EQ(result[2], 6);
+}

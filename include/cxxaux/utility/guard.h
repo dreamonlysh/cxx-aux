@@ -17,10 +17,18 @@
 
 namespace cxxaux {
 
+/**
+ * @brief RAII guard that executes a callable on destruction.
+ */
 template <typename T>
 class __Guard {
 public:
+  /**
+   * @brief Constructs a guard with a cleanup callable.
+   * @param destruct Callable to invoke on destruction
+   */
   __Guard(T&& destruct) : __destruct(std::forward<T>(destruct)) {}
+
   ~__Guard() noexcept { __destruct(); }
 
 private:
@@ -30,14 +38,22 @@ private:
 template <typename T>
 __Guard(T&&) -> __Guard<T>;
 
-/// this is a general guard like a lambda to release objects
+/**
+ * @brief Creates a scope guard that captures an object by reference.
+ * The lambda body follows the macro invocation.
+ */
 #define CXXAUX_GUARD(obj) cxxaux::__Guard __guard_dummy_##__COUNTER__ = [&obj]
 
-/// this ia a special guard to release a pointer
+/**
+ * @brief Creates a scope guard that deletes a pointer on scope exit.
+ */
 #define CXXAUX_OBJECT_GUARD(p)                                                 \
   CXXAUX_GUARD(p) { delete p; }
 
-/// this ia a special guard to release a pointer that is not by delete
+/**
+ * @brief Creates a scope guard that calls a custom deleter on a pointer on
+ * scope exit.
+ */
 #define CXXAUX_OBJECT_GUARD_WITH_DELETER(p, deleter)                           \
   CXXAUX_GUARD(p) { deleter(p); }
 

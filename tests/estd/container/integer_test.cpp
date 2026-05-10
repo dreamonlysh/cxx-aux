@@ -201,3 +201,33 @@ TEST(IntegerTest, LogicOperators) {
   ASSERT_FALSE(!a);
   ASSERT_TRUE(!Index(0));
 }
+
+TEST(IntegerTest, ExplicitConversion) {
+  Index a(42);
+  EXPECT_EQ(static_cast<int32_t>(a), 42);
+  static_assert(!std::is_convertible_v<Index, int32_t>);
+}
+
+TEST(IntegerTest, UnitTypes) {
+  using namespace es::units;
+  Bit bits = 32_b;
+  EXPECT_EQ(bits.value(), 32u);
+  Byte bytes = 512_B;
+  EXPECT_EQ(bytes.value(), 512u);
+  KiloByte kb = 4_KB;
+  EXPECT_EQ(kb.value(), 4u);
+  EXPECT_EQ((bits + 8_b).value(), 40u);
+  EXPECT_EQ((bytes + 128_B).value(), 640u);
+  EXPECT_EQ((kb + 1_KB).value(), 5u);
+}
+
+TEST(IntegerTest, DifferentTags) {
+  struct TagA;
+  struct TagB;
+  using TypeA = es::Integer<int, TagA>;
+  using TypeB = es::Integer<int, TagB>;
+  static_assert(!std::is_same_v<TypeA, TypeB>);
+  TypeA a(10);
+  TypeB b(10);
+  EXPECT_EQ(a.value(), b.value());
+}

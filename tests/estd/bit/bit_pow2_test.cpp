@@ -50,3 +50,36 @@ TEST(BitTest, ceil_to_pow2) {
   ASSERT_EQ(es::ceil_to_pow2(UINT64_MAX), 0);
   ASSERT_EQ(es::ceil_to_pow2<uint16_t>(UINT16_MAX), 0);
 }
+
+TEST(BitTest, is_pow2_EdgeCases) {
+  ASSERT_TRUE(es::is_pow2(0u));
+  ASSERT_TRUE(es::is_pow2(1u));
+  ASSERT_TRUE(es::is_pow2(2u));
+  ASSERT_FALSE(es::is_pow2(3u));
+  ASSERT_TRUE(es::is_pow2(4u));
+  ASSERT_FALSE(es::is_pow2(5u));
+  ASSERT_TRUE(es::is_pow2(1024u));
+  ASSERT_FALSE(es::is_pow2(1023u));
+}
+
+TEST(BitTest, floor_to_pow2_EdgeCases) {
+  ASSERT_EQ(es::floor_to_pow2(2u), 2);
+  ASSERT_EQ(es::floor_to_pow2(3u), 2);
+  ASSERT_EQ(es::floor_to_pow2(4u), 4);
+  ASSERT_EQ(es::floor_to_pow2(5u), 4);
+  ASSERT_EQ(es::floor_to_pow2(6u), 4);
+  ASSERT_EQ(es::floor_to_pow2(7u), 4);
+  ASSERT_EQ(es::floor_to_pow2(8u), 8);
+  ASSERT_EQ(es::floor_to_pow2(1025u), 1024);
+}
+
+TEST(BitTest, ceil_to_pow2_EdgeCases) {
+  ASSERT_EQ(es::ceil_to_pow2(2u), 2);
+  ASSERT_EQ(es::ceil_to_pow2(3u), 4);
+  ASSERT_EQ(es::ceil_to_pow2(4u), 4);
+  ASSERT_EQ(es::ceil_to_pow2(5u), 8);
+  ASSERT_EQ(es::ceil_to_pow2(6u), 8);
+  ASSERT_EQ(es::ceil_to_pow2(7u), 8);
+  ASSERT_EQ(es::ceil_to_pow2(8u), 8);
+  ASSERT_EQ(es::ceil_to_pow2(1025u), 2048);
+}

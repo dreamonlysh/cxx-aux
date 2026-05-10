@@ -15,6 +15,19 @@
 #ifndef ESTD_META_H
 #define ESTD_META_H
 
+/**
+ * @defgroup meta Type traits and metaprogramming utilities
+ *
+ * Compile-time type introspection and manipulation:
+ * - **META_HAS_MEMBER_TYPE/DATA/FUNCTION**: Macros for member detection traits
+ * - **is_win, is_unix, is_linux, is_macos**: Platform detection traits
+ * - **add_const_as**: Propagate const-ness between types
+ * - **is_iterable**: Check if a type is iterable
+ * - **remove_cvref**: Remove cv-qualifiers and references
+ * - **is_c_array, is_std_array, to_std_array**: Array type traits
+ * @{
+ */
+
 #include "__meta/has_member.h"
 // #define META_HAS_MEMBER_TYPE(type)
 // #define META_HAS_MEMBER_DATA(data)
@@ -23,26 +36,6 @@
 // Default member element validation provided
 // - META_HAS_MEMBER_TYPE(iterator);
 //   Defined: has_member_iterator, has_member_iterator_v
-
-#include "__meta/operators.h"
-// template <typename... T>
-// struct meta_and;
-// template <typename... T>
-// using meta_and_t = typename meta_and<T...>::type;
-// template <typename... T>
-// constexpr bool meta_and_v = meta_and_t<T...>::value;
-// template <typename... T>
-// struct meta_or;
-// template <typename... T>
-// using meta_or_t = typename meta_or<T...>::type;
-// template <typename... T>
-// constexpr bool meta_or_v = meta_or<T...>::value;
-// template <typename T>
-// struct meta_not;
-// template <typename T>
-// using meta_not_t = typename meta_not<T>::type;
-// template <typename T>
-// constexpr bool meta_not_v = meta_not_t<T>::value;
 
 #include "__meta/system.h"
 // struct is_win;
@@ -106,5 +99,7 @@
 // struct to_std_array;
 // template <typename T>
 // using to_std_array_t = typename to_std_array<T>::type;
+
+/** @} */
 
 #endif

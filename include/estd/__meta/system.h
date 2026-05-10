@@ -13,7 +13,6 @@
 
 #ifndef ESTD___META_SYSTEM_H
 #define ESTD___META_SYSTEM_H
-#include "operators.h"
 #include <type_traits>
 
 namespace es {
@@ -45,7 +44,8 @@ struct is_win64 : std::false_type {};
 constexpr bool is_win64_v = is_win64::value;
 
 /// @brief Type trait to check if the platform is Windows 32-bit
-struct is_win32 : meta_and_t<is_win, meta_not<is_win64>> {};
+struct is_win32
+    : std::conjunction<is_win, std::bool_constant<!is_win64::value>> {};
 
 /// @brief Helper variable for is_win32
 constexpr bool is_win32_v = is_win32::value;

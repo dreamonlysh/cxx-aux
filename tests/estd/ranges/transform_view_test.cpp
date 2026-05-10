@@ -1,3 +1,4 @@
+#include <estd/__ranges/filter_view.h>
 #include <estd/__ranges/transform_view.h>
 #include <gtest/gtest.h>
 #include <string>
@@ -62,4 +63,31 @@ TEST(TransformView, EmptyRange) {
   }
 
   EXPECT_EQ(count, 0);
+}
+
+
+TEST(TransformView, PipeOperator) {
+  std::vector<int> vec = {1, 2, 3, 4, 5};
+  auto tv = vec | es::ranges::transform([](int x) { return x * 2; });
+  std::vector<int> result;
+  for (int x : tv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 5u);
+  EXPECT_EQ(result[0], 2);
+  EXPECT_EQ(result[4], 10);
+}
+
+TEST(TransformView, ChainedFilterTransform) {
+  std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+  auto tv = vec | es::ranges::filter([](int x) { return x % 2 == 0; })
+                | es::ranges::transform([](int x) { return x * 10; });
+  std::vector<int> result;
+  for (int x : tv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 3u);
+  EXPECT_EQ(result[0], 20);
+  EXPECT_EQ(result[1], 40);
+  EXPECT_EQ(result[2], 60);
 }

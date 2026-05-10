@@ -139,16 +139,22 @@ public:
   }
 
   constexpr maybe_owned& operator=(maybe_owned&& other) noexcept {
-    std::swap(storage_, other.storage_);
+    if (this != &other) {
+      storage_ = std::move(other.storage_);
+    }
     return *this;
   }
 
+  /** @brief Assigns from an rvalue, switching to owned storage. @param t Rvalue
+   * to assign */
   template <typename U = T, typename = std::enable_if_t<!std::is_array_v<U>>>
   constexpr maybe_owned& operator=(T&& t) {
     storage_.template emplace<__owned_type>(std::move(t));
     return *this;
   }
 
+  /** @brief Assigns from an lvalue, switching to reference storage. @param t
+   * Lvalue to reference */
   constexpr maybe_owned& operator=(T& t) noexcept {
     storage_.template emplace<__reference_type>(t);
     return *this;

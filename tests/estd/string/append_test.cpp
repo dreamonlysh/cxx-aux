@@ -67,3 +67,29 @@ TEST(AppendNTest, AppendMultipleArguments) {
   append_n(s, " ", "World", '!', 123);
   EXPECT_EQ(s, "Hello World!123");
 }
+
+
+TEST(AppendTest, AppendNegativeIntegral) {
+  std::string s = "Temp: ";
+  append(s, -42L);
+  EXPECT_EQ(s, "Temp: -42");
+}
+
+TEST(AppendTest, AppendCharToEmpty) {
+  std::string s;
+  append(s, 'X');
+  EXPECT_EQ(s, "X");
+}
+
+TEST(AppendTest, AppendStringViewSubstr) {
+  std::string s = "Hello";
+  std::string_view sv = "XXWorldXX";
+  append(s, sv, 2, 5);
+  EXPECT_EQ(s, "HelloWorld");
+}
+
+TEST(AppendNTest, AppendNMixedTypes) {
+  std::string s;
+  append_n(s, "count=", 99, ' ', "end");
+  EXPECT_EQ(s, "count=99 end");
+}

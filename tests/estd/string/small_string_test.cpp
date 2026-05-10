@@ -484,3 +484,262 @@ TEST(SmallStringTest, CapacitySmallVsLarge) {
   EXPECT_FALSE(str2.is_small());
   EXPECT_GE(str2.capacity(), str2.size());
 }
+
+TEST(SmallStringTest, SSOTransitionReserveBeyondSmall) {
+  small_string<8> str("hello");
+  EXPECT_TRUE(str.is_small());
+  str.reserve(50);
+  EXPECT_FALSE(str.is_small());
+  EXPECT_GE(str.capacity(), 50);
+  EXPECT_EQ(str, "hello");
+}
+
+TEST(SmallStringTest, SSOTransitionPushBackBeyondSmall) {
+  small_string<6> str("hello");
+  EXPECT_TRUE(str.is_small());
+  str.push_back('!');
+  EXPECT_FALSE(str.is_small());
+  EXPECT_EQ(str, "hello!");
+}
+
+TEST(SmallStringTest, SSOTransitionAppendBeyondSmall) {
+  small_string<8> str("hi");
+  EXPECT_TRUE(str.is_small());
+  str.append(" there world");
+  EXPECT_FALSE(str.is_small());
+  EXPECT_EQ(str, "hi there world");
+}
+
+TEST(SmallStringTest, SSOTransitionShrinkToFitBackToSmall) {
+  small_string<8> str("hello world");
+  EXPECT_FALSE(str.is_small());
+  str.erase(5);
+  str.shrink_to_fit();
+  EXPECT_TRUE(str.is_small());
+  EXPECT_EQ(str, "hello");
+}
+
+TEST(SmallStringTest, SSOTransitionShrinkToFitStaysLarge) {
+  small_string<8> str("hello world");
+  str.shrink_to_fit();
+  EXPECT_FALSE(str.is_small());
+  EXPECT_EQ(str, "hello world");
+}
+
+TEST(SmallStringTest, IsSmallTracking) {
+  small_string<8> str;
+  EXPECT_TRUE(str.is_small());
+  str = "hi";
+  EXPECT_TRUE(str.is_small());
+  str = "hello world";
+  EXPECT_FALSE(str.is_small());
+  str.clear();
+  EXPECT_TRUE(str.is_small());
+  str = "hello world";
+  EXPECT_FALSE(str.is_small());
+  str.assign("hi");
+  EXPECT_TRUE(str.is_small());
+}
+
+TEST(SmallStringTest, FindCharWithPos) {
+  small_string<16> str("abcabc");
+  EXPECT_EQ(str.find('a'), 0);
+  EXPECT_EQ(str.find('a', 1), 3);
+  EXPECT_EQ(str.find('b', 2), 4);
+}
+
+TEST(SmallStringTest, FindSubstringWithPos) {
+  small_string<16> str("abcabc");
+  EXPECT_EQ(str.find("abc"), 0);
+  EXPECT_EQ(str.find("abc", 1), 3);
+  EXPECT_EQ(str.find("cab"), 2);
+}
+
+TEST(SmallStringTest, FindNposAll) {
+  small_string<16> str("hello");
+  EXPECT_EQ(str.find('z'), small_string<16>::npos);
+  EXPECT_EQ(str.find("xyz"), small_string<16>::npos);
+  EXPECT_EQ(str.find("hellox"), small_string<16>::npos);
+}
+
+TEST(SmallStringTest, RFindChar) {
+  small_string<16> str("abcabc");
+  EXPECT_EQ(str.rfind('a'), 3);
+  EXPECT_EQ(str.rfind('b'), 4);
+  EXPECT_EQ(str.rfind('c'), 5);
+  EXPECT_EQ(str.rfind('z'), small_string<16>::npos);
+}
+
+TEST(SmallStringTest, RFindSubstring) {
+  small_string<16> str("abcabc");
+  EXPECT_EQ(str.rfind("abc"), 3);
+  EXPECT_EQ(str.rfind("cab"), 2);
+  EXPECT_EQ(str.rfind("xyz"), small_string<16>::npos);
+}
+
+TEST(SmallStringTest, RFindWithPos) {
+  small_string<16> str("abcabc");
+  EXPECT_EQ(str.rfind('a', 2), 0);
+  EXPECT_EQ(str.rfind('c', 4), 2);
+}
+
+TEST(SmallStringTest, StartsWithStringView) {
+  small_string<16> str("hello world");
+  EXPECT_TRUE(str.starts_with(std::string_view("hello")));
+  EXPECT_FALSE(str.starts_with(std::string_view("world")));
+}
+
+TEST(SmallStringTest, StartsWithEmptyAndLonger) {
+  small_string<16> str("hello");
+  EXPECT_TRUE(str.starts_with(""));
+  EXPECT_TRUE(str.starts_with(std::string_view("")));
+  EXPECT_FALSE(str.starts_with("hello world"));
+}
+
+TEST(SmallStringTest, EndsWithStringView) {
+  small_string<16> str("hello world");
+  EXPECT_TRUE(str.ends_with(std::string_view("world")));
+  EXPECT_FALSE(str.ends_with(std::string_view("hello")));
+}
+
+TEST(SmallStringTest, EndsWithEmptyAndLonger) {
+  small_string<16> str("hello");
+  EXPECT_TRUE(str.ends_with(""));
+  EXPECT_TRUE(str.ends_with(std::string_view("")));
+  EXPECT_FALSE(str.ends_with("hello world"));
+}
+
+TEST(SmallStringTest, ContainsStringView) {
+  small_string<16> str("hello world");
+  EXPECT_TRUE(str.contains(std::string_view("lo wo")));
+  EXPECT_FALSE(str.contains(std::string_view("xyz")));
+}
+
+TEST(SmallStringTest, ContainsEdgeCases) {
+  small_string<16> str("hello");
+  EXPECT_TRUE(str.contains(""));
+  EXPECT_TRUE(str.contains(std::string_view("")));
+  EXPECT_FALSE(str.contains("hello world"));
+}
+
+TEST(SmallStringTest, CompareCString) {
+  small_string<16> str("hello");
+  EXPECT_EQ(str.compare("hello"), 0);
+  EXPECT_LT(str.compare("world"), 0);
+  EXPECT_GT(str.compare("abc"), 0);
+}
+
+TEST(SmallStringTest, CompareDifferentLengths) {
+  small_string<16> str1("hello");
+  small_string<16> str2("hello world");
+  EXPECT_LT(str1.compare(str2), 0);
+  EXPECT_GT(str2.compare(str1), 0);
+}
+
+TEST(SmallStringTest, InsertAtBeginning) {
+  small_string<16> str("world");
+  str.insert(0, "hello ");
+  EXPECT_EQ(str, "hello world");
+}
+
+TEST(SmallStringTest, InsertAtMiddle) {
+  small_string<16> str("hello world");
+  str.insert(5, " beautiful");
+  EXPECT_EQ(str, "hello beautiful world");
+}
+
+TEST(SmallStringTest, InsertTriggersSSO) {
+  small_string<8> str("hello");
+  EXPECT_TRUE(str.is_small());
+  str.insert(5, " world");
+  EXPECT_FALSE(str.is_small());
+  EXPECT_EQ(str, "hello world");
+}
+
+TEST(SmallStringTest, EraseFromBeginning) {
+  small_string<16> str("hello world");
+  str.erase(0, 6);
+  EXPECT_EQ(str, "world");
+}
+
+TEST(SmallStringTest, EraseFromMiddle) {
+  small_string<16> str("hello beautiful world");
+  str.erase(5, 10);
+  EXPECT_EQ(str, "hello world");
+}
+
+TEST(SmallStringTest, EraseTriggersSSOBack) {
+  small_string<8> str("hello world");
+  EXPECT_FALSE(str.is_small());
+  str.erase(5);
+  EXPECT_EQ(str, "hello");
+  EXPECT_TRUE(str.is_small());
+}
+
+TEST(SmallStringTest, ResizeGrowSmall) {
+  small_string<16> str("hi");
+  str.resize(5, '!');
+  EXPECT_EQ(str, "hi!!!");
+  EXPECT_EQ(str.size(), 5);
+}
+
+TEST(SmallStringTest, ResizeShrinkSmall) {
+  small_string<16> str("hello");
+  str.resize(2);
+  EXPECT_EQ(str, "he");
+  EXPECT_EQ(str.size(), 2);
+}
+
+TEST(SmallStringTest, ResizeGrowTriggersLarge) {
+  small_string<8> str("hello");
+  EXPECT_TRUE(str.is_small());
+  str.resize(20, '!');
+  EXPECT_FALSE(str.is_small());
+  EXPECT_EQ(str.size(), 20);
+  EXPECT_EQ(str, "hello!!!!!!!!!!!!!!!");
+}
+
+TEST(SmallStringTest, ResizeShrinkLargeToSmall) {
+  small_string<8> str("hello world");
+  EXPECT_FALSE(str.is_small());
+  str.resize(5);
+  EXPECT_FALSE(str.is_small());
+  EXPECT_EQ(str, "hello");
+  str.shrink_to_fit();
+  EXPECT_TRUE(str.is_small());
+}
+
+TEST(SmallStringTest, ResizeDefaultChar) {
+  small_string<16> str("hi");
+  str.resize(5);
+  EXPECT_EQ(str.size(), 5);
+  EXPECT_EQ(str[0], 'h');
+  EXPECT_EQ(str[1], 'i');
+  EXPECT_EQ(str[2], '\0');
+  EXPECT_EQ(str[3], '\0');
+  EXPECT_EQ(str[4], '\0');
+}
+
+TEST(SmallStringTest, EmptyStringFind) {
+  small_string<16> str;
+  EXPECT_EQ(str.find('a'), small_string<16>::npos);
+  EXPECT_EQ(str.find("a"), small_string<16>::npos);
+  EXPECT_EQ(str.rfind('a'), small_string<16>::npos);
+}
+
+TEST(SmallStringTest, EmptyStringStartsEndsContains) {
+  small_string<16> str;
+  EXPECT_TRUE(str.starts_with(""));
+  EXPECT_FALSE(str.starts_with('a'));
+  EXPECT_TRUE(str.ends_with(""));
+  EXPECT_FALSE(str.ends_with('a'));
+  EXPECT_TRUE(str.contains(""));
+  EXPECT_FALSE(str.contains('a'));
+}
+
+TEST(SmallStringTest, StringViewConversionData) {
+  small_string<16> str("hello");
+  std::string_view sv = str;
+  EXPECT_EQ(sv.data(), str.data());
+  EXPECT_EQ(sv.size(), str.size());
+}

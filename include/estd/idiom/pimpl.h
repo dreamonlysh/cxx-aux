@@ -14,6 +14,7 @@
 #ifndef ESTD_IDIOM_PIMPL_H
 #define ESTD_IDIOM_PIMPL_H
 #include <estd/meta.h>
+#include <memory>
 #include <utility>
 
 namespace es { namespace idiom {
@@ -129,7 +130,7 @@ public:
    */
   ~pimpl() noexcept {
     using impl_type = typename pimpl_traits<T>::impl_type;
-    reinterpret_cast<impl_type*>(__pimpl_storage)->~impl_type();
+    std::destroy_at(reinterpret_cast<impl_type*>(__pimpl_storage));
   }
 
   pimpl(const pimpl&) = delete;

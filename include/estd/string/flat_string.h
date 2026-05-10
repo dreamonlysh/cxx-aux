@@ -42,7 +42,8 @@ struct __flat_string_default_out_of_range_assert {
  * terminator)
  * @tparam OutOfRangeAssert Custom assertion handler for out-of-range conditions
  *
- * @note The string is null-terminated for compatibility with C APIs
+ * @note The string is always null-terminated; the null terminator is eagerly
+ *       maintained after every mutation, not lazily written in const accessors
  * @note OutOfRangeAssert can be customized to change behavior (e.g., assert,
  * log, ignore)
  *
@@ -87,11 +88,12 @@ public:
 
   static constexpr size_type npos = size_type(-1);
 
-  constexpr flat_string() noexcept = default;
+  constexpr flat_string() noexcept { null_terminate(); }
 
   constexpr flat_string(size_type n, value_type c) : flat_string() {
     out_of_range_assert(n <= capacity(), "flat_string size is out of range");
     storage_.assign(n, c);
+    null_terminate();
   }
 
   template <typename InputIterator,
@@ -102,11 +104,13 @@ public:
     out_of_range_assert((std::distance(first, last)) <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(first, last);
+    null_terminate();
   }
 
   constexpr flat_string(const value_type* s, size_type n) : flat_string() {
     out_of_range_assert(n <= capacity(), "flat_string size is out of range");
     storage_.assign(s, s + n);
+    null_terminate();
   }
 
   constexpr explicit flat_string(const value_type* s)
@@ -126,41 +130,65 @@ public:
   flat_string(const StringViewLike& s, size_type pos, size_type n)
       : flat_string(s.data() + pos, std::min(n, s.size() - pos)) {}
 
-  constexpr flat_string(const flat_string& other) = default;
-  constexpr flat_string(flat_string&& other) noexcept = default;
+  constexpr flat_string(const flat_string& other) : storage_(other.storage_) {
+    null_terminate();
+  }
+  constexpr flat_string(flat_string&& other) noexcept
+      : storage_(std::move(other.storage_)) {
+    null_terminate();
+  }
   constexpr flat_string(const flat_string& other, size_type pos)
-      : storage_(other.data() + pos, other.data() + other.size()) {}
+      : storage_(other.data() + pos, other.data() + other.size()) {
+    null_terminate();
+  }
   constexpr flat_string(flat_string&& other, size_type pos) noexcept
-      : storage_(other.data() + pos, other.data() + other.size()) {}
+      : storage_(other.data() + pos, other.data() + other.size()) {
+    null_terminate();
+  }
   constexpr flat_string(const flat_string& other, size_type pos, size_type n)
       : storage_(other.data() + pos,
-                 other.data() + pos + std::min(n, other.size() - pos)) {}
+                 other.data() + pos + std::min(n, other.size() - pos)) {
+    null_terminate();
+  }
   constexpr flat_string(flat_string&& other, size_type pos, size_type n)
       : storage_(other.data() + pos,
-                 other.data() + pos + std::min(n, other.size() - pos)) {}
+                 other.data() + pos + std::min(n, other.size() - pos)) {
+    null_terminate();
+  }
 
   constexpr flat_string(std::initializer_list<value_type> il) : flat_string() {
     out_of_range_assert(il.size() <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(il);
+    null_terminate();
   }
 
   ~flat_string() noexcept = default;
 
-  constexpr flat_string& operator=(const flat_string& other) = default;
+  constexpr flat_string& operator=(const flat_string& other) {
+    storage_ = other.storage_;
+    null_terminate();
+    return *this;
+  }
 
-  constexpr flat_string& operator=(flat_string&& other) noexcept = default;
+  constexpr flat_string& operator=(flat_string&& other) noexcept {
+    storage_ = std::move(other.storage_);
+    null_terminate();
+    return *this;
+  }
 
   constexpr flat_string& operator=(const value_type* s) {
-    out_of_range_assert(traits_type::length(s) <= capacity(),
-                        "flat_string size is out of range");
-    storage_.assign(s, s + traits_type::length(s));
+    auto len = traits_type::length(s);
+    out_of_range_assert(len <= capacity(), "flat_string size is out of range");
+    storage_.assign(s, s + len);
+    null_terminate();
     return *this;
   }
 
   constexpr flat_string& operator=(value_type c) {
     storage_.resize(1);
     storage_[0] = c;
+    null_terminate();
     return *this;
   }
 
@@ -168,6 +196,7 @@ public:
     out_of_range_assert(il.size() <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(il);
+    null_terminate();
     return *this;
   }
 
@@ -178,6 +207,7 @@ public:
     out_of_range_assert(s.size() <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(s.data(), s.data() + s.size());
+    null_terminate();
     return *this;
   }
 
@@ -185,11 +215,13 @@ public:
 
   constexpr flat_string& assign(const flat_string& other) {
     storage_.assign(other.data(), other.data() + other.size());
+    null_terminate();
     return *this;
   }
 
   constexpr flat_string& assign(flat_string&& other) {
     storage_.assign(other.data(), other.data() + other.size());
+    null_terminate();
     return *this;
   }
 
@@ -197,19 +229,23 @@ public:
     out_of_range_assert(count <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(count, c);
+    null_terminate();
     return *this;
   }
 
   constexpr flat_string& assign(const value_type* s, size_type n) {
     out_of_range_assert(n <= capacity(), "flat_string size is out of range");
     storage_.assign(s, s + n);
+    null_terminate();
     return *this;
   }
 
   constexpr flat_string& assign(const value_type* s) {
-    out_of_range_assert(traits_type::length(s) <= capacity(),
-                        "flat_string size is out of range");
-    return assign(s, s + traits_type::length(s));
+    auto len = traits_type::length(s);
+    out_of_range_assert(len <= capacity(), "flat_string size is out of range");
+    storage_.assign(s, s + len);
+    null_terminate();
+    return *this;
   }
 
   template <typename StringViewLike,
@@ -219,6 +255,7 @@ public:
     out_of_range_assert(s.size() <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(s.data(), s.data() + s.size());
+    null_terminate();
     return *this;
   }
 
@@ -229,6 +266,7 @@ public:
                                 size_type n = npos) {
     storage_.assign(s.data() + pos,
                     s.data() + pos + std::min(n, s.size() - pos));
+    null_terminate();
     return *this;
   }
 
@@ -236,6 +274,7 @@ public:
                                 size_type n = npos) {
     storage_.assign(other.data() + pos,
                     other.data() + pos + std::min(n, other.size() - pos));
+    null_terminate();
     return *this;
   }
 
@@ -246,6 +285,7 @@ public:
     out_of_range_assert(std::distance(first, last) <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(first, last);
+    null_terminate();
     return *this;
   }
 
@@ -253,6 +293,7 @@ public:
     out_of_range_assert(il.size() <= capacity(),
                         "flat_string size is out of range");
     storage_.assign(il);
+    null_terminate();
     return *this;
   }
 
@@ -261,6 +302,7 @@ public:
     out_of_range_assert(range.size() <= capacity(),
                         "flat_string size is out of range");
     storage_.assign_range(range);
+    null_terminate();
     return *this;
   }
 
@@ -292,21 +334,9 @@ public:
 
   constexpr const_reference back() const { return storage_.back(); }
 
-  /// @brief Returns a pointer to the underlying data of the string.
-  /// The data is guaranteed to be null-terminated.
-  /// @return A pointer to the underlying data of the string.
-  constexpr value_type* data() noexcept {
-    storage_.data()[size()] = '\0';
-    return storage_.data();
-  }
+  constexpr value_type* data() noexcept { return storage_.data(); }
 
-  /// @brief Returns a pointer to the underlying data of the string.
-  /// The data is guaranteed to be null-terminated.
-  /// @return A pointer to the underlying data of the string.
-  constexpr const value_type* data() const noexcept {
-    storage_.data()[size()] = '\0';
-    return storage_.data();
-  }
+  constexpr const value_type* data() const noexcept { return storage_.data(); }
 
   /// @brief Returns a pointer to the underlying data of the string ending with
   /// a null character.
@@ -364,19 +394,25 @@ public:
 
   constexpr void shrink_to_fit() = delete;
 
-  constexpr void clear() noexcept { storage_.clear(); }
+  constexpr void clear() noexcept {
+    storage_.clear();
+    null_terminate();
+  }
 
   constexpr flat_string& insert(size_type pos, size_type count, value_type c) {
     out_of_range_assert(count <= (capacity() - size()),
                         "flat_string size is out of range");
     storage_.insert(storage_.begin() + pos, count, c);
+    null_terminate();
     return *this;
   }
 
   constexpr flat_string& insert(size_type pos, const value_type* s) {
-    out_of_range_assert(traits_type::length(s) <= (capacity() - size()),
+    auto len = traits_type::length(s);
+    out_of_range_assert(len <= (capacity() - size()),
                         "flat_string size is out of range");
-    storage_.insert(storage_.cbegin() + pos, s, s + traits_type::length(s));
+    storage_.insert(storage_.cbegin() + pos, s, s + len);
+    null_terminate();
     return *this;
   }
 
@@ -385,6 +421,7 @@ public:
     out_of_range_assert(n <= (capacity() - size()),
                         "flat_string size is out of range");
     storage_.insert(storage_.cbegin() + pos, s, s + n);
+    null_terminate();
     return *this;
   }
 
@@ -393,6 +430,7 @@ public:
                         "flat_string size is out of range");
     storage_.insert(storage_.cbegin() + pos, str.data(),
                     str.data() + str.size());
+    null_terminate();
     return *this;
   }
 
@@ -404,19 +442,24 @@ public:
     storage_.insert(storage_.cbegin() + pos, str.data() + subpos,
                     str.data() + subpos +
                         std::min(sublen, str.size() - subpos));
+    null_terminate();
     return *this;
   }
 
   constexpr iterator insert(const_iterator pos, value_type c) {
     out_of_range_assert(1 <= (capacity() - size()),
                         "flat_string size is out of range");
-    return storage_.insert(pos, c);
+    auto it = storage_.insert(pos, c);
+    null_terminate();
+    return it;
   }
 
   constexpr iterator insert(const_iterator pos, size_type count, value_type c) {
     out_of_range_assert(count <= (capacity() - size()),
                         "flat_string size is out of range");
-    return storage_.insert(pos, count, c);
+    auto it = storage_.insert(pos, count, c);
+    null_terminate();
+    return it;
   }
 
   template <typename InputIterator,
@@ -426,14 +469,18 @@ public:
                             InputIterator last) {
     out_of_range_assert(std::distance(first, last) <= (capacity() - size()),
                         "flat_string size is out of range");
-    return storage_.insert(pos, first, last);
+    auto it = storage_.insert(pos, first, last);
+    null_terminate();
+    return it;
   }
 
   constexpr iterator insert(const_iterator pos,
                             std::initializer_list<value_type> il) {
     out_of_range_assert(il.size() <= (capacity() - size()),
                         "flat_string size is out of range");
-    return storage_.insert(pos, il.begin(), il.end());
+    auto it = storage_.insert(pos, il.begin(), il.end());
+    null_terminate();
+    return it;
   }
 
   template <typename StringViewLike,
@@ -443,6 +490,7 @@ public:
     out_of_range_assert(s.size() <= (capacity() - size()),
                         "flat_string size is out of range");
     storage_.insert(storage_.cbegin() + pos, s.data(), s.data() + s.size());
+    null_terminate();
     return *this;
   }
 
@@ -456,6 +504,7 @@ public:
                         "flat_string size is out of range");
     storage_.insert(storage_.cbegin() + pos, s.data() + subpos,
                     s.data() + subpos + std::min(sublen, s.size() - subpos));
+    null_terminate();
     return *this;
   }
 
@@ -463,38 +512,48 @@ public:
   constexpr iterator insert_range(const_iterator pos, const RangeT& range) {
     out_of_range_assert(range.size() <= (capacity() - size()),
                         "flat_string size is out of range");
-    return storage_.insert_range(pos, range);
+    auto it = storage_.insert_range(pos, range);
+    null_terminate();
+    return it;
   }
 
   constexpr iterator erase(size_type pos = 0, size_type len = npos) {
     out_of_range_assert(pos < size(), "flat_string erase out of range");
-    return storage_.erase(storage_.cbegin() + pos,
-                          storage_.cbegin() + pos +
-                              std::min(len, size() - pos));
+    auto it =
+        storage_.erase(storage_.cbegin() + pos,
+                       storage_.cbegin() + pos + std::min(len, size() - pos));
+    null_terminate();
+    return it;
   }
 
   constexpr iterator erase(const_iterator pos) {
     out_of_range_assert(pos >= begin() && pos < end(),
                         "flat_string erase out of range");
-    return storage_.erase(pos);
+    auto it = storage_.erase(pos);
+    null_terminate();
+    return it;
   }
 
   constexpr iterator erase(const_iterator first, const_iterator last) {
     out_of_range_assert(first < last, "flat_string erase invalid range");
     out_of_range_assert(first >= begin(), "flat_string erase out of range");
     out_of_range_assert(last <= end(), "flat_string erase out of range");
-    return storage_.erase(first, last);
+    auto it = storage_.erase(first, last);
+    null_terminate();
+    return it;
   }
 
   constexpr void push_back(value_type c) {
     out_of_range_assert(1 <= (capacity() - size()),
                         "flat_string size is out of range");
     storage_.push_back(c);
+    null_terminate();
   }
 
   constexpr void pop_back() {
     out_of_range_assert(!empty(), "flat_string pop_back out of range");
     storage_.pop_back();
+    null_terminate();
   }
 
   constexpr flat_string& append(size_type count, value_type c) {
@@ -512,7 +571,8 @@ public:
   }
 
   constexpr flat_string& append(const value_type* s) {
-    out_of_range_assert(traits_type::length(s) <= (capacity() - size()),
+    auto len = traits_type::length(s);
+    out_of_range_assert(len <= (capacity() - size()),
                         "flat_string size is out of range");
     es::string::append(*this, s);
     return *this;
@@ -765,15 +825,19 @@ public:
       throw std::out_of_range("flat_string resize out of range");
     }
     storage_.resize(count, c);
+    null_terminate();
   }
 
   template <typename Operation>
   constexpr void resize_and_overwrite(size_type count, Operation op) {
     storage_.resize_and_overwrite(count, op);
+    null_terminate();
   }
 
   constexpr void swap(flat_string& other) noexcept {
     storage_.swap(other.storage_);
+    null_terminate();
+    other.null_terminate();
   }
 
   constexpr size_type find(const flat_string& str,
@@ -833,7 +897,7 @@ public:
   constexpr size_type rfind(const value_type* s, size_type pos,
                             size_type n) const noexcept {
     if (n == 0) {
-      return pos;
+      return std::min(pos, size());
     }
     if (n > size()) {
       return npos;
@@ -854,7 +918,10 @@ public:
   }
 
   constexpr size_type rfind(value_type c, size_type pos = npos) const noexcept {
-    const value_type* p = data() + std::min(pos, size());
+    if (empty()) {
+      return npos;
+    }
+    const value_type* p = data() + std::min(pos, size() - 1);
     while (p >= data()) {
       if (traits_type::eq(*p, c)) {
         return std::distance(data(), p);
@@ -922,7 +989,7 @@ public:
   constexpr size_type find_first_not_of(const value_type* s, size_type pos,
                                         size_type n) const noexcept {
     if (n == 0) {
-      return pos;
+      return pos < size() ? pos : npos;
     }
     if (n > traits_type::length(s)) {
       n = traits_type::length(s);
@@ -971,13 +1038,13 @@ public:
 
   constexpr size_type find_last_of(const value_type* s, size_type pos,
                                    size_type n) const noexcept {
-    if (n == 0) {
+    if (n == 0 || empty()) {
       return npos;
     }
     if (n > traits_type::length(s)) {
       n = traits_type::length(s);
     }
-    const value_type* p = data() + std::min(pos, size());
+    const value_type* p = data() + std::min(pos, size() - 1);
     while (p >= data()) {
       if (traits_type::find(s, n, *p) != nullptr) {
         return std::distance(data(), p);
@@ -1012,13 +1079,16 @@ public:
 
   constexpr size_type find_last_not_of(const value_type* s, size_type pos,
                                        size_type n) const noexcept {
+    if (empty()) {
+      return npos;
+    }
     if (n == 0) {
-      return pos;
+      return std::min(pos, size() - 1);
     }
     if (n > traits_type::length(s)) {
       n = traits_type::length(s);
     }
-    const value_type* p = data() + std::min(pos, size());
+    const value_type* p = data() + std::min(pos, size() - 1);
     while (p >= data()) {
       if (traits_type::find(s, n, *p) == nullptr) {
         return std::distance(data(), p);
@@ -1035,7 +1105,17 @@ public:
 
   constexpr size_type find_last_not_of(value_type c,
                                        size_type pos = npos) const noexcept {
-    return rfind(c, pos);
+    if (empty()) {
+      return npos;
+    }
+    const value_type* p = data() + std::min(pos, size() - 1);
+    while (p >= data()) {
+      if (!traits_type::eq(*p, c)) {
+        return std::distance(data(), p);
+      }
+      --p;
+    }
+    return npos;
   }
 
   template <typename StringViewLike,
@@ -1076,16 +1156,15 @@ public:
 
   constexpr int compare(size_type pos, size_type count1, const value_type* s,
                         size_type count2) const {
-    if (pos >= size()) {
+    if (pos > size()) {
       throw std::out_of_range("flat_string compare out of range");
     }
     count1 = std::min(count1, size() - pos);
-    size_type len = std::min(count1, size() - pos);
-    int rst = traits_type::compare(data() + pos, s, std::min(len, count2));
+    int rst = traits_type::compare(data() + pos, s, std::min(count1, count2));
     if (rst != 0) {
       return rst;
     }
-    return len < count2 ? -1 : (len > count2 ? 1 : 0);
+    return count1 < count2 ? -1 : (count1 > count2 ? 1 : 0);
   }
 
   template <typename StringViewLike,
@@ -1127,10 +1206,11 @@ public:
   }
 
   constexpr bool starts_with(const value_type* s) const noexcept {
-    if (traits_type::length(s) > size()) {
+    auto len = traits_type::length(s);
+    if (len > size()) {
       return false;
     }
-    return traits_type::compare(data(), s, traits_type::length(s)) == 0;
+    return traits_type::compare(data(), s, len) == 0;
   }
 
   constexpr bool starts_with(value_type c) const noexcept {
@@ -1149,11 +1229,11 @@ public:
   }
 
   constexpr bool ends_with(const value_type* s) const noexcept {
-    if (traits_type::length(s) > size()) {
+    auto len = traits_type::length(s);
+    if (len > size()) {
       return false;
     }
-    return traits_type::compare(data() + size() - traits_type::length(s), s,
-                                traits_type::length(s)) == 0;
+    return traits_type::compare(data() + size() - len, s, len) == 0;
   }
 
   constexpr bool ends_with(value_type c) const noexcept {
@@ -1185,7 +1265,11 @@ public:
   }
 
 private:
-  mutable __storage_type storage_;
+  __storage_type storage_;
+
+  constexpr void null_terminate() noexcept {
+    storage_.data()[size()] = value_type{};
+  }
 };
 
 template <size_t N, typename OutOfRangeAssert>

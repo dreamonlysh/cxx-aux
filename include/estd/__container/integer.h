@@ -90,7 +90,7 @@ public:
   constexpr value_type value() const noexcept { return data; }
 
   /**
-   * @brief Implicit conversion to the underlying type.
+   * @brief Explicit conversion to the underlying type.
    * @return The underlying integer value
    */
   constexpr explicit operator T() const noexcept { return data; }
@@ -104,19 +104,19 @@ public:
    * @param v Value to assign
    * @return Reference to this
    */
-  Integer& operator=(value_type v) {
+  constexpr Integer& operator=(value_type v) noexcept {
     data = v;
     return *this;
   }
 
 #define __INTEGER_ASSIGNMENT_OPERATOR(op)                                      \
   template <typename U, typename = std::enable_if_t<std::is_integral_v<U>>>    \
-  constexpr Integer& operator op(const U& v) {                                 \
+  constexpr Integer& operator op(const U& v) noexcept {                        \
     data op v;                                                                 \
     return *this;                                                              \
   }                                                                            \
                                                                                \
-  constexpr Integer& operator op(const Integer& v) {                           \
+  constexpr Integer& operator op(const Integer& v) noexcept {                  \
     data op v.data;                                                            \
     return *this;                                                              \
   }
@@ -143,7 +143,7 @@ public:
     return *this;
   }
 
-  constexpr Integer operator++(int) {
+  constexpr Integer operator++(int) noexcept {
     auto tmp = data;
     this->operator++();
     return Integer(tmp);
@@ -154,7 +154,7 @@ public:
     return *this;
   }
 
-  constexpr Integer operator--(int) {
+  constexpr Integer operator--(int) noexcept {
     auto tmp = data;
     this->operator--();
     return Integer(tmp);
@@ -173,19 +173,21 @@ private:
 #define __INTEGER_COMPARISON_OPERATOR(op)                                      \
   template <typename T, typename Tag>                                          \
   constexpr bool operator op(const Integer<T, Tag>& lhs,                       \
-                             const Integer<T, Tag>& rhs) {                     \
+                             const Integer<T, Tag>& rhs) noexcept {            \
     return lhs.value() op rhs.value();                                         \
   }                                                                            \
                                                                                \
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
-  constexpr bool operator op(const Integer<T, Tag>& lhs, const U& rhs) {       \
+  constexpr bool operator op(const Integer<T, Tag>& lhs,                       \
+                             const U& rhs) noexcept {                          \
     return lhs.value() op rhs;                                                 \
   }                                                                            \
                                                                                \
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
-  constexpr bool operator op(const U& lhs, const Integer<T, Tag>& rhs) {       \
+  constexpr bool operator op(const U& lhs,                                     \
+                             const Integer<T, Tag>& rhs) noexcept {            \
     return lhs op rhs.value();                                                 \
   }
 
@@ -204,14 +206,14 @@ __INTEGER_COMPARISON_OPERATOR(>=)
 
 #define __INTEGER_ARITHMETIC_UNARY_OPERATOR(op)                                \
   template <typename T, typename Tag>                                          \
-  constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& v) {            \
+  constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& v) noexcept {   \
     return Integer<T, Tag>{op(v.value())};                                     \
   }
 
 #define __INTEGER_ARITHMETIC_BINARY_OPERATOR_II(op)                            \
   template <typename T, typename Tag>                                          \
   constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& lhs,            \
-                                        const Integer<T, Tag>& rhs) {          \
+                                        const Integer<T, Tag>& rhs) noexcept { \
     return Integer<T, Tag>{lhs.value() op rhs.value()};                        \
   }
 
@@ -219,7 +221,7 @@ __INTEGER_COMPARISON_OPERATOR(>=)
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
   constexpr Integer<T, Tag> operator op(const Integer<T, Tag>& lhs,            \
-                                        const U& rhs) {                        \
+                                        const U& rhs) noexcept {               \
     auto tmp = lhs.value() op rhs;                                             \
     static_assert(                                                             \
         std::is_same_v<decltype(tmp), T>,                                      \
@@ -231,7 +233,7 @@ __INTEGER_COMPARISON_OPERATOR(>=)
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
   constexpr Integer<T, Tag> operator op(const U& lhs,                          \
-                                        const Integer<T, Tag>& rhs) {          \
+                                        const Integer<T, Tag>& rhs) noexcept { \
     auto tmp = lhs op rhs.value();                                             \
     static_assert(                                                             \
         std::is_same_v<decltype(tmp), T>,                                      \
@@ -242,7 +244,7 @@ __INTEGER_COMPARISON_OPERATOR(>=)
 #define __INTEGER_ARITHMETIC_BINARY_OPERATOR_VI2V(op)                          \
   template <typename T, typename Tag, typename U,                              \
             typename = std::enable_if_t<std::is_integral_v<U>>>                \
-  constexpr U operator op(const U& lhs, const Integer<T, Tag>& rhs) {          \
+  constexpr U operator op(const U& lhs, const Integer<T, Tag>& rhs) noexcept { \
     return lhs op rhs.value();                                                 \
   }
 
@@ -281,7 +283,7 @@ __INTEGER_ARITHMETIC_BINARY_OPERATOR_RETV(>>)
 /// @{
 
 template <typename T, typename Tag>
-constexpr bool operator!(const Integer<T, Tag>& v) {
+constexpr bool operator!(const Integer<T, Tag>& v) noexcept {
   return !(v.value());
 }
 

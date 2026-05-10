@@ -7,6 +7,6 @@ list(APPEND SRC_FILES
 
 add_executable(binary_test ${SRC_FILES})
 
-target_link_libraries(binary_test binary GTest::gtest GTest::gtest_main ${CMAKE_DL_LIBS})
+target_link_libraries(binary_test GTest::gtest GTest::gtest_main ${CMAKE_DL_LIBS})
 
 gtest_discover_tests(binary_test)

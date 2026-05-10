@@ -852,7 +852,7 @@ TEST(FlatStringTest, FindLastNotOfCStringWithStartPos) {
 TEST(FlatStringTest, FindLastNotOfCharWithStartPos) {
   flat_string<16> str("hello world");
   auto pos = str.find_last_not_of('o', 8);
-  EXPECT_EQ(pos, 7);
+  EXPECT_EQ(pos, 8);
 }
 TEST(FlatStringTest, FindLastNotOfStringViewLikeWithStartPos) {
   flat_string<16> str("hello world");
@@ -1350,4 +1350,862 @@ TEST(FlatStringTest, STDStold) {
   flat_string<32> str("123.456789012345678901234567890");
   long double value = std::stold(str);
   EXPECT_EQ(value, 123.456789012345678901234567890L);
+}
+
+class FlatStringNullTermTest : public ::testing::Test {
+protected:
+  void check_null_terminated(const flat_string<16>& s) {
+    EXPECT_EQ(s.data()[s.size()], '\0')
+        << "null terminator missing after size=" << s.size();
+    EXPECT_EQ(s.c_str()[s.size()], '\0')
+        << "c_str null terminator missing after size=" << s.size();
+  }
+};
+
+TEST_F(FlatStringNullTermTest, DefaultConstructor) {
+  flat_string<16> s;
+  check_null_terminated(s);
+  EXPECT_EQ(s[0], '\0');
+}
+
+TEST_F(FlatStringNullTermTest, ConstructFromCString) {
+  flat_string<16> s("abc");
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, ConstructFromNChar) {
+  flat_string<16> s(5, 'x');
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, ConstructFromInitializerList) {
+  flat_string<16> s{'a', 'b', 'c'};
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, CopyConstructor) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2(s1);
+  check_null_terminated(s2);
+}
+
+TEST_F(FlatStringNullTermTest, MoveConstructor) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2(std::move(s1));
+  check_null_terminated(s2);
+}
+
+TEST_F(FlatStringNullTermTest, CopyConstructorWithPos) {
+  flat_string<16> s1("hello world");
+  flat_string<16> s2(s1, 6);
+  check_null_terminated(s2);
+}
+
+TEST_F(FlatStringNullTermTest, CopyConstructorWithPosAndCount) {
+  flat_string<16> s1("hello world");
+  flat_string<16> s2(s1, 6, 3);
+  check_null_terminated(s2);
+}
+
+TEST_F(FlatStringNullTermTest, AssignCString) {
+  flat_string<16> s("abc");
+  s = "hello";
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, AssignChar) {
+  flat_string<16> s("abc");
+  s = 'z';
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, AssignNChar) {
+  flat_string<16> s;
+  s.assign(5, 'a');
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, PushBack) {
+  flat_string<16> s("abc");
+  s.push_back('d');
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, PopBack) {
+  flat_string<16> s("abc");
+  s.pop_back();
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, InsertAtEnd) {
+  flat_string<16> s("abc");
+  s.insert(3, "def");
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, InsertAtBeginning) {
+  flat_string<16> s("world");
+  s.insert(0, "hello ");
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, InsertCharIterator) {
+  flat_string<16> s("abc");
+  s.insert(s.begin() + 1, 'X');
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, EraseMiddle) {
+  flat_string<16> s("hello world");
+  s.erase(5, 6);
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, EraseIterator) {
+  flat_string<16> s("abc");
+  s.erase(s.begin() + 1);
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, EraseRange) {
+  flat_string<16> s("abcde");
+  s.erase(s.begin() + 1, s.begin() + 4);
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, Clear) {
+  flat_string<16> s("hello");
+  s.clear();
+  check_null_terminated(s);
+  EXPECT_EQ(s[0], '\0');
+}
+
+TEST_F(FlatStringNullTermTest, ResizeGrow) {
+  flat_string<16> s("abc");
+  s.resize(6, 'x');
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, ResizeShrink) {
+  flat_string<16> s("abcdef");
+  s.resize(3);
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, ResizeAndOverwrite) {
+  flat_string<16> s("hello");
+  s.resize_and_overwrite(3, [](char*, size_t) { return 3; });
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, Swap) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2("world");
+  s1.swap(s2);
+  check_null_terminated(s1);
+  check_null_terminated(s2);
+}
+
+TEST_F(FlatStringNullTermTest, SwapEmptyAndNonEmpty) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2;
+  s1.swap(s2);
+  check_null_terminated(s1);
+  check_null_terminated(s2);
+}
+
+TEST_F(FlatStringNullTermTest, AppendOperations) {
+  flat_string<16> s("abc");
+  s.append("def");
+  check_null_terminated(s);
+  s.append(2, 'g');
+  check_null_terminated(s);
+  s += 'h';
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, ReplaceOperations) {
+  flat_string<32> s("hello world");
+  s.replace(6, 5, "there");
+  check_null_terminated(s);
+}
+
+TEST_F(FlatStringNullTermTest, SelfAssignment) {
+  flat_string<16> s("hello");
+  s = s;
+  check_null_terminated(s);
+  EXPECT_EQ(s, "hello");
+}
+
+TEST_F(FlatStringNullTermTest, OperatorSubscriptAtSize) {
+  flat_string<16> s("abc");
+  EXPECT_EQ(s[s.size()], '\0');
+}
+
+class FlatStringFindTest : public ::testing::Test {};
+
+TEST_F(FlatStringFindTest, FindEmptyString) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.find(""), 0);
+  EXPECT_EQ(s.find("", 3), 3);
+  EXPECT_EQ(s.find("", 10), 10);
+}
+
+TEST_F(FlatStringFindTest, FindNotFound) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.find("xyz"), flat_string<16>::npos);
+  EXPECT_EQ(s.find('z'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindEmptySubstring) {
+  flat_string<16> s("abc");
+  EXPECT_EQ(s.find(flat_string<16>("")), 0);
+}
+
+TEST_F(FlatStringFindTest, RFindEmptyString) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.rfind(""), 5);
+  EXPECT_EQ(s.rfind("", 3), 3);
+  EXPECT_EQ(s.rfind("", 10), 5);
+}
+
+TEST_F(FlatStringFindTest, RFindNotFound) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.rfind("xyz"), flat_string<16>::npos);
+  EXPECT_EQ(s.rfind('z'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, RFindCharAtEnd) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.rfind('o'), 4);
+  EXPECT_EQ(s.rfind('o', 4), 4);
+  EXPECT_EQ(s.rfind('o', 3), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindFirstOfEmptySet) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.find_first_of(""), flat_string<16>::npos);
+  EXPECT_EQ(s.find_first_of("", 2), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindFirstOfNotFound) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.find_first_of("xyz"), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindFirstNotOfAllChars) {
+  flat_string<16> s("aaa");
+  EXPECT_EQ(s.find_first_not_of('a'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindFirstNotOfEmptySet) {
+  flat_string<16> s("abc");
+  EXPECT_EQ(s.find_first_not_of(""), 0);
+}
+
+TEST_F(FlatStringFindTest, FindLastOfEmptySet) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.find_last_of(""), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindLastOfNotFound) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.find_last_of("xyz"), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindLastNotOfAllChars) {
+  flat_string<16> s("aaa");
+  EXPECT_EQ(s.find_last_not_of('a'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindLastNotOfCharBasic) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.find_last_not_of('d'), 9);
+  EXPECT_EQ(s.find_last_not_of('h'), 10);
+  EXPECT_EQ(s.find_last_not_of('x'), 10);
+}
+
+TEST_F(FlatStringFindTest, FindLastNotOfCharNpos) {
+  flat_string<16> s("aaa");
+  EXPECT_EQ(s.find_last_not_of('a'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindLastNotOfStringBasic) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.find_last_not_of("hd"), 9);
+  EXPECT_EQ(s.find_last_not_of("helo wrd"), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindTest, FindOnEmptyString) {
+  flat_string<16> s;
+  EXPECT_EQ(s.find('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find("a"), flat_string<16>::npos);
+  EXPECT_EQ(s.rfind('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_first_of('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_first_not_of('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_last_of('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_last_not_of('a'), flat_string<16>::npos);
+}
+
+class FlatStringCompareTest : public ::testing::Test {};
+
+TEST_F(FlatStringCompareTest, EmptyStringCompare) {
+  flat_string<16> s1;
+  flat_string<16> s2;
+  EXPECT_EQ(s1.compare(s2), 0);
+  EXPECT_EQ(s1.compare(""), 0);
+}
+
+TEST_F(FlatStringCompareTest, ComparePosAtSize) {
+  flat_string<16> s("abc");
+  EXPECT_EQ(s.compare(3, 0, ""), 0);
+}
+
+TEST_F(FlatStringCompareTest, ComparePosOutOfRange) {
+  flat_string<16> s("abc");
+  EXPECT_THROW(s.compare(4, 0, ""), std::out_of_range);
+}
+
+TEST_F(FlatStringCompareTest, CompareSelf) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.compare(s), 0);
+}
+
+TEST_F(FlatStringCompareTest, ComparePrefix) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.compare(0, 5, "hello"), 0);
+  EXPECT_LT(s.compare(0, 5, "hello!"), 0);
+}
+
+TEST_F(FlatStringCompareTest, CompareSuffix) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.compare(6, 5, "world"), 0);
+}
+
+TEST_F(FlatStringCompareTest, CompareDifferentLengths) {
+  flat_string<16> s1("abc");
+  flat_string<16> s2("abcd");
+  EXPECT_LT(s1.compare(s2), 0);
+  EXPECT_GT(s2.compare(s1), 0);
+}
+
+TEST_F(FlatStringCompareTest, CompareStringViewLikePosCount) {
+  flat_string<16> s("hello world");
+  std::string_view sv("world");
+  EXPECT_EQ(s.compare(6, 5, sv), 0);
+  EXPECT_EQ(s.compare(6, 5, sv, 0, 5), 0);
+}
+
+class FlatStringEdgeTest : public ::testing::Test {};
+
+TEST_F(FlatStringEdgeTest, FillToCapacity) {
+  flat_string<8> s;
+  EXPECT_EQ(s.capacity(), 7);
+  s.assign(7, 'x');
+  EXPECT_EQ(s.size(), 7);
+  EXPECT_EQ(s, "xxxxxxx");
+  EXPECT_EQ(s.data()[7], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, EmptyStringOperations) {
+  flat_string<16> s;
+  EXPECT_TRUE(s.empty());
+  EXPECT_EQ(s.size(), 0);
+  EXPECT_STREQ(s.c_str(), "");
+  EXPECT_STREQ(s.data(), "");
+  EXPECT_EQ(s[0], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, SingleCharString) {
+  flat_string<16> s(1, 'a');
+  EXPECT_EQ(s.size(), 1);
+  EXPECT_EQ(s, "a");
+  EXPECT_EQ(s.front(), 'a');
+  EXPECT_EQ(s.back(), 'a');
+  EXPECT_EQ(s.data()[1], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, InsertAtBeginning) {
+  flat_string<16> s("world");
+  s.insert(0, "hello ");
+  EXPECT_EQ(s, "hello world");
+}
+
+TEST_F(FlatStringEdgeTest, InsertInMiddle) {
+  flat_string<16> s("helo");
+  s.insert(2, "l");
+  EXPECT_EQ(s, "hello");
+}
+
+TEST_F(FlatStringEdgeTest, EraseAll) {
+  flat_string<16> s("hello");
+  s.erase(0, flat_string<16>::npos);
+  EXPECT_TRUE(s.empty());
+  EXPECT_EQ(s.data()[0], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, EraseSingleChar) {
+  flat_string<16> s("abc");
+  s.erase(1, 1);
+  EXPECT_EQ(s, "ac");
+}
+
+TEST_F(FlatStringEdgeTest, ResizeToZero) {
+  flat_string<16> s("hello");
+  s.resize(0);
+  EXPECT_TRUE(s.empty());
+  EXPECT_EQ(s.data()[0], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, ResizeGrowAndShrink) {
+  flat_string<16> s("abc");
+  s.resize(6, 'x');
+  EXPECT_EQ(s, "abcxxx");
+  s.resize(2);
+  EXPECT_EQ(s, "ab");
+  EXPECT_EQ(s.data()[2], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, SelfAssignment) {
+  flat_string<16> s("hello");
+  s = s;
+  EXPECT_EQ(s, "hello");
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, SelfSwap) {
+  flat_string<16> s("hello");
+  s.swap(s);
+  EXPECT_EQ(s, "hello");
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, CopyWithPos) {
+  flat_string<16> s("hello world");
+  char buf[6];
+  auto n = s.copy(buf, 5, 6);
+  EXPECT_EQ(n, 5);
+  buf[5] = '\0';
+  EXPECT_STREQ(buf, "world");
+}
+
+TEST_F(FlatStringEdgeTest, CopyOutOfRange) {
+  flat_string<16> s("hello");
+  char buf[1];
+  EXPECT_THROW(s.copy(buf, 1, 10), std::out_of_range);
+}
+
+TEST_F(FlatStringEdgeTest, SubstrFullString) {
+  flat_string<16> s("hello");
+  auto sub = s.substr(0);
+  EXPECT_EQ(sub, "hello");
+}
+
+TEST_F(FlatStringEdgeTest, SubstrNpos) {
+  flat_string<16> s("hello world");
+  auto sub = s.substr(6);
+  EXPECT_EQ(sub, "world");
+}
+
+TEST_F(FlatStringEdgeTest, StartsWithEmpty) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.starts_with(""));
+}
+
+TEST_F(FlatStringEdgeTest, StartsWithFullString) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.starts_with("hello"));
+}
+
+TEST_F(FlatStringEdgeTest, StartsWithTooLong) {
+  flat_string<16> s("hello");
+  EXPECT_FALSE(s.starts_with("hello world"));
+}
+
+TEST_F(FlatStringEdgeTest, StartsWithEmptyString) {
+  flat_string<16> s;
+  EXPECT_TRUE(s.starts_with(""));
+  EXPECT_FALSE(s.starts_with("a"));
+}
+
+TEST_F(FlatStringEdgeTest, EndsWithEmpty) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.ends_with(""));
+}
+
+TEST_F(FlatStringEdgeTest, EndsWithFullString) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.ends_with("hello"));
+}
+
+TEST_F(FlatStringEdgeTest, EndsWithTooLong) {
+  flat_string<16> s("hello");
+  EXPECT_FALSE(s.ends_with("hello world"));
+}
+
+TEST_F(FlatStringEdgeTest, ContainsEmpty) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.contains(""));
+}
+
+TEST_F(FlatStringEdgeTest, ContainsOnEmpty) {
+  flat_string<16> s;
+  EXPECT_TRUE(s.contains(""));
+  EXPECT_FALSE(s.contains("a"));
+  EXPECT_FALSE(s.contains('a'));
+}
+
+TEST_F(FlatStringEdgeTest, AtConstAndNonConst) {
+  flat_string<16> s("hello");
+  s.at(0) = 'H';
+  EXPECT_EQ(s, "Hello");
+  const flat_string<16>& cs = s;
+  EXPECT_EQ(cs.at(0), 'H');
+}
+
+TEST_F(FlatStringEdgeTest, OperatorSubscriptConst) {
+  const flat_string<16> s("hello");
+  EXPECT_EQ(s[0], 'h');
+  EXPECT_EQ(s[4], 'o');
+  EXPECT_EQ(s[5], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, IteratorDistance) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(std::distance(s.begin(), s.end()), 5);
+  EXPECT_EQ(std::distance(s.cbegin(), s.cend()), 5);
+  EXPECT_EQ(std::distance(s.rbegin(), s.rend()), 5);
+}
+
+TEST_F(FlatStringEdgeTest, RangeForLoop) {
+  flat_string<16> s("abc");
+  std::string result;
+  for (auto c : s) {
+    result += c;
+  }
+  EXPECT_EQ(result, "abc");
+}
+
+TEST_F(FlatStringEdgeTest, StringViewConversion) {
+  flat_string<16> s("hello");
+  std::string_view sv = s;
+  EXPECT_EQ(sv.size(), 5);
+  EXPECT_EQ(sv, "hello");
+}
+
+TEST_F(FlatStringEdgeTest, HashConsistency) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2("hello");
+  EXPECT_EQ(std::hash<flat_string<16>>()(s1), std::hash<flat_string<16>>()(s2));
+}
+
+TEST_F(FlatStringEdgeTest, MultipleAppendChain) {
+  flat_string<32> s;
+  s += "hello";
+  s += ' ';
+  s += "world";
+  s.append(3, '!');
+  EXPECT_EQ(s, "hello world!!!");
+  EXPECT_EQ(s.data()[s.size()], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, ReplaceShrink) {
+  flat_string<32> s("hello world");
+  s.replace(5, 6, "!");
+  EXPECT_EQ(s, "hello!");
+  EXPECT_EQ(s.data()[6], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, ReplaceGrow) {
+  flat_string<32> s("hi");
+  s.replace(0, 2, "hello");
+  EXPECT_EQ(s, "hello");
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+TEST_F(FlatStringEdgeTest, ReplaceSameSize) {
+  flat_string<32> s("hello");
+  s.replace(0, 5, "world");
+  EXPECT_EQ(s, "world");
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+class FlatStringNullTerminationTest : public ::testing::Test {
+protected:
+  void expect_null_terminated(const flat_string<16>& s) {
+    EXPECT_EQ(s.data()[s.size()], '\0');
+    EXPECT_EQ(s.c_str()[s.size()], '\0');
+  }
+};
+
+TEST_F(FlatStringNullTerminationTest, DefaultConstruction) {
+  flat_string<16> s;
+  EXPECT_STREQ(s.c_str(), "");
+  EXPECT_EQ(s.data()[s.size()], '\0');
+}
+
+TEST_F(FlatStringNullTerminationTest, AfterPushBack) {
+  flat_string<16> s;
+  s.push_back('x');
+  expect_null_terminated(s);
+  EXPECT_EQ(s.data()[1], '\0');
+}
+
+TEST_F(FlatStringNullTerminationTest, AfterAppend) {
+  flat_string<16> s;
+  s.append("hello");
+  expect_null_terminated(s);
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+TEST_F(FlatStringNullTerminationTest, AfterPopBack) {
+  flat_string<16> s("hello");
+  s.pop_back();
+  expect_null_terminated(s);
+  EXPECT_EQ(s.size(), 4);
+}
+
+TEST_F(FlatStringNullTerminationTest, AfterErase) {
+  flat_string<16> s("hello world");
+  s.erase(5, 6);
+  expect_null_terminated(s);
+  EXPECT_EQ(s, "hello");
+}
+
+TEST_F(FlatStringNullTerminationTest, AfterResizeGrow) {
+  flat_string<16> s("hi");
+  s.resize(5, 'x');
+  expect_null_terminated(s);
+  EXPECT_EQ(s.data()[5], '\0');
+}
+
+TEST_F(FlatStringNullTerminationTest, AfterResizeShrink) {
+  flat_string<16> s("hello");
+  s.resize(2);
+  expect_null_terminated(s);
+  EXPECT_EQ(s.data()[2], '\0');
+}
+
+TEST_F(FlatStringNullTerminationTest, OperatorSubscriptAtSize) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s[s.size()], '\0');
+}
+
+class FlatStringFindLastNotOfTest : public ::testing::Test {};
+
+TEST_F(FlatStringFindLastNotOfTest, FindsLastCharNotEqualToValue) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.find_last_not_of('d'), 9);
+}
+
+TEST_F(FlatStringFindLastNotOfTest, AllCharsMatchReturnsNpos) {
+  flat_string<16> s("aaa");
+  EXPECT_EQ(s.find_last_not_of('a'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringFindLastNotOfTest, FindsDifferentCharAtEnd) {
+  flat_string<16> s("aab");
+  EXPECT_EQ(s.find_last_not_of('a'), 2);
+}
+
+TEST_F(FlatStringFindLastNotOfTest, SkipsTrailingMatchingChars) {
+  flat_string<16> s("  hello  ");
+  EXPECT_EQ(s.find_last_not_of(' '), 6);
+}
+
+class FlatStringStartsEndsContainsTest : public ::testing::Test {};
+
+TEST_F(FlatStringStartsEndsContainsTest, StartsWithCString) {
+  flat_string<16> s("hello world");
+  EXPECT_TRUE(s.starts_with("hello"));
+  EXPECT_FALSE(s.starts_with("world"));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, StartsWithChar) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.starts_with('h'));
+  EXPECT_FALSE(s.starts_with('w'));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, StartsWithStringView) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.starts_with(std::string_view("hel")));
+  EXPECT_FALSE(s.starts_with(std::string_view("wor")));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, EndsWithCString) {
+  flat_string<16> s("hello world");
+  EXPECT_TRUE(s.ends_with("world"));
+  EXPECT_FALSE(s.ends_with("hello"));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, EndsWithChar) {
+  flat_string<16> s("world");
+  EXPECT_TRUE(s.ends_with('d'));
+  EXPECT_FALSE(s.ends_with('w'));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, ContainsCString) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.contains("llo"));
+  EXPECT_FALSE(s.contains("xyz"));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, ContainsChar) {
+  flat_string<16> s("hello");
+  EXPECT_TRUE(s.contains('e'));
+  EXPECT_FALSE(s.contains('x'));
+}
+
+TEST_F(FlatStringStartsEndsContainsTest, StartsWithNegativeOnShorter) {
+  flat_string<16> s("hi");
+  EXPECT_FALSE(s.starts_with("hello"));
+}
+
+class FlatStringCompareBasicTest : public ::testing::Test {};
+
+TEST_F(FlatStringCompareBasicTest, EqualStringsReturnZero) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2("hello");
+  EXPECT_EQ(s1.compare(s2), 0);
+}
+
+TEST_F(FlatStringCompareBasicTest, LessReturnsNegative) {
+  flat_string<16> s1("apple");
+  flat_string<16> s2("banana");
+  EXPECT_LT(s1.compare(s2), 0);
+}
+
+TEST_F(FlatStringCompareBasicTest, GreaterReturnsPositive) {
+  flat_string<16> s1("banana");
+  flat_string<16> s2("apple");
+  EXPECT_GT(s1.compare(s2), 0);
+}
+
+class FlatStringSubstrTest : public ::testing::Test {};
+
+TEST_F(FlatStringSubstrTest, SubstrFromZeroReturnsFull) {
+  flat_string<16> s("hello");
+  EXPECT_EQ(s.substr(0), "hello");
+}
+
+TEST_F(FlatStringSubstrTest, SubstrFromMiddlePosition) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.substr(3), "lo world");
+}
+
+TEST_F(FlatStringSubstrTest, SubstrWithCount) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.substr(0, 3), "hel");
+}
+
+TEST_F(FlatStringSubstrTest, SubstrWithNposCount) {
+  flat_string<16> s("hello world");
+  EXPECT_EQ(s.substr(6, flat_string<16>::npos), "world");
+}
+
+class FlatStringResizeAndOverwriteTest : public ::testing::Test {};
+
+TEST_F(FlatStringResizeAndOverwriteTest, WriteContentAndReturnActualSize) {
+  flat_string<16> s("hello");
+  s.resize_and_overwrite(8, [](char* buf, size_t) {
+    const char* src = "abcdefgh";
+    for (size_t i = 0; i < 8; ++i) {
+      buf[i] = src[i];
+    }
+    return 8;
+  });
+  EXPECT_EQ(s.size(), 8);
+  EXPECT_EQ(s, "abcdefgh");
+}
+
+TEST_F(FlatStringResizeAndOverwriteTest, ReturnSizeLessThanCount) {
+  flat_string<16> s("hello");
+  s.resize_and_overwrite(10, [](char* buf, size_t) {
+    buf[0] = 'a';
+    buf[1] = 'b';
+    buf[2] = 'c';
+    return 3;
+  });
+  EXPECT_EQ(s.size(), 3);
+  EXPECT_EQ(s, "abc");
+  EXPECT_EQ(s.data()[3], '\0');
+}
+
+class FlatStringAssignOverloadTest : public ::testing::Test {};
+
+TEST_F(FlatStringAssignOverloadTest, AssignCountChar) {
+  flat_string<16> s("hello");
+  s.assign(3, 'z');
+  EXPECT_EQ(s, "zzz");
+}
+
+TEST_F(FlatStringAssignOverloadTest, AssignCStringWithSize) {
+  flat_string<16> s("hello");
+  s.assign("world", 3);
+  EXPECT_EQ(s, "wor");
+}
+
+TEST_F(FlatStringAssignOverloadTest, AssignCString) {
+  flat_string<16> s("hello");
+  s.assign("world");
+  EXPECT_EQ(s, "world");
+}
+
+TEST_F(FlatStringAssignOverloadTest, AssignStringViewLike) {
+  flat_string<16> s("hello");
+  s.assign(std::string_view("world"));
+  EXPECT_EQ(s, "world");
+}
+
+TEST_F(FlatStringAssignOverloadTest, AssignFlatString) {
+  flat_string<16> s1("hello");
+  flat_string<16> s2("world");
+  s1.assign(s2);
+  EXPECT_EQ(s1, "world");
+}
+
+class FlatStringEdgeCaseTest : public ::testing::Test {};
+
+TEST_F(FlatStringEdgeCaseTest, EmptyStringFindOperations) {
+  flat_string<16> s;
+  EXPECT_EQ(s.find('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.rfind('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_first_of('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_first_not_of('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_last_of('a'), flat_string<16>::npos);
+  EXPECT_EQ(s.find_last_not_of('a'), flat_string<16>::npos);
+}
+
+TEST_F(FlatStringEdgeCaseTest, EmptyStringAppendAndErase) {
+  flat_string<16> s;
+  s.append("a");
+  EXPECT_EQ(s, "a");
+  s.erase(0, 1);
+  EXPECT_TRUE(s.empty());
+  EXPECT_EQ(s.data()[0], '\0');
+}
+
+TEST_F(FlatStringEdgeCaseTest, FullCapacityString) {
+  flat_string<8> s;
+  s.assign(7, 'x');
+  EXPECT_EQ(s.size(), s.capacity());
+  EXPECT_EQ(s, "xxxxxxx");
+  EXPECT_EQ(s.data()[7], '\0');
+}
+
+TEST_F(FlatStringEdgeCaseTest, MinimalCapacityString) {
+  flat_string<1> s;
+  EXPECT_EQ(s.capacity(), 0);
+  EXPECT_TRUE(s.empty());
+  EXPECT_STREQ(s.c_str(), "");
+  EXPECT_EQ(s.data()[0], '\0');
+  EXPECT_EQ(s[s.size()], '\0');
+}
+
+TEST_F(FlatStringEdgeCaseTest, FullCapacityResizeThrows) {
+  flat_string<4> s;
+  s.assign(3, 'x');
+  EXPECT_EQ(s.size(), s.capacity());
+  EXPECT_THROW(s.resize(4), std::out_of_range);
 }

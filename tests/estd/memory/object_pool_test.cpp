@@ -166,6 +166,92 @@ TEST(SubObjectPoolTest, SmallNoLock) {
   parent.operator_delete(a);
 }
 
+struct NonTrivial {
+  static int alive_count;
+  int value;
+  NonTrivial(int v) : value(v) { ++alive_count; }
+  ~NonTrivial() { --alive_count; }
+};
+int NonTrivial::alive_count = 0;
+
+TEST(ObjectPoolTest, NonTrivialType) {
+  ASSERT_EQ(NonTrivial::alive_count, 0);
+  ObjectPool<NonTrivial> pool;
+  auto* a = pool.operator_new(10);
+  auto* b = pool.operator_new(20);
+  ASSERT_EQ(NonTrivial::alive_count, 2);
+  ASSERT_EQ(a->value, 10);
+  ASSERT_EQ(b->value, 20);
+  pool.operator_delete(a);
+  ASSERT_EQ(NonTrivial::alive_count, 1);
+  pool.operator_delete(b);
+  ASSERT_EQ(NonTrivial::alive_count, 0);
+}
+
+TEST(ObjectPoolTest, MakeUniqueNonTrivial) {
+  ASSERT_EQ(NonTrivial::alive_count, 0);
+  ObjectPool<NonTrivial> pool;
+  {
+    auto a = make_unique(pool, 42);
+    ASSERT_EQ(NonTrivial::alive_count, 1);
+    ASSERT_EQ(a->value, 42);
+  }
+  ASSERT_EQ(NonTrivial::alive_count, 0);
+}
+
+TEST(ObjectPoolTest, MultipleAllocations) {
+  ObjectPool<int> pool;
+  std::vector<int*> ptrs;
+  constexpr int count = 100;
+  for (int i = 0; i < count; ++i) {
+    ptrs.push_back(pool.operator_new(i));
+  }
+  std::sort(ptrs.begin(), ptrs.end());
+  for (int i = 1; i < count; ++i) {
+    ASSERT_NE(ptrs[i], ptrs[i - 1]);
+  }
+  std::vector<int> values;
+  for (auto* p : ptrs) {
+    values.push_back(*p);
+  }
+  std::sort(values.begin(), values.end());
+  for (int i = 0; i < count; ++i) {
+    ASSERT_EQ(values[i], i);
+  }
+  for (auto* p : ptrs) {
+    pool.operator_delete(p);
+  }
+}
+
+TEST(ObjectPoolTest, DeallocateAndReuse) {
+  ObjectPool<int> pool;
+  int* a = pool.operator_new(1);
+  int* b = pool.operator_new(2);
+  int* c = pool.operator_new(3);
+  pool.operator_delete(b);
+  int* d = pool.operator_new(4);
+  ASSERT_EQ(d, b);
+  ASSERT_EQ(*d, 4);
+  pool.operator_delete(d);
+  pool.operator_delete(c);
+  pool.operator_delete(a);
+}
+
+TEST(ObjectPoolTest, Merge) {
+  ObjectPool<int> pool_a;
+  ObjectPool<int> pool_b;
+  int* a1 = pool_a.operator_new(1);
+  int* b1 = pool_b.operator_new(2);
+  pool_a.merge(pool_b);
+  int* a2 = pool_a.operator_new(3);
+  ASSERT_EQ(*a1, 1);
+  ASSERT_EQ(*b1, 2);
+  ASSERT_EQ(*a2, 3);
+  pool_a.operator_delete(a2);
+  pool_a.operator_delete(b1);
+  pool_a.operator_delete(a1);
+}
+
 TEST(SubObjectPoolTest, LargeNoLock) {
   ObjectPool<LargeObject> parent;
   LargeObject* a = parent.operator_new(1);

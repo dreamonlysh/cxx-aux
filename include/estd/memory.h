@@ -14,6 +14,19 @@
 #ifndef ESTD_MEMORY_H
 #define ESTD_MEMORY_H
 
+/**
+ * @defgroup memory Memory pools and allocation layouts
+ *
+ * Memory management components for efficient pooled allocation:
+ * - **layout_bit_mapping**: Bitmap-based allocation for small objects
+ * - **layout_stack**: Stack-based allocation for large objects
+ * - **MemoryPoolUniform**: Fixed-size memory pool with automatic strategy
+ * selection
+ * - **ObjectPool**: Type-safe object pool with construction/destruction
+ * - **SubObjectPool**: Thread-local object pool that merges back to parent
+ * @{
+ */
+
 #include "__memory/layout_bit_mapping.h"
 // template <size_t MemoryBytes, size_t MemberBytes,
 //           typename MappingType = unsigned long long>
@@ -112,5 +125,7 @@
 // template <typename T, size_t Align, size_t BlockSize, typename LockerT>
 // SubObjectPool(ObjectPool<T, Align, BlockSize>, LockerT)
 //     -> SubObjectPool<T, Align, BlockSize, LockerT>;
+
+/** @} */
 
 #endif

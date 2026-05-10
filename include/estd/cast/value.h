@@ -79,6 +79,16 @@ namespace __impl_value {
 META_HAS_MEMBER_DATA(CLASSID);
 }
 
+/**
+ * @brief Specialization of isa_traits for Value-based hierarchies.
+ *
+ * Checks if the object's CLASSID matches T::CLASSID.
+ * T must have a static constexpr unsigned CLASSID member and inherit from
+ * Value<U>.
+ *
+ * @tparam T The target derived type (must have CLASSID)
+ * @tparam U The unique tag of the Value hierarchy
+ */
 template <typename T, typename U>
 struct isa_traits<T, Value<U>> {
   static_assert(__impl_value::has_member_CLASSID_v<T>);
@@ -87,6 +97,14 @@ struct isa_traits<T, Value<U>> {
   static bool doit(const Value<U>& v) { return T::CLASSID == v.uid; }
 };
 
+/**
+ * @brief Specialization of cast_traits for Value-based hierarchies.
+ *
+ * Performs a static_cast from Value<U>& to T&. T must inherit from Value<U>.
+ *
+ * @tparam T The target derived type
+ * @tparam U The unique tag of the Value hierarchy
+ */
 template <typename T, typename U>
 struct cast_traits<T, Value<U>> {
   static_assert(std::is_base_of_v<Value<U>, T>);

@@ -82,3 +82,70 @@ TEST(LayoutBitMapping, ResetAndAcquire) {
   EXPECT_EQ(ptr1, ptr3);
   EXPECT_EQ(ptr2, ptr4);
 }
+
+TEST(LayoutBitMapping, FullAllocation) {
+  alignas(8) char buffer[64] = {0};
+  using Mapping = uint8_t;
+  es::memory::layout_bit_mapping<64, 8, Mapping> lm(buffer);
+  lm.reset();
+  constexpr size_t capacity = decltype(lm)::member_capacity;
+  std::vector<void*> ptrs;
+  for (size_t i = 0; i < capacity; ++i) {
+    void* p = lm.acquire();
+    ASSERT_NE(p, nullptr);
+    ptrs.push_back(p);
+  }
+  void* overflow = lm.acquire();
+  EXPECT_EQ(overflow, nullptr);
+  for (auto* p : ptrs) {
+    lm.release(p);
+  }
+}
+
+TEST(LayoutBitMapping, ReleaseAndReacquire) {
+  alignas(8) char buffer[64] = {0};
+  using Mapping = uint8_t;
+  es::memory::layout_bit_mapping<64, 8, Mapping> lm(buffer);
+  void* p1 = lm.acquire();
+  void* p2 = lm.acquire();
+  ASSERT_NE(p1, nullptr);
+  ASSERT_NE(p2, nullptr);
+  lm.release(p1);
+  void* p3 = lm.acquire();
+  EXPECT_EQ(p1, p3);
+  lm.release(p2);
+  lm.release(p3);
+}
+
+TEST(LayoutBitMapping, ResetRestoresAllSlots) {
+  alignas(8) char buffer[64] = {0};
+  using Mapping = uint8_t;
+  es::memory::layout_bit_mapping<64, 8, Mapping> lm(buffer);
+  lm.reset();
+  constexpr size_t capacity = decltype(lm)::member_capacity;
+  std::vector<void*> ptrs;
+  for (size_t i = 0; i < capacity; ++i) {
+    ptrs.push_back(lm.acquire());
+  }
+  EXPECT_EQ(lm.acquire(), nullptr);
+  lm.reset();
+  for (size_t i = 0; i < capacity; ++i) {
+    void* p = lm.acquire();
+    EXPECT_NE(p, nullptr);
+  }
+}
+
+TEST(LayoutBitMapping, SingleSlot) {
+  alignas(8) char buffer[9] = {0};
+  using Mapping = uint8_t;
+  es::memory::layout_bit_mapping<9, 8, Mapping> lm(buffer);
+  lm.reset();
+  EXPECT_EQ(decltype(lm)::member_capacity, 1u);
+  void* p1 = lm.acquire();
+  ASSERT_NE(p1, nullptr);
+  EXPECT_EQ(lm.acquire(), nullptr);
+  lm.release(p1);
+  void* p2 = lm.acquire();
+  EXPECT_EQ(p1, p2);
+  lm.release(p2);
+}

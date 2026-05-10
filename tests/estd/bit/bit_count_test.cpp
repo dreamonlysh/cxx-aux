@@ -140,3 +140,30 @@ TEST(BitTest, countr_bit1) {
   ASSERT_EQ(es::countr_bit1(0xeull), 0);
   ASSERT_EQ(es::countr_bit1(UINT64_MAX), 64);
 }
+
+TEST(BitTest, count_bit1_EdgeValues) {
+  ASSERT_EQ(es::count_bit1(0u), 0);
+  ASSERT_EQ(es::count_bit1(1u), 1);
+  ASSERT_EQ(es::count_bit1(~0u), 32);
+  ASSERT_EQ(es::count_bit1(0xFFu), 8);
+  ASSERT_EQ(es::count_bit1(0xFFFFu), 16);
+  ASSERT_EQ(es::count_bit1(0xAAAAu), 8);
+}
+
+TEST(BitTest, count_bit0_EdgeValues) {
+  ASSERT_EQ(es::count_bit0(0u), 32);
+  ASSERT_EQ(es::count_bit0(0xFFu), 24);
+  ASSERT_EQ(es::count_bit0(~0u), 0);
+  ASSERT_EQ(es::count_bit0(0xFFFF0000u), 16);
+}
+
+TEST(BitTest, countl_countr_Variants) {
+  ASSERT_EQ(es::countl_bit0(2u), 30);
+  ASSERT_EQ(es::countl_bit0(0x80000000u), 0);
+  ASSERT_EQ(es::countl_bit1(0xFF000000u), 8);
+  ASSERT_EQ(es::countl_bit1(0xFFFF0000u), 16);
+  ASSERT_EQ(es::countr_bit0(2u), 1);
+  ASSERT_EQ(es::countr_bit0(0x80000000u), 31);
+  ASSERT_EQ(es::countr_bit1(0x000000FFu), 8);
+  ASSERT_EQ(es::countr_bit1(0x0000FFFFu), 16);
+}

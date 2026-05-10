@@ -524,3 +524,97 @@ TEST(MaybeOwnedTest, MoveOnlyType) {
   EXPECT_TRUE(mo2.has_value());
   EXPECT_EQ(mo2->value, 42);
 }
+
+TEST(MaybeOwnedTest, CopyDeepCopiesOwnedStorage) {
+  es::maybe_owned<std::string> original("hello");
+  es::maybe_owned<std::string> copy = original;
+  *copy = "modified";
+  EXPECT_EQ(*original, "hello");
+  EXPECT_EQ(*copy, "modified");
+}
+
+TEST(MaybeOwnedTest, CopyAssignmentDeepCopies) {
+  es::maybe_owned<std::string> original("hello");
+  es::maybe_owned<std::string> assigned;
+  assigned = original;
+  *assigned = "changed";
+  EXPECT_EQ(*original, "hello");
+  EXPECT_EQ(*assigned, "changed");
+}
+
+TEST(MaybeOwnedTest, MoveConstructorTransfersOwnership) {
+  es::maybe_owned<std::string> original("hello");
+  es::maybe_owned<std::string> moved = std::move(original);
+  EXPECT_TRUE(moved.is_owned());
+  EXPECT_EQ(*moved, "hello");
+}
+
+TEST(MaybeOwnedTest, MoveAssignmentTransfers) {
+  es::maybe_owned<std::string> original("hello");
+  es::maybe_owned<std::string> assigned;
+  assigned = std::move(original);
+  EXPECT_TRUE(assigned.is_owned());
+  EXPECT_EQ(*assigned, "hello");
+}
+
+TEST(MaybeOwnedTest, RvalueAssignmentSwitchesToOwned) {
+  std::string s = "ref";
+  es::maybe_owned<std::string> mo(s);
+  EXPECT_TRUE(mo.is_reference());
+  mo = std::string("owned");
+  EXPECT_TRUE(mo.is_owned());
+  EXPECT_EQ(*mo, "owned");
+}
+
+TEST(MaybeOwnedTest, LvalueAssignmentSwitchesToReference) {
+  es::maybe_owned<std::string> mo("owned");
+  EXPECT_TRUE(mo.is_owned());
+  std::string s = "ref";
+  mo = s;
+  EXPECT_TRUE(mo.is_reference());
+  EXPECT_EQ(*mo, "ref");
+}
+
+TEST(MaybeOwnedTest, ConstAccessGetReturnsConstRef) {
+  const es::maybe_owned<std::string> mo("hello");
+  const std::string& ref = mo.get();
+  EXPECT_EQ(ref, "hello");
+  static_assert(std::is_same_v<decltype(mo.get()), const std::string&>);
+}
+
+TEST(MaybeOwnedTest, ConstAccessOperatorStarReturnsConstRef) {
+  const es::maybe_owned<std::string> mo("hello");
+  const std::string& ref = *mo;
+  EXPECT_EQ(ref, "hello");
+  static_assert(std::is_same_v<decltype(*mo), const std::string&>);
+}
+
+TEST(MaybeOwnedTest, SelfAssignmentCopyReferenceStorage) {
+  std::string s = "test";
+  es::maybe_owned<std::string> mo(s);
+  mo = mo;
+  EXPECT_TRUE(mo.is_reference());
+  EXPECT_EQ(*mo, "test");
+}
+
+TEST(MaybeOwnedTest, SelfAssignmentMoveReferenceStorage) {
+  std::string s = "test";
+  es::maybe_owned<std::string> mo(s);
+  mo = std::move(mo);
+  EXPECT_TRUE(mo.has_value());
+}
+
+TEST(MaybeOwnedTest, OwnershipQuery) {
+  es::maybe_owned<std::string> empty;
+  EXPECT_FALSE(empty.is_owned());
+  EXPECT_FALSE(empty.is_reference());
+
+  es::maybe_owned<std::string> owned("test");
+  EXPECT_TRUE(owned.is_owned());
+  EXPECT_FALSE(owned.is_reference());
+
+  std::string s = "ref";
+  es::maybe_owned<std::string> ref(s);
+  EXPECT_FALSE(ref.is_owned());
+  EXPECT_TRUE(ref.is_reference());
+}

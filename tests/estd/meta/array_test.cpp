@@ -264,3 +264,21 @@ TEST(ArrayTest, ToStdArray_AllCVRefCombinations) {
   EXPECT_TRUE((std::is_same_v<es::to_std_array_t<const volatile int (&&)[5]>,
                               std::array<int, 5>>));
 }
+
+TEST(ArrayTest, IsCArray_FocusedEdgeCases) {
+  EXPECT_TRUE(es::is_c_array_v<int[5]>);
+  EXPECT_FALSE(es::is_c_array_v<int>);
+  EXPECT_FALSE(es::is_c_array_v<double>);
+  EXPECT_TRUE(es::is_c_array_v<char[1]>);
+}
+
+TEST(ArrayTest, IsStdArray_FocusedEdgeCases) {
+  EXPECT_TRUE((es::is_std_array_v<std::array<int, 5>>));
+  EXPECT_FALSE(es::is_std_array_v<int[5]>);
+  EXPECT_FALSE(es::is_std_array_v<int>);
+}
+
+TEST(ArrayTest, ToStdArray_ConvertsCArray) {
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<int[5]>, std::array<int, 5>>));
+  EXPECT_TRUE((std::is_same_v<es::to_std_array_t<double[10]>, std::array<double, 10>>));
+}

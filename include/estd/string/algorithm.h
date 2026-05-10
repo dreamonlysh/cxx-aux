@@ -14,6 +14,19 @@
 #ifndef ESTD_STRING_ALGORITHM_H
 #define ESTD_STRING_ALGORITHM_H
 
+/**
+ * @defgroup string_algorithm String algorithms and transformations
+ *
+ * Generic string manipulation algorithms that work with any string-like type:
+ * - **append**: Generic append for string-like types (char, C-string,
+ * string_view, integral)
+ * - **append_n**: Variadic append for multiple items
+ * - **replace**: Generic replace for string-like types
+ * - **views**: Lazy view adapters for string transformations (to_upper,
+ * to_lower, dot_to_underline)
+ * @{
+ */
+
 #include "__algorithm/append.h"
 // template <typename StringLike, typename = std::enable_if_t<
 //     __impl_type_traits::is_string_like_v<StringLike>>>
@@ -112,5 +125,7 @@
 // void replace(StringLike& s, typename StringLike::size_type pos,
 //              typename StringLike::size_type count,
 //              std::initializer_list<typename StringLike::value_type> il);
+
+/** @} */
 
 #endif

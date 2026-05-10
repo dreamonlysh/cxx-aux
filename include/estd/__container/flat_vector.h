@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <memory>
 #include <type_traits>
 
 namespace es {
@@ -75,9 +76,6 @@ public:
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  /**
-   * @brief Default constructor. Creates an empty vector.
-   */
   constexpr flat_vector() noexcept : cursor_(data()) {}
 
   /**
@@ -95,8 +93,8 @@ public:
    */
   constexpr flat_vector(size_type n, const T& value) {
     out_of_range_assert(n <= N, "flat_vector size is out of range");
+    std::uninitialized_fill(data(), data() + n, value);
     cursor_ = data() + n;
-    std::fill(data(), cursor_, value);
   }
 
   /**
@@ -112,7 +110,7 @@ public:
   constexpr flat_vector(InputIterator first, InputIterator last) {
     out_of_range_assert(std::distance(first, last) <= N,
                         "flat_vector size is out of range");
-    cursor_ = std::copy(first, last, data());
+    cursor_ = std::uninitialized_copy(first, last, data());
   }
 
   /**
@@ -122,30 +120,38 @@ public:
    */
   constexpr flat_vector(std::initializer_list<T> il) {
     out_of_range_assert(il.size() <= N, "flat_vector size is out of range");
-    cursor_ = std::copy(il.begin(), il.end(), data());
+    cursor_ = std::uninitialized_copy(il.begin(), il.end(), data());
   }
 
-  constexpr flat_vector(const flat_vector& other) {
-    cursor_ = std::copy(other.begin(), other.end(), data());
+  constexpr flat_vector(const flat_vector& other) noexcept(
+      std::is_nothrow_copy_constructible_v<T>) {
+    cursor_ = std::uninitialized_copy(other.begin(), other.end(), data());
   }
 
   constexpr flat_vector(flat_vector&& other) noexcept {
-    cursor_ = std::move(other.begin(), other.end(), data());
+    cursor_ =
+        std::uninitialized_copy(std::make_move_iterator(other.begin()),
+                                std::make_move_iterator(other.end()), data());
   }
 
-  constexpr flat_vector& operator=(const flat_vector& other) {
+  constexpr flat_vector& operator=(const flat_vector& other) noexcept(
+      std::is_nothrow_copy_constructible_v<T>) {
     if (this != &other) {
-      cursor_ = std::copy(other.begin(), other.end(), data());
+      std::destroy(begin(), end());
+      cursor_ = std::uninitialized_copy(other.begin(), other.end(), data());
     }
     return *this;
   }
 
   constexpr flat_vector& operator=(flat_vector&& other) noexcept {
-    cursor_ = std::move(other.begin(), other.end(), data());
+    std::destroy(begin(), end());
+    cursor_ =
+        std::uninitialized_copy(std::make_move_iterator(other.begin()),
+                                std::make_move_iterator(other.end()), data());
     return *this;
   }
 
-  ~flat_vector() noexcept = default;
+  ~flat_vector() noexcept { std::destroy(begin(), end()); }
 
   /**
    * @brief Assigns new contents to the vector, replacing its current contents.
@@ -155,8 +161,9 @@ public:
    */
   constexpr void assign(size_type n, const T& value) {
     out_of_range_assert(n <= N, "flat_vector size is out of range");
+    std::destroy(begin(), end());
+    std::uninitialized_fill(data(), data() + n, value);
     cursor_ = data() + n;
-    std::fill(data(), cursor_, value);
   }
 
   /**
@@ -172,7 +179,8 @@ public:
   constexpr void assign(InputIterator first, InputIterator last) {
     out_of_range_assert(std::distance(first, last) <= N,
                         "flat_vector size is out of range");
-    cursor_ = std::copy(first, last, data());
+    std::destroy(begin(), end());
+    cursor_ = std::uninitialized_copy(first, last, data());
   }
 
   /**
@@ -182,7 +190,8 @@ public:
    */
   constexpr void assign(std::initializer_list<T> il) {
     out_of_range_assert(il.size() <= N, "flat_vector size is out of range");
-    cursor_ = std::copy(il.begin(), il.end(), data());
+    std::destroy(begin(), end());
+    cursor_ = std::uninitialized_copy(il.begin(), il.end(), data());
   }
 
   /**
@@ -197,7 +206,8 @@ public:
     auto last = std::end(range);
     out_of_range_assert(std::distance(first, last) <= N,
                         "flat_vector size is out of range");
-    cursor_ = std::copy(first, last, data());
+    std::destroy(begin(), end());
+    cursor_ = std::uninitialized_copy(first, last, data());
   }
 
   /**
@@ -213,12 +223,6 @@ public:
     return data()[pos];
   }
 
-  /**
-   * @brief Access element with bounds checking (const version).
-   * @param pos Position of element
-   * @return Const reference to element
-   * @throws std::out_of_range if pos >= size()
-   */
   constexpr const_reference at(size_type pos) const {
     if (pos >= size()) {
       throw std::out_of_range("flat_vector::at() out of range");
@@ -294,7 +298,10 @@ public:
 
   constexpr void shrink_to_fit() = delete;
 
-  constexpr void clear() noexcept { cursor_ = data(); }
+  constexpr void clear() noexcept {
+    std::destroy(begin(), end());
+    cursor_ = data();
+  }
 
   constexpr iterator insert(const_iterator pos, const T& value) {
     out_of_range_assert(pos >= begin() && pos <= end(),
@@ -303,8 +310,18 @@ public:
       throw std::out_of_range("flat_vector insert out of range");
     }
     auto new_pos = begin() + std::distance(cbegin(), pos);
-    std::copy_backward(new_pos, end(), cursor_ + 1);
-    *new_pos = value;
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      std::copy_backward(new_pos, cursor_, cursor_ + 1);
+      *new_pos = value;
+    } else {
+      if (cursor_ != new_pos) {
+        ::new (static_cast<void*>(cursor_)) T(std::move(*(cursor_ - 1)));
+        std::move_backward(new_pos, cursor_ - 1, cursor_);
+        *new_pos = value;
+      } else {
+        ::new (static_cast<void*>(cursor_)) T(value);
+      }
+    }
     ++cursor_;
     return new_pos;
   }
@@ -316,8 +333,18 @@ public:
       throw std::out_of_range("flat_vector insert out of range");
     }
     auto tmp = const_cast<iterator>(pos);
-    std::copy_backward(tmp, cursor_, cursor_ + 1);
-    *tmp = std::move(value);
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      std::copy_backward(tmp, cursor_, cursor_ + 1);
+      *tmp = std::move(value);
+    } else {
+      if (cursor_ != tmp) {
+        ::new (static_cast<void*>(cursor_)) T(std::move(*(cursor_ - 1)));
+        std::move_backward(tmp, cursor_ - 1, cursor_);
+        *tmp = std::move(value);
+      } else {
+        ::new (static_cast<void*>(cursor_)) T(std::move(value));
+      }
+    }
     ++cursor_;
     return tmp;
   }
@@ -330,8 +357,25 @@ public:
       throw std::out_of_range("flat_vector insert out of range");
     }
     auto new_pos = begin() + std::distance(cbegin(), pos);
-    std::copy_backward(new_pos, end(), cursor_ + count);
-    std::fill(new_pos, new_pos + count, value);
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      std::copy_backward(new_pos, cursor_, cursor_ + count);
+      std::fill(new_pos, new_pos + count, value);
+    } else {
+      auto old_end = cursor_;
+      auto move_count = static_cast<size_type>(std::distance(new_pos, old_end));
+      if (move_count > count) {
+        std::uninitialized_copy(std::make_move_iterator(old_end - count),
+                                std::make_move_iterator(old_end), cursor_);
+        std::move_backward(new_pos, old_end - count, old_end);
+        std::fill(new_pos, new_pos + count, value);
+      } else {
+        std::uninitialized_fill(cursor_, cursor_ + (count - move_count), value);
+        std::uninitialized_copy(std::make_move_iterator(new_pos),
+                                std::make_move_iterator(old_end),
+                                cursor_ + (count - move_count));
+        std::fill(new_pos, old_end, value);
+      }
+    }
     cursor_ += count;
     return new_pos;
   }
@@ -347,8 +391,25 @@ public:
     }
 
     auto new_pos = begin() + std::distance(cbegin(), pos);
-    std::copy_backward(new_pos, end(), end() + range_size);
-    std::copy(first, last, new_pos);
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      std::copy_backward(new_pos, cursor_, cursor_ + range_size);
+      std::copy(first, last, new_pos);
+    } else {
+      auto old_end = cursor_;
+      auto move_count = static_cast<size_type>(std::distance(new_pos, old_end));
+      if (move_count > range_size) {
+        std::uninitialized_copy(std::make_move_iterator(old_end - range_size),
+                                std::make_move_iterator(old_end), cursor_);
+        std::move_backward(new_pos, old_end - range_size, old_end);
+        std::copy(first, last, new_pos);
+      } else {
+        std::uninitialized_copy(first + move_count, last, cursor_);
+        std::uninitialized_copy(std::make_move_iterator(new_pos),
+                                std::make_move_iterator(old_end),
+                                cursor_ + (range_size - move_count));
+        std::copy(first, first + move_count, new_pos);
+      }
+    }
     cursor_ += range_size;
     return new_pos;
   }
@@ -370,8 +431,16 @@ public:
       throw std::out_of_range("flat_vector emplace out of range");
     }
     auto tmp = const_cast<iterator>(pos);
-    std::copy_backward(tmp, cursor_, cursor_ + 1);
-    *tmp = T(std::forward<Args>(args)...);
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      std::copy_backward(tmp, cursor_, cursor_ + 1);
+      *tmp = T(std::forward<Args>(args)...);
+    } else {
+      if (cursor_ != tmp) {
+        ::new (static_cast<void*>(cursor_)) T(std::move(*(cursor_ - 1)));
+        std::move_backward(tmp, cursor_ - 1, cursor_);
+      }
+      ::new (static_cast<void*>(tmp)) T(std::forward<Args>(args)...);
+    }
     ++cursor_;
     return tmp;
   }
@@ -380,8 +449,11 @@ public:
     out_of_range_assert(pos >= begin() && pos < end(),
                         "flat_vector erase out of range");
     auto tmp = const_cast<iterator>(pos);
-    std::copy(tmp + 1, cursor_, tmp);
+    std::move(tmp + 1, cursor_, tmp);
     --cursor_;
+    if constexpr (!std::is_trivially_destructible_v<T>) {
+      std::destroy_at(cursor_);
+    }
     return tmp;
   }
 
@@ -391,8 +463,12 @@ public:
     out_of_range_assert(last <= end(), "flat_vector erase out of range");
     iterator range_first = begin() + std::distance(cbegin(), first);
     iterator range_last = begin() + std::distance(cbegin(), last);
-    std::copy(range_last, end(), range_first);
-    cursor_ -= std::distance(first, last);
+    auto count = std::distance(first, last);
+    std::move(range_last, end(), range_first);
+    cursor_ -= count;
+    if constexpr (!std::is_trivially_destructible_v<T>) {
+      std::destroy(cursor_, cursor_ + count);
+    }
     return range_first;
   }
 
@@ -400,7 +476,7 @@ public:
     if (cursor_ == capacity_end()) {
       throw std::out_of_range("flat_vector push_back out of range");
     }
-    *cursor_ = value;
+    ::new (static_cast<void*>(cursor_)) T(value);
     ++cursor_;
   }
 
@@ -408,7 +484,7 @@ public:
     if (cursor_ == capacity_end()) {
       throw std::out_of_range("flat_vector push_back out of range");
     }
-    *cursor_ = std::move(value);
+    ::new (static_cast<void*>(cursor_)) T(std::move(value));
     ++cursor_;
   }
 
@@ -424,7 +500,7 @@ public:
     if (cursor_ == capacity_end()) {
       throw std::out_of_range("flat_vector emplace_back out of range");
     }
-    *cursor_ = T(std::forward<Args>(args)...);
+    ::new (static_cast<void*>(cursor_)) T(std::forward<Args>(args)...);
     ++cursor_;
     return *(cursor_ - 1);
   }
@@ -442,18 +518,15 @@ public:
     out_of_range_assert(std::distance(first, last) <=
                             std::distance(cursor_, capacity_end()),
                         "flat_vector append_range out of range");
-    cursor_ = std::copy(first, last, cursor_);
+    cursor_ = std::uninitialized_copy(first, last, cursor_);
   }
 
-  /**
-   * @brief Removes the last element.
-   * @throws std::out_of_range if vector is empty
-   */
   constexpr void pop_back() {
     if (cursor_ == data()) {
       throw std::out_of_range("flat_vector pop_back out of range");
     }
     --cursor_;
+    std::destroy_at(cursor_);
   }
 
   /**
@@ -472,7 +545,9 @@ public:
   constexpr void resize(size_type count, const T& value) {
     out_of_range_assert(count <= N, "flat_vector resize out of range");
     if (count > size()) {
-      std::fill(cursor_, data() + count, value);
+      std::uninitialized_fill(cursor_, data() + count, value);
+    } else if (count < size()) {
+      std::destroy(data() + count, end());
     }
     cursor_ = data() + count;
   }
@@ -486,6 +561,9 @@ public:
    */
   template <typename Operation>
   constexpr void resize_and_overwrite(size_type count, Operation op) {
+    static_assert(
+        std::is_trivially_copyable_v<T>,
+        "resize_and_overwrite requires trivially copyable element type");
     auto size = op(data(), capacity());
     out_of_range_assert(size <= N, "flat_vector resize out of range");
     cursor_ = data() + size;
@@ -494,12 +572,27 @@ public:
   /**
    * @brief Swaps contents with another flat_vector.
    * @param other Vector to swap with
+   *
+   * @note noexcept only if T is nothrow move constructible
    */
-  constexpr void swap(flat_vector& other) noexcept {
-    auto max = std::max(size(), other.size());
-    std::swap_ranges(data(), data() + max, other.data());
+  constexpr void
+  swap(flat_vector& other) noexcept(std::is_nothrow_move_constructible_v<T>) {
     auto this_size = size();
     auto other_size = other.size();
+    if constexpr (std::is_trivially_copyable_v<T>) {
+      auto max = std::max(this_size, other_size);
+      std::swap_ranges(data(), data() + max, other.data());
+    } else {
+      auto min = std::min(this_size, other_size);
+      std::swap_ranges(data(), data() + min, other.data());
+      auto* longer = this_size > other_size ? this : &other;
+      auto* shorter = this_size > other_size ? &other : this;
+      for (size_type i = min; i < std::max(this_size, other_size); ++i) {
+        ::new (static_cast<void*>(shorter->data() + i))
+            T(std::move(longer->data()[i]));
+        std::destroy_at(longer->data() + i);
+      }
+    }
     cursor_ = data() + other_size;
     other.cursor_ = other.data() + this_size;
   }
@@ -556,8 +649,9 @@ constexpr bool operator>=(const flat_vector<N, T>& lhs,
 
 namespace std {
 template <std::size_t N, typename T>
-constexpr void swap(es::flat_vector<N, T>& lhs,
-                    es::flat_vector<N, T>& rhs) noexcept {
+constexpr void
+swap(es::flat_vector<N, T>& lhs,
+     es::flat_vector<N, T>& rhs) noexcept(noexcept(lhs.swap(rhs))) {
   lhs.swap(rhs);
 }
 

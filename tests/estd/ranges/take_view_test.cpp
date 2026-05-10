@@ -70,3 +70,40 @@ TEST(TakeView, StringTake) {
 
   EXPECT_EQ(result, "hello");
 }
+
+
+TEST(TakeView, TakeMoreThanSize) {
+  std::vector<int> vec = {1, 2};
+  auto tv = es::ranges::take(100)(vec);
+  std::vector<int> result;
+  for (int x : tv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 2u);
+  EXPECT_EQ(result[0], 1);
+  EXPECT_EQ(result[1], 2);
+}
+
+TEST(TakeView, TakeZeroElements) {
+  std::vector<int> vec = {10, 20, 30};
+  auto tv = es::ranges::take(0)(vec);
+  int count = 0;
+  for (int x : tv) {
+    (void)x;
+    ++count;
+  }
+  EXPECT_EQ(count, 0);
+}
+
+TEST(TakeView, PipeOperator) {
+  std::vector<int> vec = {1, 2, 3, 4, 5};
+  auto tv = vec | es::ranges::take(3);
+  std::vector<int> result;
+  for (int x : tv) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 3u);
+  EXPECT_EQ(result[0], 1);
+  EXPECT_EQ(result[1], 2);
+  EXPECT_EQ(result[2], 3);
+}

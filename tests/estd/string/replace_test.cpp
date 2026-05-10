@@ -169,3 +169,28 @@ TEST(ReplaceTest, ReplaceWithInputIteratorOutOfRange) {
       es::string::replace(s, 20, 5, replacement.begin(), replacement.end()),
       std::out_of_range);
 }
+
+
+TEST(ReplaceTest, ReplaceWithShorterMiddle) {
+  std::string s = "Hello, World!";
+  es::string::replace(s, 7, 5, "C++");
+  ASSERT_EQ(s, "Hello, C++!");
+}
+
+TEST(ReplaceTest, ReplaceWithLongerMiddle) {
+  std::string s = "Hello, C++!";
+  es::string::replace(s, 7, 3, "World");
+  ASSERT_EQ(s, "Hello, World!");
+}
+
+TEST(ReplaceTest, ReplaceAtBeginning) {
+  std::string s = "Hello World";
+  es::string::replace(s, 0, 5, "Goodbye");
+  ASSERT_EQ(s, "Goodbye World");
+}
+
+TEST(ReplaceTest, ReplaceAtEnd) {
+  std::string s = "Hello World";
+  es::string::replace(s, 6, 5, "Universe");
+  ASSERT_EQ(s, "Hello Universe");
+}

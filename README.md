@@ -76,7 +76,7 @@ int main() {
 | Module | Description |
 |--------|-------------|
 | `binary/binary_decoder` | Binary data decoder |
-| `binary/elf/` | ELF format parser |
+| `binary/elf` | ELF format parser (header-only, `elf_format.h` + `elf.h`) |
 | `utility/logger_wrapper` | Unified logger interface |
 | `utility/memory_pool` | Simple memory pool |
 
@@ -90,6 +90,16 @@ cmake --build build
 # Run tests
 cd build && ctest
 ```
+
+## Install
+
+```bash
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake --build build
+cmake --install build
+```
+
+This installs headers to `include/estd`, `include/cxxaux`, `include/experiment` and static libraries (`memory_pool`) to `lib/`.
 
 ## Examples
 

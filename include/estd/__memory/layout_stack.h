@@ -14,6 +14,7 @@
 #ifndef ESTD_MEMORY_LAYOUT_STACK_H
 #define ESTD_MEMORY_LAYOUT_STACK_H
 #include <cassert>
+#include <cstddef>
 #include <utility>
 
 namespace es { namespace memory {
@@ -129,7 +130,7 @@ public:
    * @warning The memory segment must remain valid for the duration it's on the
    * stack
    */
-  void push(value_type v, size_t sz = -1) {
+  void push(value_type v, size_t sz = SIZE_MAX) {
     assert(sz >= memory_required_by_stack &&
            "memory to be pushed should not be too small to hold a address");
     *reinterpret_cast<value_type*>(v) = top_;

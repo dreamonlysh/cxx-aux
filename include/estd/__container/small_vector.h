@@ -15,37 +15,39 @@
 #define ESTD___CONTAINER_SMALL_VECTOR_H
 
 #include "flat_vector.h"
+#include <iterator>
 #include <limits>
-#include <variant>
 #include <vector>
 
 namespace es {
 
 /**
- * @brief A vector with small vector optimization using flat_vector for small
- * vectors.
+ * @brief A vector with small-vector optimization (SVO).
  *
- * This container provides a vector that uses stack-allocated storage for small
- * vectors (up to N elements) and automatically switches to heap-allocated
- * std::vector when the size exceeds N.
+ * This container uses stack-allocated storage (flat_vector) for small vectors
+ * and automatically transitions to heap-allocated storage (std::vector) when
+ * the number of elements exceeds the inline capacity N.
  *
  * Key features:
- * - Uses flat_vector<N, T> for vectors with size <= N (stack allocation)
- * - Switches to std::vector<T> when size exceeds N (heap allocation)
+ * - Stack allocation for small vectors (size <= N)
+ * - Automatic transition to heap when size exceeds N
  * - Standard vector-like interface
- * - Automatic transition between small and large storage
+ * - Union-based storage (no std::variant overhead)
+ * - Move semantics for small↔large transitions
+ * - Conditional noexcept on move operations
  *
- * @tparam N Maximum number of elements for small vector storage
+ * @tparam N Maximum number of elements for inline (stack) storage
  * @tparam T Type of elements
+ *
+ * @note Use is_small() to check current storage mode
+ * @note Transitions from small to large use move semantics
  *
  * Example usage:
  * @code
  * small_vector<16, int> vec;
- * vec.push_back(1);        // Uses flat_vector<16, int> (stack)
- * vec.push_back(2);        // Still uses flat_vector<16, int>
- * // Add more elements...
- * for (int i = 0; i < 20; ++i) vec.push_back(i);  // Switches to
- * std::vector<int> (heap)
+ * vec.push_back(1);        // Stack allocated
+ * for (int i = 0; i < 20; ++i) vec.push_back(i);  // Switches to heap
+ * if (vec.is_small()) { <stack allocated> }
  * @endcode
  */
 template <std::size_t N, typename T>
@@ -70,21 +72,27 @@ public:
 
   static constexpr size_type small_capacity = N;
 
-  small_vector() noexcept : storage_(small_storage_type{}) {}
+  small_vector() noexcept : is_small_(true) {
+    ::new (static_cast<void*>(&small_)) small_storage_type();
+  }
 
   explicit small_vector(size_type count) {
     if (count <= small_capacity) {
-      storage_ = small_storage_type(count);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(count);
     } else {
-      storage_ = large_storage_type(count);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(count);
     }
   }
 
   small_vector(size_type count, const T& value) {
     if (count <= small_capacity) {
-      storage_ = small_storage_type(count, value);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(count, value);
     } else {
-      storage_ = large_storage_type(count, value);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(count, value);
     }
   }
 
@@ -94,42 +102,92 @@ public:
   small_vector(InputIterator first, InputIterator last) {
     auto dist = std::distance(first, last);
     if (static_cast<size_type>(dist) <= small_capacity) {
-      storage_ = small_storage_type(first, last);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(first, last);
     } else {
-      storage_ = large_storage_type(first, last);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(first, last);
     }
   }
 
   small_vector(std::initializer_list<T> il) {
     if (il.size() <= small_capacity) {
-      storage_ = small_storage_type(il);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(il);
     } else {
-      storage_ = large_storage_type(il);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(il);
     }
   }
 
-  small_vector(const small_vector& other) = default;
-  small_vector(small_vector&& other) noexcept = default;
+  small_vector(const small_vector& other) : is_small_(other.is_small_) {
+    if (other.is_small_) {
+      ::new (static_cast<void*>(&small_)) small_storage_type(other.small_);
+    } else {
+      ::new (static_cast<void*>(&large_)) large_storage_type(other.large_);
+    }
+  }
 
-  ~small_vector() = default;
+  small_vector(small_vector&& other) noexcept : is_small_(other.is_small_) {
+    if (other.is_small_) {
+      ::new (static_cast<void*>(&small_))
+          small_storage_type(std::move(other.small_));
+    } else {
+      ::new (static_cast<void*>(&large_))
+          large_storage_type(std::move(other.large_));
+    }
+  }
 
-  small_vector& operator=(const small_vector& other) = default;
-  small_vector& operator=(small_vector&& other) noexcept = default;
+  ~small_vector() noexcept { destroy(); }
+
+  small_vector& operator=(const small_vector& other) {
+    if (this != &other) {
+      destroy();
+      is_small_ = other.is_small_;
+      if (other.is_small_) {
+        ::new (static_cast<void*>(&small_)) small_storage_type(other.small_);
+      } else {
+        ::new (static_cast<void*>(&large_)) large_storage_type(other.large_);
+      }
+    }
+    return *this;
+  }
+
+  small_vector& operator=(small_vector&& other) noexcept {
+    if (this != &other) {
+      destroy();
+      is_small_ = other.is_small_;
+      if (other.is_small_) {
+        ::new (static_cast<void*>(&small_))
+            small_storage_type(std::move(other.small_));
+      } else {
+        ::new (static_cast<void*>(&large_))
+            large_storage_type(std::move(other.large_));
+      }
+    }
+    return *this;
+  }
 
   small_vector& operator=(std::initializer_list<T> il) {
+    destroy();
     if (il.size() <= small_capacity) {
-      storage_ = small_storage_type(il);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(il);
     } else {
-      storage_ = large_storage_type(il);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(il);
     }
     return *this;
   }
 
   void assign(size_type count, const T& value) {
+    destroy();
     if (count <= small_capacity) {
-      storage_ = small_storage_type(count, value);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(count, value);
     } else {
-      storage_ = large_storage_type(count, value);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(count, value);
     }
   }
 
@@ -138,18 +196,24 @@ public:
                 typename std::iterator_traits<InputIterator>::value_type>>
   void assign(InputIterator first, InputIterator last) {
     auto dist = std::distance(first, last);
+    destroy();
     if (static_cast<size_type>(dist) <= small_capacity) {
-      storage_ = small_storage_type(first, last);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(first, last);
     } else {
-      storage_ = large_storage_type(first, last);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(first, last);
     }
   }
 
   void assign(std::initializer_list<T> il) {
+    destroy();
     if (il.size() <= small_capacity) {
-      storage_ = small_storage_type(il);
+      is_small_ = true;
+      ::new (static_cast<void*>(&small_)) small_storage_type(il);
     } else {
-      storage_ = large_storage_type(il);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(il);
     }
   }
 
@@ -176,13 +240,10 @@ public:
   reference back() { return data()[size() - 1]; }
   const_reference back() const { return data()[size() - 1]; }
 
-  pointer data() noexcept {
-    return std::visit([](auto& v) -> pointer { return v.data(); }, storage_);
-  }
+  pointer data() noexcept { return is_small_ ? small_.data() : large_.data(); }
 
   const_pointer data() const noexcept {
-    return std::visit([](const auto& v) -> const_pointer { return v.data(); },
-                      storage_);
+    return is_small_ ? small_.data() : large_.data();
   }
 
   iterator begin() noexcept { return data(); }
@@ -212,8 +273,7 @@ public:
   bool empty() const noexcept { return size() == 0; }
 
   size_type size() const noexcept {
-    return std::visit([](const auto& v) -> size_type { return v.size(); },
-                      storage_);
+    return is_small_ ? small_.size() : large_.size();
   }
 
   size_type max_size() const noexcept {
@@ -221,31 +281,42 @@ public:
   }
 
   size_type capacity() const noexcept {
-    return std::visit([](const auto& v) -> size_type { return v.capacity(); },
-                      storage_);
+    return is_small_ ? small_.capacity() : large_.capacity();
   }
 
-  void clear() noexcept { storage_ = small_storage_type{}; }
+  void clear() noexcept {
+    if (is_small_) {
+      small_.clear();
+    } else {
+      large_.clear();
+    }
+  }
 
   void reserve(size_type new_cap) {
-    if (new_cap > small_capacity && is_small()) {
+    if (new_cap > small_capacity && is_small_) {
       large_storage_type large;
       large.reserve(new_cap);
-      large.insert(large.end(), begin(), end());
-      storage_ = std::move(large);
-    } else if (!is_small()) {
-      std::get<large_storage_type>(storage_).reserve(new_cap);
+      large.insert(large.end(), std::make_move_iterator(small_.begin()),
+                   std::make_move_iterator(small_.end()));
+      std::destroy_at(&small_);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(std::move(large));
+    } else if (!is_small_) {
+      large_.reserve(new_cap);
     }
   }
 
   void shrink_to_fit() {
-    if (!is_small()) {
-      auto& large = std::get<large_storage_type>(storage_);
-      if (large.size() <= small_capacity) {
-        small_storage_type small(large.begin(), large.end());
-        storage_ = std::move(small);
+    if (!is_small_) {
+      if (large_.size() <= small_capacity) {
+        small_storage_type small(std::make_move_iterator(large_.begin()),
+                                 std::make_move_iterator(large_.end()));
+        std::destroy_at(&large_);
+        is_small_ = true;
+        ::new (static_cast<void*>(&small_))
+            small_storage_type(std::move(small));
       } else {
-        large.shrink_to_fit();
+        large_.shrink_to_fit();
       }
     }
   }
@@ -253,13 +324,11 @@ public:
   iterator insert(const_iterator pos, const T& value) {
     auto offset = pos - begin();
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).insert(
-          std::get<small_storage_type>(storage_).begin() + offset, value);
+    if (new_size <= small_capacity && is_small_) {
+      small_.insert(small_.begin() + offset, value);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).insert(
-          std::get<large_storage_type>(storage_).begin() + offset, value);
+      large_.insert(large_.begin() + offset, value);
     }
     return begin() + offset;
   }
@@ -267,15 +336,11 @@ public:
   iterator insert(const_iterator pos, T&& value) {
     auto offset = pos - begin();
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).insert(
-          std::get<small_storage_type>(storage_).begin() + offset,
-          std::move(value));
+    if (new_size <= small_capacity && is_small_) {
+      small_.insert(small_.begin() + offset, std::move(value));
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).insert(
-          std::get<large_storage_type>(storage_).begin() + offset,
-          std::move(value));
+      large_.insert(large_.begin() + offset, std::move(value));
     }
     return begin() + offset;
   }
@@ -283,15 +348,11 @@ public:
   iterator insert(const_iterator pos, size_type count, const T& value) {
     auto offset = pos - begin();
     size_type new_size = size() + count;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).insert(
-          std::get<small_storage_type>(storage_).begin() + offset, count,
-          value);
+    if (new_size <= small_capacity && is_small_) {
+      small_.insert(small_.begin() + offset, count, value);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).insert(
-          std::get<large_storage_type>(storage_).begin() + offset, count,
-          value);
+      large_.insert(large_.begin() + offset, count, value);
     }
     return begin() + offset;
   }
@@ -303,13 +364,11 @@ public:
     auto offset = pos - begin();
     auto dist = std::distance(first, last);
     size_type new_size = size() + dist;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).insert(
-          std::get<small_storage_type>(storage_).begin() + offset, first, last);
+    if (new_size <= small_capacity && is_small_) {
+      small_.insert(small_.begin() + offset, first, last);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).insert(
-          std::get<large_storage_type>(storage_).begin() + offset, first, last);
+      large_.insert(large_.begin() + offset, first, last);
     }
     return begin() + offset;
   }
@@ -322,27 +381,21 @@ public:
   iterator emplace(const_iterator pos, Args&&... args) {
     auto offset = pos - begin();
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).emplace(
-          std::get<small_storage_type>(storage_).begin() + offset,
-          std::forward<Args>(args)...);
+    if (new_size <= small_capacity && is_small_) {
+      small_.emplace(small_.begin() + offset, std::forward<Args>(args)...);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).emplace(
-          std::get<large_storage_type>(storage_).begin() + offset,
-          std::forward<Args>(args)...);
+      large_.emplace(large_.begin() + offset, std::forward<Args>(args)...);
     }
     return begin() + offset;
   }
 
   iterator erase(const_iterator pos) {
     auto offset = pos - begin();
-    if (is_small()) {
-      std::get<small_storage_type>(storage_).erase(
-          std::get<small_storage_type>(storage_).begin() + offset);
+    if (is_small_) {
+      small_.erase(small_.begin() + offset);
     } else {
-      auto& large = std::get<large_storage_type>(storage_);
-      large.erase(large.begin() + offset);
+      large_.erase(large_.begin() + offset);
     }
     return begin() + offset;
   }
@@ -350,89 +403,98 @@ public:
   iterator erase(const_iterator first, const_iterator last) {
     auto offset = first - begin();
     auto count = last - first;
-    if (is_small()) {
-      std::get<small_storage_type>(storage_).erase(
-          std::get<small_storage_type>(storage_).begin() + offset,
-          std::get<small_storage_type>(storage_).begin() + offset + count);
+    if (is_small_) {
+      small_.erase(small_.begin() + offset, small_.begin() + offset + count);
     } else {
-      auto& large = std::get<large_storage_type>(storage_);
-      large.erase(large.begin() + offset, large.begin() + offset + count);
+      large_.erase(large_.begin() + offset, large_.begin() + offset + count);
     }
     return begin() + offset;
   }
 
   void push_back(const T& value) {
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).push_back(value);
+    if (new_size <= small_capacity && is_small_) {
+      small_.push_back(value);
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).push_back(value);
+      large_.push_back(value);
     }
   }
 
   void push_back(T&& value) {
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).push_back(std::move(value));
+    if (new_size <= small_capacity && is_small_) {
+      small_.push_back(std::move(value));
     } else {
       ensure_large();
-      std::get<large_storage_type>(storage_).push_back(std::move(value));
+      large_.push_back(std::move(value));
     }
   }
 
   template <typename... Args>
   reference emplace_back(Args&&... args) {
     size_type new_size = size() + 1;
-    if (new_size <= small_capacity && is_small()) {
-      return std::get<small_storage_type>(storage_).emplace_back(
-          std::forward<Args>(args)...);
+    if (new_size <= small_capacity && is_small_) {
+      return small_.emplace_back(std::forward<Args>(args)...);
     } else {
       ensure_large();
-      return std::get<large_storage_type>(storage_).emplace_back(
-          std::forward<Args>(args)...);
+      return large_.emplace_back(std::forward<Args>(args)...);
     }
   }
 
   void pop_back() {
-    if (is_small()) {
-      std::get<small_storage_type>(storage_).pop_back();
+    if (is_small_) {
+      small_.pop_back();
     } else {
-      auto& large = std::get<large_storage_type>(storage_);
-      large.pop_back();
+      large_.pop_back();
     }
   }
 
   void resize(size_type count) { resize(count, T{}); }
 
   void resize(size_type count, const T& value) {
-    if (count <= small_capacity && is_small()) {
-      std::get<small_storage_type>(storage_).resize(count, value);
+    if (count <= small_capacity && is_small_) {
+      small_.resize(count, value);
     } else if (count > small_capacity) {
       ensure_large();
-      std::get<large_storage_type>(storage_).resize(count, value);
+      large_.resize(count, value);
     } else {
-      small_storage_type small(count, value);
-      storage_ = std::move(small);
+      large_.resize(count, value);
     }
   }
 
-  void swap(small_vector& other) noexcept { storage_.swap(other.storage_); }
-
-  bool is_small() const noexcept {
-    return std::holds_alternative<small_storage_type>(storage_);
+  void swap(small_vector& other) noexcept {
+    small_vector tmp(std::move(*this));
+    *this = std::move(other);
+    other = std::move(tmp);
   }
+
+  bool is_small() const noexcept { return is_small_; }
 
 private:
-  void ensure_large() {
-    if (is_small()) {
-      auto& small = std::get<small_storage_type>(storage_);
-      large_storage_type large(small.begin(), small.end());
-      storage_ = std::move(large);
+  void destroy() noexcept {
+    if (is_small_) {
+      std::destroy_at(&small_);
+    } else {
+      std::destroy_at(&large_);
     }
   }
 
-  std::variant<small_storage_type, large_storage_type> storage_;
+  void ensure_large() {
+    if (is_small_) {
+      large_storage_type large(std::make_move_iterator(small_.begin()),
+                               std::make_move_iterator(small_.end()));
+      std::destroy_at(&small_);
+      is_small_ = false;
+      ::new (static_cast<void*>(&large_)) large_storage_type(std::move(large));
+    }
+  }
+
+  union {
+    small_storage_type small_;
+    large_storage_type large_;
+  };
+  bool is_small_;
 };
 
 template <std::size_t N, typename T>

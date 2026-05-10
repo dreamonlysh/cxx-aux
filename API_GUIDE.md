@@ -23,6 +23,10 @@ include/
 │   └── string/
 └── cxxaux/         # General utility modules
     ├── binary/
+    │   ├── binary_decoder.h
+    │   ├── elf_format.h
+    │   ├── elf.ini
+    │   └── elf.h
     ├── compiler/
     └── utility/
 ```
@@ -63,20 +67,21 @@ inline constexpr bool is_iterable_v = is_iterable<T>::value;
 
 ### Meta Logic Operations
 
-| Utility | Description |
-|---------|-------------|
-| `meta_and<Ts...>` | Logical AND of type traits |
-| `meta_and_v<Ts...>` | Result of meta_and |
-| `meta_or<Ts...>` | Logical OR of type traits |
-| `meta_or_v<Ts...>` | Result of meta_or |
-| `meta_not<T>` | Logical NOT of type trait |
-| `meta_not_v<T>` | Result of meta_not |
+Use `std::conjunction`, `std::disjunction` from `<type_traits>` (C++17):
 
 ```cpp
 // Combine multiple conditions
 template <typename T>
-using is_numeric = meta_and<std::is_arithmetic<T>, meta_not<std::is_same<T, bool>>>;
+using is_numeric = std::conjunction<std::is_arithmetic<T>, std::bool_constant<!std::is_same_v<T, bool>>>;
 ```
+
+| Standard Utility | Description |
+|-----------------|-------------|
+| `std::conjunction<Ts...>` | Logical AND of type traits (short-circuit) |
+| `std::conjunction_v<Ts...>` | Result of conjunction |
+| `std::disjunction<Ts...>` | Logical OR of type traits (short-circuit) |
+| `std::disjunction_v<Ts...>` | Result of disjunction |
+| `std::bool_constant<!T::value>` | Logical NOT of type trait |
 
 ### System Detection
 
@@ -377,6 +382,8 @@ if (vec.is_small()) {
 - Automatic transition to heap when needed
 - Standard vector interface
 - `is_small()` to check storage type
+- Uses union-based storage (no `std::variant` overhead)
+- Conditional `noexcept` on move operations
 
 ---
 
@@ -702,26 +709,80 @@ decoder.ignore("\n");
 
 ---
 
-## binary/elf/
+## binary/elf
 
-ELF format parser.
+Header-only ELF format parser with standalone format definitions.
+
+### File Structure
+
+| File | Description |
+|------|-------------|
+| `elf_format.h` | ELF format definitions (types, structs, enums) — no dependencies |
+| `elf.ini` | Internal implementation details (`detail` namespace) |
+| `elf.h` | Public API — include this to use the parser |
+
+### Usage
 
 ```cpp
-#include <cxxaux/binary/elf/elf.h>
+#include <cxxaux/binary/elf.h>
 
-// Parse ELF file
-ELFFile elf(data, size);
+// Parse ELF binary from raw data
+auto elf = cxxaux::elf::parseElf(data, size);
+if (!elf) { /* not a valid little-endian ELF */ }
+
+// Or parse directly by architecture:
+// auto elf32 = cxxaux::elf::parseElf32(data, size);
+// auto elf64 = cxxaux::elf::parseElf64(data, size);
+
+// Header metadata
+auto bits = elf->archBits();   // EIClass::ELFCLASS32 or ELFCLASS64
+auto enc  = elf->encoding();   // EIData::ELFDATA2LSB
+auto type = elf->type();       // EType::ET_EXEC, ET_DYN, etc.
+auto mach = elf->machine();    // EMachine::EM_X86_64, etc.
 
 // Access sections
-for (const auto& section : elf.sections()) {
-    std::cout << section.name() << "\n";
+for (size_t i = 0; i < elf->s_size(); ++i) {
+    auto sec = elf->s_at(i);
+    std::cout << sec->name() << " type=" << static_cast<uint32_t>(sec->type())
+              << " size=" << sec->content().second << "\n";
 }
 
-// Access symbols
-for (const auto& sym : elf.symbols()) {
-    std::cout << sym.name() << " @ " << sym.value() << "\n";
+// Access program headers
+for (size_t i = 0; i < elf->p_size(); ++i) {
+    auto prog = elf->p_at(i);
+    std::cout << "segment vaddr=0x" << std::hex << prog->vaddr() << "\n";
 }
+
+// Dump function symbols to any output stream
+elf->dump(std::cout);
 ```
+
+### Key Classes
+
+| Class | Description |
+|-------|-------------|
+| `Elf` | Abstract interface for a parsed ELF file |
+| `Section` | Parsed section with name, type, flags, content |
+| `Program` | Parsed program header with type, flags, layout |
+| `ElfImpl<BitNArch>` | Concrete implementation (32/64-bit) |
+
+### Key Functions
+
+| Function | Description |
+|----------|-------------|
+| `parseElf(data, size)` | Factory: auto-detect class, return `unique_ptr<Elf>` |
+| `parseElf32(data, size)` | Parse as ELF32, return `unique_ptr<Elf>` |
+| `parseElf64(data, size)` | Parse as ELF64, return `unique_ptr<Elf>` |
+| `isElfFile(data, size)` | Check if data starts with ELF magic |
+
+### Format Definitions (`elf_format.h`)
+
+All ELF format types and constants are defined independently (no LLVM dependency):
+
+- **Basic types**: `Elf32_Addr`, `Elf64_Off`, etc.
+- **Structs**: `Elf32_Ehdr`/`Elf64_Ehdr`, `Elf32_Phdr`/`Elf64_Phdr`, `Elf32_Shdr`/`Elf64_Shdr`, `Elf32_Sym`/`Elf64_Sym`, `Elf32_Rel`/`Elf64_Rel`, `Elf32_Rela`/`Elf64_Rela`, `Elf32_Dyn`/`Elf64_Dyn`, `Elf32_Nhdr`/`Elf64_Nhdr`
+- **Enums**: `EIClass`, `EIData`, `EIVersion`, `EIOSABI`, `EType`, `EMachine`, `EVersion`, `PType`, `PFlags`, `SHType`, `SHFlags`, `STType`, `STBind`, `STVis`, `DTag`, `NTCore`, `NTGNU`, `NTDefault`
+- **Architecture aliases**: `Bit32Arch`, `Bit64Arch`
 
 ---
 

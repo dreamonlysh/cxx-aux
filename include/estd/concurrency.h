@@ -14,6 +14,18 @@
 #ifndef ESTD_CONCURRENCY_H
 #define ESTD_CONCURRENCY_H
 
+/**
+ * @defgroup concurrency Thread safety utilities
+ *
+ * Concurrency primitives and thread-safe wrappers:
+ * - **is_mutex_like**: Type trait to check if a type satisfies the Mutex
+ * concept
+ * - **mutex_silent**: No-op mutex for single-threaded generic code
+ * - **ThreadSafeObjectWrapper**: Thread-safe method invocation wrapper
+ * - **ThreadSafeFunctionWrapper**: Thread-safe callable binding wrapper
+ * @{
+ */
+
 #include "__concurrency/is_mutex_like.h"
 // - META_HAS_MEMBER_FUNCTION(lock);
 // - META_HAS_MEMBER_FUNCTION(try_lock);
@@ -66,5 +78,7 @@
 //   template <typename... Args>
 //   auto operator()(Args&&... args);
 // };
+
+/** @} */
 
 #endif

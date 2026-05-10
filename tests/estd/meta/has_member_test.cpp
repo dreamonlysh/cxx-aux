@@ -1,5 +1,6 @@
 #include <estd/__meta/has_member.h>
 #include <gtest/gtest.h>
+#include <vector>
 
 // ==================== Test types for member type detection
 // ====================
@@ -67,9 +68,11 @@ namespace es {
 
 META_HAS_MEMBER_TYPE(value_type);
 META_HAS_MEMBER_DATA(data);
-META_HAS_MEMBER_FUNCTION(size); // No args for size()
+META_HAS_MEMBER_FUNCTION(size);
 META_HAS_MEMBER_FUNCTION(foo, int(0));
 META_HAS_MEMBER_FUNCTION(bar, double(0), float(0));
+META_HAS_MEMBER_DATA(x);
+META_HAS_MEMBER_FUNCTION(go);
 
 } // namespace es
 
@@ -186,4 +189,29 @@ TEST(HasMemberTest, hasMemberFunction_CVQualified) {
   // Note: non-const methods on const objects won't work, but const methods will
   ASSERT_TRUE(es::has_member_size_v<const TypeWithSizeMethod>);
   ASSERT_TRUE(es::has_member_bar_v<const TypeWithFooMethod>);
+}
+
+TEST(HasMemberTest, hasMemberData_WithStruct) {
+  struct WithData { int x; };
+  struct WithoutData {};
+  ASSERT_TRUE(es::has_member_x<WithData>::value);
+  ASSERT_TRUE(es::has_member_x_v<WithData>);
+  ASSERT_FALSE(es::has_member_x<WithoutData>::value);
+  ASSERT_FALSE(es::has_member_x_v<WithoutData>);
+}
+
+TEST(HasMemberTest, hasMemberFunction_WithStruct) {
+  struct WithFunc { void go() {} };
+  struct WithoutFunc {};
+  ASSERT_TRUE(es::has_member_go<WithFunc>::value);
+  ASSERT_TRUE(es::has_member_go_v<WithFunc>);
+  ASSERT_FALSE(es::has_member_go<WithoutFunc>::value);
+  ASSERT_FALSE(es::has_member_go_v<WithoutFunc>);
+}
+
+TEST(HasMemberTest, hasMemberIterator_StdContainers) {
+  ASSERT_TRUE(es::has_member_iterator_v<std::vector<int>>);
+  ASSERT_TRUE(es::has_member_iterator_v<std::vector<double>>);
+  ASSERT_FALSE(es::has_member_iterator_v<int>);
+  ASSERT_FALSE(es::has_member_iterator_v<double>);
 }

@@ -14,26 +14,30 @@
 #ifndef ESTD_BIT_H
 #define ESTD_BIT_H
 
-// keywords: operation
-// - count: count the number of bit 0 or 1
-// - hl: short for highlight, will set the specific bits to 1 and others to 0
-// - dim: opposite to highlight, will set the specific bits to 0 and others to 1
-// - set: set bits to 1
-// - reset: set bits to 0
-// - is: validate bits match
-//
-// keywords: range of bits to take effect
-// l: suffix for operation, start from the left(highest) with adjacent bits
-// r: suffix for operation, start from the right(lowest) with adjacent bits
-// inc: short for include, used with l/r will include the first opposite bit
-// first: find from the right(lowest) bit, choose the first matched
-// adjacent: used with first will include the adjacent same bits
-//
-// keywords: bit
-// bit: bit 0/1
-// bit0: bit 0, hidden when set
-// bit1: bit 1, hidden when reset
-// pow2: 2**n, only one bit 1
+/**
+ * @defgroup bit Bit manipulation utilities
+ *
+ * Bit operations following a consistent naming convention:
+ * - **count**: Count the number of bit 0 or 1
+ * - **hl** (highlight): Set specific bits to 1, others to 0
+ * - **dim**: Set specific bits to 0, others to 1
+ * - **set/reset**: Set bits to 1/0
+ * - **is**: Validate bits match
+ *
+ * Range suffixes:
+ * - **l/r**: Start from left (highest) / right (lowest) with adjacent bits
+ * - **inc**: Include the first opposite bit
+ * - **first**: Find from the right, choose the first matched
+ * - **adjacent**: Include adjacent same bits
+ *
+ * Bit keywords:
+ * - **bit0**: Bit 0 (hidden when set)
+ * - **bit1**: Bit 1 (hidden when reset)
+ * - **pow2**: 2^n (only one bit 1)
+ *
+ * @note All functions require unsigned integer types
+ * @{
+ */
 
 #include "__bit/bit_count.h"
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -100,5 +104,7 @@
 // constexpr T setr(T v) noexcept;
 // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 // constexpr T reset_first_adjacent(T v) noexcept;
+
+/** @} */
 
 #endif

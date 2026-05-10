@@ -64,3 +64,35 @@ TEST(Subrange, DataAccess) {
 
   EXPECT_EQ(*sr.data(), 20);
 }
+
+
+TEST(Subrange, EmptySubrangeIteration) {
+  std::vector<int> vec = {1, 2, 3};
+  auto sr = es::ranges::subrange(vec.begin() + 1, vec.begin() + 1);
+  EXPECT_TRUE(sr.empty());
+  int count = 0;
+  for (int x : sr) {
+    (void)x;
+    ++count;
+  }
+  EXPECT_EQ(count, 0);
+}
+
+TEST(Subrange, SubrangeFromIterators) {
+  std::vector<int> vec = {10, 20, 30, 40, 50};
+  auto sr = es::ranges::subrange(vec.begin() + 1, vec.begin() + 4);
+  std::vector<int> result;
+  for (int x : sr) {
+    result.push_back(x);
+  }
+  EXPECT_EQ(result.size(), 3u);
+  EXPECT_EQ(result[0], 20);
+  EXPECT_EQ(result[1], 30);
+  EXPECT_EQ(result[2], 40);
+}
+
+TEST(Subrange, SizeQuery) {
+  std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7};
+  auto sr = es::ranges::subrange(vec.begin() + 2, vec.begin() + 5);
+  EXPECT_EQ(sr.size(), 3);
+}

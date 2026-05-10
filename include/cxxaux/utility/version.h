@@ -15,8 +15,9 @@
 #define CXXAUX_UTILITY_VERSION_H
 
 #include "estd/__bit/bit_get.h"
-#include <estd/bit.h>
 #include <cstddef>
+#include <estd/bit.h>
+#include <memory>
 #include <new>
 #include <type_traits>
 #include <utility>
@@ -111,7 +112,8 @@ public:
   constexpr VersionIDSet() noexcept = default;
 
   /** @brief Constructs a set from a single VersionID */
-  constexpr explicit VersionIDSet(VersionID id) noexcept : bitmap_(id.value()) {}
+  constexpr explicit VersionIDSet(VersionID id) noexcept
+      : bitmap_(id.value()) {}
 
   /** @brief Constructs a set from multiple VersionIDs */
   template <typename... IDs>
@@ -212,7 +214,7 @@ public:
    * @param func Callable taking a VersionID parameter
    */
   template <typename Func>
-  constexpr void foreach(Func&& func) const noexcept {
+  constexpr void foreach (Func&& func) const noexcept {
     bitset_type remaining = bitmap_;
     while (remaining) {
       unsigned off = es::countr_bit0(remaining);
@@ -243,8 +245,8 @@ private:
  */
 template <typename VersionID>
 struct VersionInfo {
-  VersionID id;           /**< The version identifier */
-  const char* name = nullptr;  /**< Optional version name */
+  VersionID id;               /**< The version identifier */
+  const char* name = nullptr; /**< Optional version name */
 
   /** @brief Default constructor */
   constexpr VersionInfo() noexcept = default;
@@ -254,8 +256,7 @@ struct VersionInfo {
    * @param v The version identifier
    * @param n The version name (optional)
    */
-  constexpr VersionInfo(VersionID v, const char* n) noexcept
-      : id(v), name(n) {}
+  constexpr VersionInfo(VersionID v, const char* n) noexcept : id(v), name(n) {}
 
   /**
    * @brief Casts this to a derived type.
@@ -307,7 +308,7 @@ public:
 
   /** @brief Destructor, destroys all managed VersionInfo objects */
   ~VersionManager() noexcept {
-    ids_.foreach([this](VersionID id) { at(id.offset())->~VersionInfo(); });
+    ids_.foreach ([this](VersionID id) { std::destroy_at(at(id.offset())); });
   }
 
   /** @brief Returns the maximum number of versions that can be stored */
@@ -328,7 +329,8 @@ public:
   }
 
   const VersionInfo* at(unsigned index) const noexcept {
-    return reinterpret_cast<const VersionInfo*>(infos_ + index * sizeof(VersionInfo));
+    return reinterpret_cast<const VersionInfo*>(infos_ +
+                                                index * sizeof(VersionInfo));
   }
 
   /**
@@ -344,23 +346,17 @@ public:
     }
     auto off = id.offset();
     VersionInfo* ptr = at(off);
-    new (ptr) VersionInfo(std::forward<Args>(args)...);
+    ::new (static_cast<void*>(ptr)) VersionInfo(std::forward<Args>(args)...);
     ids_ |= id;
     return {ptr, true};
   }
 
-  /**
-   * @brief Adds a VersionInfo by copy/move.
-   * @param id The version identifier
-   * @param info The VersionInfo to add
-   * @return Pair of (pointer, inserted) like std::map::insert
-   */
   std::pair<VersionInfo*, bool> add(VersionID id, VersionInfo info) {
     if (ids_.has(id)) {
       return {at(id.offset()), false};
     }
     VersionInfo* ptr = at(id.offset());
-    new (ptr) VersionInfo(std::move(info));
+    ::new (static_cast<void*>(ptr)) VersionInfo(std::move(info));
     ids_ |= id;
     return {ptr, true};
   }
@@ -389,17 +385,13 @@ public:
    * @param func Callable taking a VersionInfo& parameter
    */
   template <typename Func>
-  void foreach(Func&& func) noexcept {
-    ids_.foreach([this, &func](VersionID id) {
-      func(*at(id.offset()));
-    });
+  void foreach (Func&& func) noexcept {
+    ids_.foreach ([this, &func](VersionID id) { func(*at(id.offset())); });
   }
 
   template <typename Func>
-  void foreach(Func&& func) const noexcept {
-    ids_.foreach([this, &func](VersionID id) {
-      func(*at(id.offset()));
-    });
+  void foreach (Func&& func) const noexcept {
+    ids_.foreach ([this, &func](VersionID id) { func(*at(id.offset())); });
   }
 
   /** @brief Returns true if the given VersionID is registered */
