@@ -14,6 +14,7 @@
 #ifndef ESTD___BIT_BIT_COUNT_H
 #define ESTD___BIT_BIT_COUNT_H
 #include <limits>
+#include <type_traits>
 
 namespace es {
 
